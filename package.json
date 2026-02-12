@@ -1,0 +1,16 @@
+{
+  "name": "openfin-app",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up --build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.7.0"
+  }
+}
