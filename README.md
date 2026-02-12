@@ -1,4 +1,4 @@
-# OpenFin App
+# OpenFinance App
 
 Full-stack web app with Google OAuth authentication. Hono API server + SvelteKit SPA client backed by PostgreSQL.
 
