@@ -13,7 +13,7 @@ app.route("/api/auth", authRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 
-app.get("/", (c) => c.text("ImATeapot", 418));
+app.get("/", (c) => c.text("ImATeapot2", 418));
 
 // Serve static client files
 app.use("/*", serveStatic({ root: "../client-dist" }));

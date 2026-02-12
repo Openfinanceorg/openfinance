@@ -2,14 +2,19 @@
   "name": "openfin-app",
   "private": true,
   "scripts": {
-    "dev": "docker compose up --build",
+    "dev": "docker compose up -d && concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "dev:server": "docker compose up -d && pnpm --filter server dev",
+    "build": "docker build --target production -t openfin .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.0",
     "typescript": "^5.7.0"
   }

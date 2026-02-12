@@ -10,18 +10,5 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  openfinance:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/openfin
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-secret}
-      BETTER_AUTH_URL: http://localhost:3000
-    depends_on:
-      - db
-
 volumes:
   pgdata:
