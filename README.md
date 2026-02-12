@@ -29,15 +29,8 @@ Fill in your Google OAuth credentials (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET
 ### 3. Start the app
 
 ```sh
-docker compose up db -d
 pnpm db:migrate
+pnpm dev
 ```
 
-In separate terminals:
-
-```sh
-cd server && pnpm dev    # API on :3000
-cd client && pnpm dev    # SvelteKit on :5173 (proxies /api to server)
-```
-
-The client dev server proxies API requests to the server automatically.
+This starts Postgres in Docker, the API server on `:3000`, and SvelteKit on `:5173` (proxies `/api` to server).

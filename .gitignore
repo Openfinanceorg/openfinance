@@ -5,3 +5,4 @@ client/build
 client-dist
 .env
 *.local
+.DS_Store
