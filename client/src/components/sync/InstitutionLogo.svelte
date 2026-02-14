@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { InstitutionType } from "$lib/types/institution";
+  import type { InstitutionType } from "@shared/types";
 
   interface Props {
     institution: InstitutionType;

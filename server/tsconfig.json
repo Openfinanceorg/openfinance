@@ -11,7 +11,8 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "$lib/*": ["./src/lib/*"]
+      "$lib/*": ["./src/lib/*"],
+      "@shared/*": ["./src/shared/*"]
     }
   },
   "include": ["src"]

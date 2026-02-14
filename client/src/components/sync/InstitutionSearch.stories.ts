@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
 import InstitutionSearch from "./InstitutionSearch.svelte";
-import type { InstitutionType } from "$lib/types/institution";
+import type { InstitutionType } from "@shared/types";
 
 const mockInstitutions: InstitutionType[] = [
   {
@@ -66,12 +66,20 @@ const mockInstitutions: InstitutionType[] = [
         item_logins: {
           status: "DEGRADED",
           last_status_change: "2024-01-01",
-          breakdown: { success: 0.75, error_institution: 0.2, error_plaid: 0.05 },
+          breakdown: {
+            success: 0.75,
+            error_institution: 0.2,
+            error_plaid: 0.05,
+          },
         },
         transactions_updates: {
           status: "HEALTHY",
           last_status_change: "2024-01-01",
-          breakdown: { success: 0.98, error_institution: 0.01, error_plaid: 0.01 },
+          breakdown: {
+            success: 0.98,
+            error_institution: 0.01,
+            error_plaid: 0.01,
+          },
         },
         lastUpdated: "2024-01-01",
       },

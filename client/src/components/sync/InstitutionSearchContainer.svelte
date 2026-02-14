@@ -4,7 +4,7 @@
     InstitutionType,
     SyncProvider,
     SearchInstitutionsResponse,
-  } from "$lib/types/institution";
+  } from "@shared/types";
 
   // === PROPS ===
   interface Props {
