@@ -1,4 +1,6 @@
 import "./env.js";
+import { DBOS } from "@dbos-inc/dbos-sdk";
+import "./workflows/index.js";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
@@ -23,5 +25,14 @@ app.use("/*", serveStatic({ root: "../client-dist" }));
 app.get("/*", serveStatic({ root: "../client-dist", path: "index.html" }));
 
 const port = parseInt(process.env.PORT || "3000");
-console.log(`Server running on port ${port}`);
-serve({ fetch: app.fetch, port });
+
+(async () => {
+  DBOS.setConfig({
+    name: "openfin-server",
+    systemDatabaseUrl: process.env.DATABASE_URL,
+  });
+  await DBOS.launch();
+
+  console.log(`Server running on port ${port}`);
+  serve({ fetch: app.fetch, port });
+})();
