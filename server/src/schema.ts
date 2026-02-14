@@ -1,5 +1,14 @@
 import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
+// Institution registry
+export {
+  institutionRegistry,
+  ALL_ACCOUNT_TYPES,
+  type InstitutionRegistry,
+  type NewInstitutionRegistry,
+  type AccountType,
+} from "./lib/sql/institution-registry";
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

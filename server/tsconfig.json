@@ -8,7 +8,11 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "$lib/*": ["./src/lib/*"]
+    }
   },
   "include": ["src"]
 }

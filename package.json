@@ -2,7 +2,7 @@
   "name": "openfinance-app",
   "private": true,
   "scripts": {
-    "dev": "docker compose up -d && concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "dev": "docker compose up -d && concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\" \"pnpm --filter client storybook\"",
     "dev:server": "docker compose up -d && pnpm --filter server dev",
     "build": "docker build --target production -t openfinance .",
     "db:generate": "drizzle-kit generate",

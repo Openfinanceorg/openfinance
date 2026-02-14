@@ -10,14 +10,18 @@
     "@dbos-inc/dbos-sdk": "^4.8.8",
     "@hono/node-server": "^1.13.0",
     "better-auth": "^1.2.0",
+    "commander": "^14.0.3",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.41.0",
     "hono": "^4.7.0",
+    "plaid": "^41.1.0",
     "postgres": "^3.4.0",
     "tsx": "^4.19.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.18"
   }
 }
