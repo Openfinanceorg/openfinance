@@ -34,3 +34,14 @@ pnpm dev
 ```
 
 This starts Postgres in Docker, the API server on `:3000`, and SvelteKit on `:5173` (proxies `/api` to server).
+
+## Adding shadcn-svelte components
+
+We use [shadcn-svelte](https://next.shadcn-svelte.com/). To add a new component:
+
+```sh
+cd client
+npx shadcn-svelte@next add <component-name>
+```
+
+Components are installed to `src/lib/components/ui/<component-name>/`.
