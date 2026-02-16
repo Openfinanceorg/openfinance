@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AccountCard from "$lib/components/AccountCard.svelte";
+  import { AccountList } from "$lib/accounts";
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
   import { fetchAccounts } from "$lib/sync/api";
@@ -130,11 +130,7 @@
           </button>
         </div>
 
-        <div class="space-y-3">
-          {#each accounts as account (account.id)}
-            <AccountCard {account} />
-          {/each}
-        </div>
+        <AccountList {accounts} />
       {/if}
     </div>
   </main>

@@ -9,8 +9,8 @@ import {
   index,
   unique,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
-import { accountConnections } from "./account-connections";
+import { user } from "./auth.sql";
+import { accountConnections } from "./account-connections.sql";
 
 export const financialAccountStatusEnum = pgEnum("financial_account_status", [
   "active",
@@ -46,10 +46,9 @@ export const financialAccounts = pgTable(
   },
   (table) => ({
     userIdIdx: index("idx_financial_accounts_user_id").on(table.userId),
-    providerAccountUnique: unique("uq_financial_accounts_connection_provider_account").on(
-      table.accountConnectionId,
-      table.providerAccountId,
-    ),
+    providerAccountUnique: unique(
+      "uq_financial_accounts_connection_provider_account",
+    ).on(table.accountConnectionId, table.providerAccountId),
   }),
 );
 

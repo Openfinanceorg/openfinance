@@ -11,8 +11,8 @@ import {
   index,
   unique,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
-import { financialAccounts } from "./financial-accounts";
+import { user } from "./auth.sql";
+import { financialAccounts } from "./financial-accounts.sql";
 
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "active",

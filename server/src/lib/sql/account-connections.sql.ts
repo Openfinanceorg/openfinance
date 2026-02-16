@@ -7,8 +7,8 @@ import {
   integer,
   index,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
-import { institutionRegistry } from "./institution-registry";
+import { user } from "./auth.sql";
+import { institutionRegistry } from "./institution-registry.sql";
 
 export const financialProviderEnum = pgEnum("financial_provider", [
   "plaid",

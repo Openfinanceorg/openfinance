@@ -7,8 +7,8 @@ import {
   integer,
   index,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
-import { accountConnections } from "./account-connections";
+import { user } from "./auth.sql";
+import { accountConnections } from "./account-connections.sql";
 
 export const syncJobProviderEnum = pgEnum("sync_job_provider", ["plaid", "mx"]);
 

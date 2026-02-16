@@ -1,4 +1,4 @@
-export { user, session, account, verification } from "./lib/sql/auth";
+export { user, session, account, verification } from "./lib/sql/auth.sql";
 
 export {
   accountConnections,
@@ -6,14 +6,14 @@ export {
   accountConnectionStatusEnum,
   type AccountConnection,
   type NewAccountConnection,
-} from "./lib/sql/account-connections";
+} from "./lib/sql/account-connections.sql";
 
 export {
   financialAccounts,
   financialAccountStatusEnum,
   type FinancialAccount,
   type NewFinancialAccount,
-} from "./lib/sql/financial-accounts";
+} from "./lib/sql/financial-accounts.sql";
 
 export {
   institutionRegistry,
@@ -21,14 +21,14 @@ export {
   type InstitutionRegistry,
   type NewInstitutionRegistry,
   type AccountType,
-} from "./lib/sql/institution-registry";
+} from "./lib/sql/institution-registry.sql";
 
 export {
   transactions,
   transactionStatusEnum,
   type Transaction,
   type NewTransaction,
-} from "./lib/sql/transactions";
+} from "./lib/sql/transactions.sql";
 
 export {
   syncJobs,
@@ -37,4 +37,4 @@ export {
   syncJobStatusEnum,
   type SyncJob,
   type NewSyncJob,
-} from "./lib/sql/sync-jobs";
+} from "./lib/sql/sync-jobs.sql";

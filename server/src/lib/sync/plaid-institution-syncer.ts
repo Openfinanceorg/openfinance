@@ -1,9 +1,9 @@
 import { db } from "../../db.js";
-import { institutionRegistry } from "$lib/sql/institution-registry.js";
+import { institutionRegistry } from "$lib/sql/institution-registry.sql";
 import { sql, inArray, eq } from "drizzle-orm";
 import { subDays } from "date-fns";
-import type { InstitutionSyncer } from "./institution-syncer.interface.js";
-import type { NewInstitutionRegistry } from "$lib/sql/institution-registry.js";
+import type { InstitutionSyncer } from "./institution-syncer.interface";
+import type { NewInstitutionRegistry } from "$lib/sql/institution-registry.sql";
 import {
   buildConflictUpdateColumns,
   getInstitutionRegistryUpdateColumns,
@@ -16,7 +16,7 @@ import {
 import {
   ALL_ACCOUNT_TYPES,
   type AccountType,
-} from "$lib/sql/institution-registry.js";
+} from "$lib/sql/institution-registry.sql";
 
 /**
  * Handles syncing institutions from Plaid to the institution registry
