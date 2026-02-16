@@ -6,6 +6,9 @@ import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import authRoutes from "./routes/auth.js";
+import institutionRoutes from "./routes/institutions.js";
+import plaidRoutes from "./routes/plaid.js";
+import accountRoutes from "./routes/accounts.js";
 
 const app = new Hono();
 
@@ -13,6 +16,9 @@ app.use("*", logger());
 
 // API routes
 app.route("/api/auth", authRoutes);
+app.route("/api/institutions", institutionRoutes);
+app.route("/api/plaid", plaidRoutes);
+app.route("/api/accounts", accountRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 
