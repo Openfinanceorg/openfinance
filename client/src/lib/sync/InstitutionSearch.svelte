@@ -1,10 +1,5 @@
 <script lang="ts">
-  import {
-    Search,
-    X,
-    Lock,
-    HelpCircle,
-  } from "lucide-svelte";
+  import { Search, X, Lock, HelpCircle } from "lucide-svelte";
   import {
     Dialog,
     DialogContent,
@@ -397,7 +392,7 @@
           {#if searchQuery}
             <button
               onclick={clearSearch}
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors"
               type="button"
             >
               <X size={16} />
