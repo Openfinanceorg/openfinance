@@ -18,6 +18,7 @@ export interface ConnectedAccount {
   institutionLogo: string | null;
   institutionUrl: string | null;
   syncError: { message: string; lastFailedAt: string } | null;
+  isSyncing: boolean;
   connectionId: number;
   provider: "plaid" | "mx";
 }

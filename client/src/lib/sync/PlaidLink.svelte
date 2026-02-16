@@ -51,10 +51,15 @@
 
   interface Props {
     onAccountLinked?: () => void;
+    onSyncStarted?: () => void;
     onExit?: () => void;
   }
 
-  let { onAccountLinked = () => {}, onExit = () => {} }: Props = $props();
+  let {
+    onAccountLinked = () => {},
+    onSyncStarted = () => {},
+    onExit = () => {},
+  }: Props = $props();
 
   let handler: PlaidHandler | null = null;
   let sdkLoaded = $state(false);
@@ -90,6 +95,7 @@
             metadata.institution?.institution_id ?? institutionId,
           );
           onAccountLinked();
+          onSyncStarted();
         } catch (err) {
           console.error("Failed to exchange token:", err);
         }

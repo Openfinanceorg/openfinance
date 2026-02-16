@@ -6,6 +6,7 @@
   import { fetchAccounts } from "$lib/sync/api";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
+  import SyncBanner from "$lib/sync/SyncBanner.svelte";
   import type {
     ConnectedAccount,
     InstitutionType,
@@ -18,6 +19,7 @@
   let loading = $state(true);
   let searchOpen = $state(false);
   let plaidLink: PlaidLink;
+  let syncBanner: SyncBanner;
   let selectedInstitutionId = $state<string | undefined>();
 
   async function loadAccounts() {
@@ -52,9 +54,23 @@
   function handleAccountLinked() {
     loadAccounts();
   }
+
+  function handleSyncStarted() {
+    syncBanner.triggerPoll();
+  }
+
+  function handleSyncComplete(updatedAccounts: ConnectedAccount[]) {
+    accounts = updatedAccounts;
+  }
 </script>
 
-<PlaidLink bind:this={plaidLink} onAccountLinked={handleAccountLinked} />
+<PlaidLink
+  bind:this={plaidLink}
+  onAccountLinked={handleAccountLinked}
+  onSyncStarted={handleSyncStarted}
+/>
+
+<SyncBanner bind:this={syncBanner} onSyncComplete={handleSyncComplete} />
 
 <InstitutionSearchContainer
   bind:isOpen={searchOpen}
@@ -71,7 +87,7 @@
     <header
       class="flex items-center justify-between px-8 py-6 max-w-3xl mx-auto"
     >
-      <span class="text-sm font-semibold tracking-tight text-gray-500"
+      <span class="text-sm font-semibold tracking-tight text-gray-800"
         >OpenFinance</span
       >
       <ProfileDropdown />
@@ -108,8 +124,9 @@
         <!-- Accounts list -->
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-sm font-medium text-gray-500">Accounts</h2>
-          <button
-            class="text-sm text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1"
+          <Button
+            variant="linkBlue"
+            size="link"
             onclick={() => (searchOpen = true)}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -120,8 +137,8 @@
                 stroke-linecap="round"
               />
             </svg>
-            Add account
-          </button>
+            add account
+          </Button>
         </div>
 
         <AccountList {accounts} />
