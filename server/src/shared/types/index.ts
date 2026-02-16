@@ -4,6 +4,18 @@ export type {
   SearchInstitutionsResponse,
 } from "./institution";
 
+export type {
+  ApiTransaction,
+  GetTransactionsResponse,
+  TransactionFilter,
+  TransactionStatus,
+  SortOption,
+  SortField,
+  SortOrder,
+  AmountFilter,
+  Operator,
+} from "./transaction";
+
 export interface ConnectedAccount {
   id: number;
   name: string;
