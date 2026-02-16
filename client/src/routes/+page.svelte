@@ -63,7 +63,7 @@
 
 {#if !$session.data}
   <main class="flex min-h-screen items-center justify-center">
-    <p class="text-gray-400">Loading...</p>
+    <p class="text-gray-500">Loading...</p>
   </main>
 {:else}
   <main class="min-h-screen bg-white">
@@ -71,7 +71,7 @@
     <header
       class="flex items-center justify-between px-8 py-6 max-w-3xl mx-auto"
     >
-      <span class="text-sm font-semibold tracking-tight text-gray-400"
+      <span class="text-sm font-semibold tracking-tight text-gray-500"
         >OpenFinance</span
       >
       <ProfileDropdown />
@@ -81,7 +81,7 @@
     <div class="max-w-3xl mx-auto px-8 pt-8">
       {#if loading}
         <div class="text-center py-20">
-          <p class="text-gray-400 text-sm">Loading accounts...</p>
+          <p class="text-gray-500 text-sm">Loading accounts...</p>
         </div>
       {:else if accounts.length === 0}
         <!-- Empty state -->
@@ -89,7 +89,7 @@
           <p class="text-gray-900 text-xl font-medium mb-2">
             No accounts connected
           </p>
-          <p class="text-gray-400 text-sm mb-8">
+          <p class="text-gray-500 text-sm mb-8">
             Connect your bank account to get started.
           </p>
           <Button onclick={() => (searchOpen = true)}>
@@ -107,9 +107,7 @@
       {:else}
         <!-- Accounts list -->
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">
-            Accounts
-          </h2>
+          <h2 class="text-sm font-medium text-gray-500">Accounts</h2>
           <button
             class="text-sm text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1"
             onclick={() => (searchOpen = true)}

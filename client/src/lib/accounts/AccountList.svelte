@@ -16,9 +16,9 @@
   {#each groups as group (group.key)}
     <section>
       <div class="flex items-center justify-between mb-1 px-1">
-        <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+        <h3 class="text-xs font-medium text-gray-500">
           {group.label}
-          <span class="text-gray-300 ml-1">{group.accounts.length}</span>
+          <span class="text-gray-500 ml-1">{group.accounts.length}</span>
         </h3>
       </div>
       <div class="divide-y divide-gray-100">

@@ -12,12 +12,15 @@
         ghost:
           "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100",
         link: "text-gray-600 underline-offset-4 hover:underline dark:text-gray-400",
+        linkBlue:
+          "cursor-pointer text-[#007AFF] hover:text-[#0051D5] h-auto min-h-0 font-normal dark:text-[#0A84FF] dark:hover:text-[#409CFF]",
       },
       size: {
         default: "h-10 px-5 py-2.5",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-lg px-8",
         icon: "h-10 w-10",
+        link: "h-auto p-0",
       },
     },
     defaultVariants: {

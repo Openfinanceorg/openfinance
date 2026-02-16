@@ -50,7 +50,7 @@
         class="w-full h-full object-contain"
       />
     {:else}
-      <span class="text-gray-400 font-medium text-sm" aria-hidden="true">
+      <span class="text-gray-500 font-medium text-sm" aria-hidden="true">
         {account.institutionName.charAt(0).toUpperCase()}
       </span>
     {/if}
@@ -59,10 +59,10 @@
     <p class="text-sm font-medium text-gray-900 truncate">
       {account.name}
       {#if account.mask}
-        <span class="text-gray-400 font-normal">····{account.mask}</span>
+        <span class="text-gray-500 font-normal">····{account.mask}</span>
       {/if}
     </p>
-    <p class="text-xs text-gray-400 truncate">{account.institutionName}</p>
+    <p class="text-xs text-gray-500 truncate">{account.institutionName}</p>
   </div>
   <div class="flex-shrink-0 text-sm font-medium text-gray-900">
     {displayBalance}
