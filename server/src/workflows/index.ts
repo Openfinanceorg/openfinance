@@ -11,3 +11,4 @@
  */
 
 import "./example.workflow";
+import "./transaction-sync.workflow";
