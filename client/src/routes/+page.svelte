@@ -1,5 +1,7 @@
 <script lang="ts">
+  import AccountCard from "$lib/components/AccountCard.svelte";
   import { authClient } from "$lib/auth-client";
+  import { Button } from "$lib/components/ui/button";
   import { fetchAccounts } from "$lib/sync/api";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
@@ -49,25 +51,6 @@
   function handleAccountLinked() {
     loadAccounts();
   }
-
-  function formatBalance(
-    balance: string | null,
-    currency: string | null,
-  ): string {
-    if (!balance) return "--";
-    const num = parseFloat(balance);
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "USD",
-    }).format(num);
-  }
-
-  function formatAccountType(type: string, subtype: string | null): string {
-    const display = subtype || type;
-    return (
-      display.charAt(0).toUpperCase() + display.slice(1).replace(/_/g, " ")
-    );
-  }
 </script>
 
 <PlaidLink bind:this={plaidLink} onAccountLinked={handleAccountLinked} />
@@ -113,10 +96,7 @@
           <p class="text-gray-400 text-sm mb-8">
             Connect your bank account to get started.
           </p>
-          <button
-            class="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
-            onclick={() => (searchOpen = true)}
-          >
+          <Button onclick={() => (searchOpen = true)}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M8 3v10M3 8h10"
@@ -126,7 +106,7 @@
               />
             </svg>
             Connect bank account
-          </button>
+          </Button>
         </div>
       {:else}
         <!-- Accounts list -->
@@ -152,44 +132,7 @@
 
         <div class="space-y-3">
           {#each accounts as account (account.id)}
-            <div
-              class="border border-gray-100 rounded-xl p-5 hover:border-gray-200 transition-colors"
-            >
-              <div class="flex items-start justify-between">
-                <div>
-                  <p class="text-sm text-gray-400 mb-1">
-                    {account.institutionName}
-                  </p>
-                  <p class="text-base font-medium text-gray-900">
-                    {account.name}
-                    {#if account.mask}
-                      <span class="text-gray-400 font-normal"
-                        >····{account.mask}</span
-                      >
-                    {/if}
-                  </p>
-                  <p class="text-sm text-gray-400 mt-0.5">
-                    {formatAccountType(account.type, account.subtype)}
-                  </p>
-                </div>
-                <div class="text-right">
-                  <p class="text-base font-medium text-gray-900">
-                    {formatBalance(
-                      account.currentBalance,
-                      account.isoCurrencyCode,
-                    )}
-                  </p>
-                  {#if account.availableBalance && account.availableBalance !== account.currentBalance}
-                    <p class="text-sm text-gray-400 mt-0.5">
-                      {formatBalance(
-                        account.availableBalance,
-                        account.isoCurrencyCode,
-                      )} available
-                    </p>
-                  {/if}
-                </div>
-              </div>
-            </div>
+            <AccountCard {account} />
           {/each}
         </div>
       {/if}
