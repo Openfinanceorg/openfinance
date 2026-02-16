@@ -27,7 +27,7 @@
 
 <DropdownMenu>
   <DropdownMenuTrigger
-    class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-gray-100 transition-colors border-0 cursor-pointer"
+    class="flex items-center gap-1.5 rounded-lg px-1.5 py-1 text-left hover:bg-gray-100 transition-colors border-0 cursor-pointer"
   >
     <Avatar class="h-7 w-7">
       <AvatarImage src={$session.data?.user?.image} alt="" />
@@ -35,13 +35,7 @@
         >{getInitials($session.data?.user?.name)}</AvatarFallback
       >
     </Avatar>
-    <div class="flex flex-col">
-      <span class="text-sm font-medium text-gray-900">
-        {$session.data?.user?.name ?? "Account"}
-      </span>
-      <span class="text-xs text-gray-500">Free plan</span>
-    </div>
-    <ChevronsUpDown class="h-4 w-4 text-gray-400" />
+    <ChevronsUpDown class="h-3.5 w-3.5 text-gray-400" />
   </DropdownMenuTrigger>
   <DropdownMenuContent class="bg-white text-gray-900 border-gray-200">
     <DropdownMenuItem

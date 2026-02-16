@@ -71,9 +71,10 @@
     <header
       class="flex items-center justify-between px-8 py-6 max-w-3xl mx-auto"
     >
-      <div class="flex items-center gap-4">
-        <ProfileDropdown />
-      </div>
+      <span class="text-sm font-semibold tracking-tight text-gray-400"
+        >OpenFinance</span
+      >
+      <ProfileDropdown />
     </header>
 
     <!-- Content -->
