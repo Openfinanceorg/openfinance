@@ -37,6 +37,7 @@ export const accountConnections = pgTable(
     // Plaid item identifiers (nullable for MX)
     plaidItemId: text("plaid_item_id").unique(),
     plaidAccessToken: text("plaid_access_token"),
+    transactionCursor: text("transaction_cursor"),
 
     // MX member identifiers (nullable for Plaid)
     mxMemberGuid: text("mx_member_guid").unique(),

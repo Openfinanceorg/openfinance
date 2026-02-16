@@ -1,0 +1,1 @@
+ALTER TABLE "account_connections" ADD COLUMN "transaction_cursor" text;

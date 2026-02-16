@@ -29,6 +29,13 @@
       "when": 1771201406876,
       "tag": "0003_familiar_lorna_dane",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771205137144,
+      "tag": "0004_add-transaction-cursor",
+      "breakpoints": true
     }
   ]
 }
