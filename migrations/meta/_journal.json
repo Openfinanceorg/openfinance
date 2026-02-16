@@ -22,6 +22,13 @@
       "when": 1771197852062,
       "tag": "0002_living_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771201406876,
+      "tag": "0003_familiar_lorna_dane",
+      "breakpoints": true
     }
   ]
 }

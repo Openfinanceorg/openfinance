@@ -29,3 +29,12 @@ export {
   type Transaction,
   type NewTransaction,
 } from "./lib/sql/transactions";
+
+export {
+  syncJobs,
+  syncJobProviderEnum,
+  syncJobTypeEnum,
+  syncJobStatusEnum,
+  type SyncJob,
+  type NewSyncJob,
+} from "./lib/sql/sync-jobs";
