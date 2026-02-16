@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { SearchInstitutionsResponse } from "@shared/types";
 import { type AuthEnv } from "$lib/middleware";
-import { institutionRegistryService } from "$lib/institutionRegistry.service";
+import { institutionRegistryService } from "$lib/institution-registry.service";
 
 const institutionRoutes = new Hono<AuthEnv>();
 

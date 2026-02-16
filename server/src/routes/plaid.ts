@@ -1,14 +1,10 @@
 import { Hono } from "hono";
 import { Products, CountryCode } from "plaid";
 import { plaidClient } from "$lib/sync/plaid.client";
+import { plaidService } from "$lib/sync/plaid.service";
 import { requireAuth, type AuthEnv } from "$lib/middleware";
 import { db } from "../db";
-import {
-  accountConnections,
-  financialAccounts,
-  institutionRegistry,
-} from "../schema";
-import { eq } from "drizzle-orm";
+import { accountConnections } from "../schema";
 
 const plaidRoutes = new Hono<AuthEnv>();
 
@@ -38,41 +34,18 @@ plaidRoutes.post("/exchange_public_token", async (c) => {
   }>();
 
   // Exchange public token for access token
-  const exchangeResponse = await plaidClient.itemPublicTokenExchange({
-    public_token,
-  });
-  const { access_token, item_id } = exchangeResponse.data;
+  const { accessToken, itemId } =
+    await plaidService.exchangePublicToken(public_token);
 
-  // Get institution info
-  let institutionName = "Unknown Institution";
-  let institutionLogo: string | null = null;
+  // Get institution info and registry ID
   let registryId: number | null = null;
-
   if (institution_id) {
     try {
-      const instResponse = await plaidClient.institutionsGetById({
-        institution_id,
-        country_codes: [CountryCode.Us, CountryCode.Ca],
-        options: { include_optional_metadata: true },
-      });
-      institutionName = instResponse.data.institution.name;
-      institutionLogo = instResponse.data.institution.logo ?? null;
+      await plaidService.getInstitutionInfo(institution_id);
     } catch {
       // ignore - use defaults
     }
-
-    // Find in registry
-    const registryRows = await db
-      .select()
-      .from(institutionRegistry)
-      .where(
-        eq(institutionRegistry.providerCompositeKey, `plaid_${institution_id}`),
-      )
-      .limit(1);
-
-    if (registryRows.length > 0) {
-      registryId = registryRows[0].id;
-    }
+    registryId = await plaidService.findRegistryId(institution_id);
   }
 
   // Create account connection
@@ -82,49 +55,18 @@ plaidRoutes.post("/exchange_public_token", async (c) => {
       userId: user.id,
       provider: "plaid",
       institutionRegistryId: registryId,
-      plaidItemId: item_id,
-      plaidAccessToken: access_token,
+      plaidItemId: itemId,
+      plaidAccessToken: accessToken,
       status: "active",
     })
     .returning();
 
-  // Fetch and store accounts
-  const accountsResponse = await plaidClient.accountsGet({ access_token });
-
-  for (const account of accountsResponse.data.accounts) {
-    await db
-      .insert(financialAccounts)
-      .values({
-        userId: user.id,
-        accountConnectionId: connection.id,
-        providerAccountId: account.account_id,
-        name: account.name,
-        officialName: account.official_name ?? null,
-        type: account.type,
-        subtype: account.subtype ?? null,
-        mask: account.mask ?? null,
-        currentBalance: account.balances.current?.toString() ?? null,
-        availableBalance: account.balances.available?.toString() ?? null,
-        isoCurrencyCode: account.balances.iso_currency_code ?? null,
-      })
-      .onConflictDoUpdate({
-        target: [
-          financialAccounts.accountConnectionId,
-          financialAccounts.providerAccountId,
-        ],
-        set: {
-          name: account.name,
-          officialName: account.official_name ?? null,
-          type: account.type,
-          subtype: account.subtype ?? null,
-          mask: account.mask ?? null,
-          currentBalance: account.balances.current?.toString() ?? null,
-          availableBalance: account.balances.available?.toString() ?? null,
-          isoCurrencyCode: account.balances.iso_currency_code ?? null,
-          updatedAt: new Date(),
-        },
-      });
-  }
+  // Sync accounts and create transaction sync job
+  await plaidService.performInitialSync({
+    connectionId: connection.id,
+    userId: user.id,
+    accessToken,
+  });
 
   return c.json({ message: "Account connected successfully" });
 });
