@@ -2,6 +2,22 @@ import type { ConnectedAccount } from "@openfinance/shared";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
+export interface ApiKey {
+  id: number;
+  prefix: string;
+  name: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
+
+export interface CreatedApiKey {
+  id: number;
+  key: string;
+  prefix: string;
+  name: string | null;
+  createdAt: string;
+}
+
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
@@ -37,5 +53,16 @@ export function exchangePlaidPublicToken(
       public_token: publicToken,
       institution_id: institutionId,
     }),
+  });
+}
+
+export function listApiKeys() {
+  return apiFetch<{ keys: ApiKey[] }>("/api/keys");
+}
+
+export function createApiKey(name?: string) {
+  return apiFetch<CreatedApiKey>("/api/keys", {
+    method: "POST",
+    body: JSON.stringify({ name }),
   });
 }

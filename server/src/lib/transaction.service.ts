@@ -75,8 +75,9 @@ function amountFilterToSql(filter: AmountFilter): SQL<unknown> | null {
 function toApiTransaction(
   row: typeof transactions.$inferSelect,
 ): ApiTransaction {
+  const { raw, ...rest } = row;
   return {
-    ...row,
+    ...rest,
     amount: Number.parseFloat(row.amount),
     date: formatDate(row.date) ?? "",
     authorizedDate: formatDate(row.authorizedDate),

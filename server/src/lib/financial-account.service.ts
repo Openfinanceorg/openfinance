@@ -23,7 +23,6 @@ class FinancialAccountService {
         connectionId: accountConnections.id,
         provider: accountConnections.provider,
         institutionName: institutionRegistry.name,
-        institutionLogo: institutionRegistry.logo,
         institutionUrl: institutionRegistry.url,
       })
       .from(financialAccounts)
@@ -52,7 +51,6 @@ class FinancialAccountService {
       availableBalance: row.account.availableBalance,
       isoCurrencyCode: row.account.isoCurrencyCode,
       institutionName: row.institutionName ?? "Unknown",
-      institutionLogo: row.institutionLogo ?? null,
       institutionUrl: row.institutionUrl ?? null,
       syncError: syncErrorMap.get(row.connectionId) ?? null,
       isSyncing: syncingConnections.has(row.connectionId),
@@ -71,7 +69,6 @@ class FinancialAccountService {
         connectionId: accountConnections.id,
         provider: accountConnections.provider,
         institutionName: institutionRegistry.name,
-        institutionLogo: institutionRegistry.logo,
         institutionUrl: institutionRegistry.url,
       })
       .from(financialAccounts)
@@ -105,7 +102,6 @@ class FinancialAccountService {
       availableBalance: row.account.availableBalance,
       isoCurrencyCode: row.account.isoCurrencyCode,
       institutionName: row.institutionName ?? "Unknown",
-      institutionLogo: row.institutionLogo ?? null,
       institutionUrl: row.institutionUrl ?? null,
       syncError: syncErrorMap.get(row.connectionId) ?? null,
       isSyncing: syncingConnections.has(row.connectionId),

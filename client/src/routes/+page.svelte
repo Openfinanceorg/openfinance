@@ -3,7 +3,7 @@
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
   import ProfileDropdown from "$lib/components/ProfileDropdown.svelte";
-  import { fetchAccounts } from "$lib/sync/api";
+  import { createApiKey, fetchAccounts } from "$lib/sync/api";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
@@ -22,6 +22,35 @@
   let searchOpen = $state(false);
   let plaidLink: PlaidLink;
   let selectedInstitutionId = $state<string | undefined>();
+  let generatingKey = $state(false);
+  let revealedKey = $state<string | null>(null);
+  let keyError = $state<string | null>(null);
+  let keyCopied = $state(false);
+
+  const MCP_PACKAGE_NAME = "@openfinance/mcp-server";
+  const MCP_BIN_NAME = "openfinance-mcp";
+  const DEFAULT_OPENFINANCE_URL = "http://localhost:3000";
+
+  const mcpInstallCommand = `npx -y ${MCP_PACKAGE_NAME}`;
+
+  const mcpConfigSnippet = $derived(
+    JSON.stringify(
+      {
+        mcpServers: {
+          openfinance: {
+            command: "npx",
+            args: ["-y", MCP_PACKAGE_NAME],
+            env: {
+              OPENFINANCE_API_KEY: revealedKey ?? "sk-...",
+              OPENFINANCE_URL: DEFAULT_OPENFINANCE_URL,
+            },
+          },
+        },
+      },
+      null,
+      2,
+    ),
+  );
 
   async function loadAccounts() {
     try {
@@ -64,6 +93,26 @@
 
   function handleSyncStarted() {
     triggerPoll();
+  }
+
+  async function handleCreateKey() {
+    generatingKey = true;
+    keyError = null;
+    keyCopied = false;
+    try {
+      const created = await createApiKey("Claude Desktop");
+      revealedKey = created.key;
+    } catch {
+      keyError = "Failed to generate key. Please try again.";
+    } finally {
+      generatingKey = false;
+    }
+  }
+
+  async function handleCopyKey() {
+    if (!revealedKey) return;
+    await navigator.clipboard.writeText(revealedKey);
+    keyCopied = true;
   }
 </script>
 
@@ -132,6 +181,51 @@
 
         <AccountList {accounts} />
       {/if}
+
+      <section class="mt-14 p-2">
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-sm font-medium text-gray-500">
+              Connect accounts to your AI
+            </h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Generate a key, then paste this into
+              <code class="text-xs">claude_desktop_config.json</code>.
+            </p>
+          </div>
+          <Button onclick={handleCreateKey} disabled={generatingKey}>
+            {generatingKey ? "Generating..." : "New key"}
+          </Button>
+        </div>
+
+        <p class="text-xs text-gray-500 mb-4">
+          Uses <code>{MCP_PACKAGE_NAME}</code> / <code>{MCP_BIN_NAME}</code>.
+        </p>
+
+        <pre
+          class="text-xs bg-gray-50 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-all"><code
+            >{mcpConfigSnippet}</code
+          ></pre>
+
+        {#if revealedKey}
+          <div class="mt-4 bg-amber-50 rounded-lg p-4">
+            <p class="text-xs text-amber-900">Save this key now.</p>
+            <div class="mt-2 flex items-center gap-2">
+              <code
+                class="text-xs text-amber-950 bg-white rounded px-2 py-1 break-all"
+                >{revealedKey}</code
+              >
+              <Button variant="secondary" size="sm" onclick={handleCopyKey}
+                >{keyCopied ? "Copied" : "Copy"}</Button
+              >
+            </div>
+          </div>
+        {/if}
+
+        {#if keyError}
+          <p class="mt-4 text-sm text-red-600">{keyError}</p>
+        {/if}
+      </section>
     </div>
   </main>
 {/if}
