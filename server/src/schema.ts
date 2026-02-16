@@ -30,6 +30,8 @@ export {
   type NewTransaction,
 } from "./lib/sql/transactions.sql";
 
+export { apiKeys, type ApiKey, type NewApiKey } from "./lib/sql/api-keys.sql";
+
 export {
   syncJobs,
   syncJobProviderEnum,

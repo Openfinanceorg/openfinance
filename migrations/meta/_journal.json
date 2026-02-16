@@ -36,6 +36,13 @@
       "when": 1771205137144,
       "tag": "0004_add-transaction-cursor",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771209500729,
+      "tag": "0005_reflective_guardian",
+      "breakpoints": true
     }
   ]
 }
