@@ -7,7 +7,7 @@ import {
   type FinancialAccount,
   type NewFinancialAccount,
 } from "../schema";
-import { eq, inArray, sql } from "drizzle-orm";
+import { eq, inArray, and, desc } from "drizzle-orm";
 import type { ConnectedAccount } from "@shared/types";
 
 interface SyncError {
@@ -39,6 +39,7 @@ class FinancialAccountService {
 
     const connectionIds = [...new Set(rows.map((r) => r.connectionId))];
     const syncErrorMap = await this.getSyncErrors(connectionIds);
+    const syncingConnections = await this.getSyncingConnections(connectionIds);
 
     return rows.map((row) => ({
       id: row.account.id,
@@ -54,6 +55,7 @@ class FinancialAccountService {
       institutionLogo: row.institutionLogo ?? null,
       institutionUrl: row.institutionUrl ?? null,
       syncError: syncErrorMap.get(row.connectionId) ?? null,
+      isSyncing: syncingConnections.has(row.connectionId),
       connectionId: row.connectionId,
       provider: row.provider,
     }));
@@ -88,6 +90,9 @@ class FinancialAccountService {
     if (!row || row.account.userId !== userId) return undefined;
 
     const syncErrorMap = await this.getSyncErrors([row.connectionId]);
+    const syncingConnections = await this.getSyncingConnections([
+      row.connectionId,
+    ]);
 
     return {
       id: row.account.id,
@@ -103,6 +108,7 @@ class FinancialAccountService {
       institutionLogo: row.institutionLogo ?? null,
       institutionUrl: row.institutionUrl ?? null,
       syncError: syncErrorMap.get(row.connectionId) ?? null,
+      isSyncing: syncingConnections.has(row.connectionId),
       connectionId: row.connectionId,
       provider: row.provider,
     };
@@ -145,27 +151,46 @@ class FinancialAccountService {
       .where(eq(financialAccounts.accountConnectionId, connectionId));
   }
 
+  private async getSyncingConnections(
+    connectionIds: number[],
+  ): Promise<Set<number>> {
+    if (connectionIds.length === 0) return new Set();
+
+    const pendingJobs = await db
+      .select({ accountConnectionId: syncJobs.accountConnectionId })
+      .from(syncJobs)
+      .where(
+        and(
+          inArray(syncJobs.accountConnectionId, connectionIds),
+          eq(syncJobs.status, "pending"),
+        ),
+      );
+
+    return new Set(pendingJobs.map((j) => j.accountConnectionId));
+  }
+
   private async getSyncErrors(
     connectionIds: number[],
   ): Promise<Map<number, SyncError>> {
     if (connectionIds.length === 0) return new Map();
 
     const latestJobs = await db
-      .select({
+      .selectDistinctOn([syncJobs.accountConnectionId], {
         accountConnectionId: syncJobs.accountConnectionId,
         errorMessage: syncJobs.errorMessage,
         completedAt: syncJobs.completedAt,
         status: syncJobs.status,
-        rn: sql<number>`row_number() over (partition by ${syncJobs.accountConnectionId} order by ${syncJobs.createdAt} desc)`.as(
-          "rn",
-        ),
       })
       .from(syncJobs)
-      .where(inArray(syncJobs.accountConnectionId, connectionIds));
+      .where(inArray(syncJobs.accountConnectionId, connectionIds))
+      .orderBy(
+        syncJobs.accountConnectionId,
+        desc(syncJobs.createdAt),
+        desc(syncJobs.id),
+      );
 
     const errorMap = new Map<number, SyncError>();
     for (const job of latestJobs) {
-      if (Number(job.rn) !== 1) continue;
       if (job.status === "error" && job.errorMessage) {
         errorMap.set(job.accountConnectionId, {
           message: job.errorMessage,
