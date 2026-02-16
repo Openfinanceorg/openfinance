@@ -7,6 +7,8 @@
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
+  import { triggerPoll, setOnSyncComplete } from "$lib/sync/sync-status";
+  import { Plus } from "lucide-svelte";
   import type {
     ConnectedAccount,
     InstitutionType,
@@ -19,7 +21,6 @@
   let loading = $state(true);
   let searchOpen = $state(false);
   let plaidLink: PlaidLink;
-  let syncBanner: SyncBanner;
   let selectedInstitutionId = $state<string | undefined>();
 
   async function loadAccounts() {
@@ -40,6 +41,12 @@
     }
   });
 
+  $effect(() => {
+    setOnSyncComplete((updatedAccounts) => {
+      accounts = updatedAccounts;
+    });
+  });
+
   function handleProviderSelect(
     institution: InstitutionType,
     provider: SyncProvider,
@@ -56,11 +63,7 @@
   }
 
   function handleSyncStarted() {
-    syncBanner.triggerPoll();
-  }
-
-  function handleSyncComplete(updatedAccounts: ConnectedAccount[]) {
-    accounts = updatedAccounts;
+    triggerPoll();
   }
 </script>
 
@@ -70,7 +73,7 @@
   onSyncStarted={handleSyncStarted}
 />
 
-<SyncBanner bind:this={syncBanner} onSyncComplete={handleSyncComplete} />
+<SyncBanner />
 
 <InstitutionSearchContainer
   bind:isOpen={searchOpen}
@@ -109,14 +112,7 @@
             Connect your bank account to get started.
           </p>
           <Button onclick={() => (searchOpen = true)}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M8 3v10M3 8h10"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
+            <Plus class="h-4 w-4" />
             Connect bank account
           </Button>
         </div>
@@ -129,14 +125,7 @@
             size="link"
             onclick={() => (searchOpen = true)}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M8 3v10M3 8h10"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              />
-            </svg>
+            <Plus class="h-3.5 w-3.5" />
             add account
           </Button>
         </div>
