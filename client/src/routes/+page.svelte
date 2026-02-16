@@ -2,6 +2,7 @@
   import { AccountList } from "$lib/accounts";
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
+  import ProfileDropdown from "$lib/components/ProfileDropdown.svelte";
   import { fetchAccounts } from "$lib/sync/api";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
@@ -70,13 +71,9 @@
     <header
       class="flex items-center justify-between px-8 py-6 max-w-3xl mx-auto"
     >
-      <span class="text-lg font-medium text-gray-900">OpenFinance</span>
-      <button
-        class="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-        onclick={() => authClient.signOut()}
-      >
-        Sign out
-      </button>
+      <div class="flex items-center gap-4">
+        <ProfileDropdown />
+      </div>
     </header>
 
     <!-- Content -->
