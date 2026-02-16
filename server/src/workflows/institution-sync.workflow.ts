@@ -23,9 +23,9 @@ export class InstitutionSyncWorkflow {
     schedTime?: Date,
     _atTime?: Date,
   ): Promise<InstitutionSyncResult> {
-    DBOS.logger.info("Starting institution sync workflow", {
-      scheduledTime: schedTime?.toISOString(),
-    });
+    DBOS.logger.info(
+      `Starting institution sync workflow (scheduled: ${schedTime?.toISOString() ?? "manual"})`,
+    );
 
     const errors: string[] = [];
     let institutionsRefreshed = false;
@@ -64,12 +64,9 @@ export class InstitutionSyncWorkflow {
       timestamp: new Date().toISOString(),
     };
 
-    DBOS.logger.info("Institution sync workflow completed", {
-      success,
-      institutionsRefreshed,
-      healthStatusUpdated,
-      errorCount: errors.length,
-    });
+    DBOS.logger.info(
+      `Institution sync workflow completed: success=${success}, refreshed=${institutionsRefreshed}, healthUpdated=${healthStatusUpdated}, errors=${errors.length}`,
+    );
 
     return result;
   }
