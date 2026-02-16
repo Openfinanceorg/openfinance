@@ -13,7 +13,7 @@
     ConnectedAccount,
     InstitutionType,
     SyncProvider,
-  } from "@shared/types";
+  } from "@openfinance/shared";
 
   const session = authClient.useSession();
 

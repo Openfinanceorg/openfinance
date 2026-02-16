@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { InstitutionType } from "@shared/types";
+  import type { InstitutionType } from "@openfinance/shared";
 
   interface Props {
     institution: InstitutionType;

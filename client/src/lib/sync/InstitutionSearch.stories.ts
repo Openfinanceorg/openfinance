@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
 import InstitutionSearch from "./InstitutionSearch.svelte";
-import type { InstitutionType } from "@shared/types";
+import type { InstitutionType } from "@openfinance/shared";
 
 const mockInstitutions: InstitutionType[] = [
   {

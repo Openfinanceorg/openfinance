@@ -1,4 +1,4 @@
-import type { ConnectedAccount } from "@shared/types";
+import type { ConnectedAccount } from "@openfinance/shared";
 
 export interface AccountGroup {
   key: string;

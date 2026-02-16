@@ -6,7 +6,7 @@ import { transactionService } from "../lib/transaction.service";
 import type {
   GetTransactionsResponse,
   TransactionFilter,
-} from "@shared/types/transaction";
+} from "@openfinance/shared";
 
 const csv = z
   .string()

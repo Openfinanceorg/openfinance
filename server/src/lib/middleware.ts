@@ -1,5 +1,9 @@
 import { createMiddleware } from "hono/factory";
+import crypto from "node:crypto";
 import { auth } from "../auth.js";
+import { db } from "../db.js";
+import { apiKeys, user as userTable } from "../schema.js";
+import { eq, and, isNull } from "drizzle-orm";
 
 export type AuthEnv = {
   Variables: {
@@ -7,7 +11,66 @@ export type AuthEnv = {
   };
 };
 
+async function authenticateApiKey(authHeader: string): Promise<{
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+} | null> {
+  const token = authHeader.replace(/^Bearer\s+/i, "");
+  if (!token.startsWith("sk-")) return null;
+
+  const keyHash = crypto.createHash("sha256").update(token).digest("hex");
+
+  const [row] = await db
+    .select({
+      keyId: apiKeys.id,
+      userId: apiKeys.userId,
+    })
+    .from(apiKeys)
+    .where(and(eq(apiKeys.keyHash, keyHash), isNull(apiKeys.revokedAt)))
+    .limit(1);
+
+  if (!row) return null;
+
+  // Update last_used_at (fire-and-forget)
+  db.update(apiKeys)
+    .set({ lastUsedAt: new Date() })
+    .where(eq(apiKeys.id, row.keyId))
+    .then(
+      () => {},
+      () => {},
+    );
+
+  // Look up the user
+  const [u] = await db
+    .select({
+      id: userTable.id,
+      name: userTable.name,
+      email: userTable.email,
+      image: userTable.image,
+    })
+    .from(userTable)
+    .where(eq(userTable.id, row.userId))
+    .limit(1);
+
+  if (!u) return null;
+  return u;
+}
+
 export const requireAuth = createMiddleware<AuthEnv>(async (c, next) => {
+  // Try API key auth first
+  const authHeader = c.req.header("Authorization");
+  if (authHeader?.startsWith("Bearer sk-")) {
+    const apiUser = await authenticateApiKey(authHeader);
+    if (apiUser) {
+      c.set("user", apiUser);
+      return next();
+    }
+    return c.json({ error: "Invalid API key" }, 401);
+  }
+
+  // Fall back to session auth
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
   });

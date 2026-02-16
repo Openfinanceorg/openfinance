@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ConnectedAccount } from "@shared/types";
+  import type { ConnectedAccount } from "@openfinance/shared";
 
   interface Props {
     account: ConnectedAccount;

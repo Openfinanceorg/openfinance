@@ -1,3 +1,5 @@
+import type { ConnectedAccount } from "@openfinance/shared";
+
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -16,9 +18,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export function fetchAccounts() {
-  return apiFetch<{ accounts: import("@shared/types").ConnectedAccount[] }>(
-    "/api/accounts",
-  );
+  return apiFetch<{ accounts: ConnectedAccount[] }>("/api/accounts");
 }
 
 export function createPlaidLinkToken() {

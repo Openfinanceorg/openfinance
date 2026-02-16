@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ConnectedAccount } from "@shared/types";
+  import type { ConnectedAccount } from "@openfinance/shared";
   import { formatBalance, isLiabilityGroup } from "./utils";
 
   interface Props {

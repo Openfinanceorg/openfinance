@@ -10,6 +10,7 @@ import institutionRoutes from "./routes/institutions.js";
 import plaidRoutes from "./routes/plaid.js";
 import accountRoutes from "./routes/accounts.js";
 import transactionRoutes from "./routes/transactions.js";
+import keyRoutes from "./routes/keys.js";
 
 const app = new Hono();
 
@@ -21,6 +22,7 @@ app.route("/api/institutions", institutionRoutes);
 app.route("/api/plaid", plaidRoutes);
 app.route("/api/accounts", accountRoutes);
 app.route("/api/transactions", transactionRoutes);
+app.route("/api/keys", keyRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 

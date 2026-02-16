@@ -1,7 +1,7 @@
 import { db } from "../db";
 import { institutionRegistry } from "../schema";
 import { ilike, eq, asc, and, sql, inArray } from "drizzle-orm";
-import type { InstitutionType } from "@shared/types";
+import type { InstitutionType } from "@openfinance/shared";
 
 /**
  * Top institutions by country - Plaid IDs only

@@ -4,7 +4,7 @@
     InstitutionType,
     SyncProvider,
     SearchInstitutionsResponse,
-  } from "@shared/types";
+  } from "@openfinance/shared";
 
   // === PROPS ===
   interface Props {
@@ -89,11 +89,7 @@
     try {
       isSearching = true;
       const country = await getCurrentCountry();
-      const response = await getTopInstitutionsAPI(
-        country,
-        20,
-        "all",
-      );
+      const response = await getTopInstitutionsAPI(country, 20, "all");
       institutions = response.institutions;
     } catch {
       institutions = [];
@@ -157,6 +153,6 @@
   {connectedInstitutionIds}
   onSearchInput={handleSearchInput}
   onInstitutionSelect={handleInstitutionSelect}
-  onProviderSelect={onProviderSelect}
+  {onProviderSelect}
   onClose={handleClose}
 />

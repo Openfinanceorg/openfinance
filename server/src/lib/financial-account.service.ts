@@ -8,7 +8,7 @@ import {
   type NewFinancialAccount,
 } from "../schema";
 import { eq, inArray, and, desc } from "drizzle-orm";
-import type { ConnectedAccount } from "@shared/types";
+import type { ConnectedAccount } from "@openfinance/shared";
 
 interface SyncError {
   message: string;

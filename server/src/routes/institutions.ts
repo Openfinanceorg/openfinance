@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import type { SearchInstitutionsResponse } from "@shared/types";
+import type { SearchInstitutionsResponse } from "@openfinance/shared";
 import { type AuthEnv } from "$lib/middleware";
 import { institutionRegistryService } from "$lib/institution-registry.service";
 

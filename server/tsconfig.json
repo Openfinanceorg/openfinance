@@ -8,11 +8,11 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "outDir": "dist",
-    "rootDir": "src",
     "baseUrl": ".",
     "paths": {
       "$lib/*": ["./src/lib/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@openfinance/shared": ["../shared/src/index.ts"],
+      "@openfinance/shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src"]

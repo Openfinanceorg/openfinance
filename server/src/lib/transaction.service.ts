@@ -18,7 +18,7 @@ import type {
   ApiTransaction,
   TransactionFilter,
   TransactionStatus,
-} from "@shared/types/transaction";
+} from "@openfinance/shared";
 
 const DEFAULT_LIMIT = 100;
 const MAX_LIMIT = 500;

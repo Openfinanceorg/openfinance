@@ -13,7 +13,8 @@
     "paths": {
       "$lib": ["./src/lib"],
       "$lib/*": ["./src/lib/*"],
-      "@shared/*": ["../server/src/shared/*"]
+      "@openfinance/shared": ["../shared/src/index.ts"],
+      "@openfinance/shared/*": ["../shared/src/*"]
     }
   }
 }
