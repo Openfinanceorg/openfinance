@@ -70,9 +70,7 @@
     <header
       class="flex items-center justify-between px-8 py-6 max-w-3xl mx-auto"
     >
-      <h1 class="text-lg font-medium text-gray-900">
-        {$session.data.user.name}
-      </h1>
+      <span class="text-lg font-medium text-gray-900">OpenFinance</span>
       <button
         class="text-sm text-gray-400 hover:text-gray-600 transition-colors"
         onclick={() => authClient.signOut()}

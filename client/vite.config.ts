@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  envDir: path.resolve(__dirname, ".."),
   plugins: [tailwindcss(), sveltekit()],
   resolve: {
     alias: {

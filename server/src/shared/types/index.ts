@@ -16,6 +16,8 @@ export interface ConnectedAccount {
   isoCurrencyCode: string | null;
   institutionName: string;
   institutionLogo: string | null;
+  institutionUrl: string | null;
+  syncError: { message: string; lastFailedAt: string } | null;
   connectionId: number;
   provider: "plaid" | "mx";
 }
