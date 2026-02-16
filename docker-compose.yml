@@ -10,5 +10,17 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  test-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: openfin_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_test:/var/lib/postgresql/data
+
 volumes:
   pgdata:
+  pgdata_test:
