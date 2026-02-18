@@ -1,0 +1,50 @@
+{
+  "manifest_version": "0.3",
+  "name": "openfinance",
+  "display_name": "OpenFinance",
+  "version": "0.1.0",
+  "description": "Connect your financial accounts to view balances, search transactions, and get spending insights.",
+  "author": {
+    "name": "OpenFinance"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "build/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/build/index.js"],
+      "env": {
+        "OPENFINANCE_API_KEY": "${user_config.api_key}",
+        "OPENFINANCE_URL": "${user_config.server_url}"
+      }
+    }
+  },
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Your OpenFinance API key (starts with sk-)",
+      "sensitive": true,
+      "required": true
+    },
+    "server_url": {
+      "type": "string",
+      "title": "Server URL",
+      "description": "URL of your OpenFinance server",
+      "required": true,
+      "default": "https://api.openfinance.sh"
+    }
+  },
+  "tools": [
+    {
+      "name": "get_accounts",
+      "description": "Get all connected financial accounts with balances and institution info"
+    },
+    {
+      "name": "get_transactions",
+      "description": "Search and filter financial transactions"
+    }
+  ],
+  "keywords": ["finance", "banking", "transactions", "accounts"],
+  "license": "MIT"
+}

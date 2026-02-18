@@ -1,0 +1,10 @@
+src/
+*.ts
+tsconfig.json
+openfinance.mcpb
+.mcpbignore
+node_modules/tsup/
+node_modules/tsx/
+node_modules/typescript/
+node_modules/@types/
+node_modules/@anthropic-ai/
