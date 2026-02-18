@@ -13,4 +13,16 @@ accountRoutes.get("/", async (c) => {
   return c.json({ accounts });
 });
 
+// DELETE /api/accounts/:id
+accountRoutes.delete("/:id", async (c) => {
+  const user = c.get("user");
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid account ID" }, 400);
+
+  const deleted = await financialAccountService.deleteAccount(id, user.id);
+  if (!deleted) return c.json({ error: "Account not found" }, 404);
+
+  return c.json({ success: true });
+});
+
 export default accountRoutes;

@@ -281,6 +281,14 @@ class PlaidService {
 
     return { nextCursor, added, modified, removed };
   }
+  async itemRemove(accessToken: string): Promise<boolean> {
+    try {
+      await plaidClient.itemRemove({ access_token: accessToken });
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export const plaidService = new PlaidService();

@@ -9,6 +9,8 @@ import {
 } from "../schema";
 import { eq, inArray, and, desc } from "drizzle-orm";
 import type { ConnectedAccount } from "@openfinance/shared";
+import { plaidService } from "./sync/plaid.service";
+import { mxService } from "./sync/mx.service";
 
 interface SyncError {
   message: string;
@@ -136,6 +138,70 @@ class FinancialAccountService {
       .returning();
 
     return result;
+  }
+
+  async deleteAccount(
+    accountId: number,
+    userId: string,
+  ): Promise<FinancialAccount | null> {
+    const [account] = await db
+      .select()
+      .from(financialAccounts)
+      .where(
+        and(
+          eq(financialAccounts.id, accountId),
+          eq(financialAccounts.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (!account) return null;
+
+    await db
+      .delete(financialAccounts)
+      .where(eq(financialAccounts.id, accountId));
+
+    // If no other accounts remain on this connection, delete the connection too
+    const remaining = await db
+      .select({ id: financialAccounts.id })
+      .from(financialAccounts)
+      .where(
+        eq(financialAccounts.accountConnectionId, account.accountConnectionId),
+      )
+      .limit(1);
+
+    if (remaining.length === 0) {
+      // Best-effort provider-side unlink before deleting the connection row
+      const [connection] = await db
+        .select()
+        .from(accountConnections)
+        .where(eq(accountConnections.id, account.accountConnectionId))
+        .limit(1);
+
+      if (connection) {
+        try {
+          if (connection.provider === "plaid" && connection.plaidAccessToken) {
+            await plaidService.itemRemove(connection.plaidAccessToken);
+          } else if (connection.provider === "mx" && connection.mxMemberGuid) {
+            await mxService.deleteMember(
+              connection.userId,
+              connection.mxMemberGuid,
+            );
+          }
+        } catch (err) {
+          console.error(
+            "Failed to unlink provider connection, proceeding with deletion:",
+            err,
+          );
+        }
+      }
+
+      await db
+        .delete(accountConnections)
+        .where(eq(accountConnections.id, account.accountConnectionId));
+    }
+
+    return account;
   }
 
   async getAccountsByConnectionId(
