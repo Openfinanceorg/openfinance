@@ -65,7 +65,7 @@
   <section class="p-2">
     <div class="flex items-start justify-between gap-4 mb-4">
       <div>
-        <h2 class="text-sm font-medium text-gray-500">
+        <h2 class="text-base font-semibold text-gray-700">
           Connect accounts to your AI
         </h2>
         <p class="text-sm text-gray-600 mt-1">
@@ -164,7 +164,7 @@
           </Button>
         </div>
         <pre
-          class="text-xs bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+          class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
             >{codexCommand}</code
           ></pre>
         <p class="text-xs text-gray-500 mt-2">
@@ -179,7 +179,7 @@
           <code>{MCP_PACKAGE_NAME}</code>.
         </p>
         <pre
-          class="text-xs bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+          class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
             >{mcpConfigSnippet}</code
           ></pre>
       </Tabs.Content>
