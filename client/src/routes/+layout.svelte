@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { authClient } from "$lib/auth-client";
+  import Toaster from "$lib/components/ui/sonner/sonner.svelte";
 
   let { children } = $props();
 
@@ -30,3 +31,5 @@
 {:else}
   {@render children()}
 {/if}
+
+<Toaster />
