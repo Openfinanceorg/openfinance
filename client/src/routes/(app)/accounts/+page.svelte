@@ -96,11 +96,7 @@
     </Button>
   </div>
 
-  {#if loading}
-    <div class="text-center py-20">
-      <p class="text-gray-500 text-sm">Loading accounts...</p>
-    </div>
-  {:else if accounts.length === 0}
+  {#if !loading && accounts.length === 0}
     <div class="text-center py-10">
       <p class="text-gray-500 text-sm">No accounts connected yet.</p>
     </div>

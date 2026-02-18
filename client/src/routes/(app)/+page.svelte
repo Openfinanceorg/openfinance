@@ -105,11 +105,7 @@
 />
 
 <div class="max-w-4xl mx-auto px-8 pt-8 space-y-8">
-  {#if loading}
-    <div class="text-center py-20">
-      <p class="text-gray-500 text-sm">Loading...</p>
-    </div>
-  {:else}
+  {#if !loading}
     <TasksSection {accounts} onConnectAccount={() => (searchOpen = true)} />
 
     {#if accounts.length > 0}
