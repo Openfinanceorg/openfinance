@@ -23,7 +23,7 @@
       </header>
       <div class="flex">
         <Sidebar />
-        <main class="flex-1">
+        <main class="flex-1 min-w-0">
           {@render children()}
         </main>
       </div>

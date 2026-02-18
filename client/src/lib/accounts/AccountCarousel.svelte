@@ -1,0 +1,71 @@
+<script lang="ts">
+  import type { ConnectedAccount } from "@openfinance/shared";
+  import type { EmblaCarouselType } from "embla-carousel";
+  import AccountCard from "./AccountCard.svelte";
+  import emblaCarouselSvelte from "embla-carousel-svelte";
+  import ChevronLeft from "lucide-svelte/icons/chevron-left";
+  import ChevronRight from "lucide-svelte/icons/chevron-right";
+
+  interface Props {
+    accounts: ConnectedAccount[];
+  }
+
+  let { accounts }: Props = $props();
+
+  let emblaApi: EmblaCarouselType | undefined = $state();
+  let canScrollPrev = $state(false);
+  let canScrollNext = $state(false);
+
+  function onInit(event: CustomEvent<EmblaCarouselType>) {
+    emblaApi = event.detail;
+    updateButtons();
+    emblaApi.on("select", updateButtons);
+    emblaApi.on("reInit", updateButtons);
+  }
+
+  function updateButtons() {
+    if (!emblaApi) return;
+    canScrollPrev = emblaApi.canScrollPrev();
+    canScrollNext = emblaApi.canScrollNext();
+  }
+
+</script>
+
+<div class="relative group -mx-8" role="region" aria-label="Accounts carousel">
+  <div
+    class="overflow-hidden"
+    use:emblaCarouselSvelte={{
+      options: { align: "start", containScroll: "trimSnaps", dragFree: true },
+      plugins: [],
+    }}
+    onemblaInit={onInit}
+  >
+    <div class="flex gap-4 px-8">
+      {#each accounts as account (account.id)}
+        <div class="flex-shrink-0">
+          <AccountCard {account} />
+        </div>
+      {/each}
+    </div>
+  </div>
+
+  {#if canScrollPrev}
+    <button
+      class="absolute left-2 top-1/2 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-gray-700 rounded-full p-1.5 shadow-md hover:bg-gray-50 hover:text-gray-900"
+      onclick={() => emblaApi?.scrollPrev()}
+      aria-label="Scroll left"
+    >
+      <ChevronLeft size={18} />
+    </button>
+  {/if}
+
+  {#if canScrollNext}
+    <button
+      class="absolute right-2 top-1/2 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-gray-700 rounded-full p-1.5 shadow-md hover:bg-gray-50 hover:text-gray-900"
+      onclick={() => emblaApi?.scrollNext()}
+      aria-label="Scroll right"
+    >
+      <ChevronRight size={18} />
+    </button>
+  {/if}
+</div>

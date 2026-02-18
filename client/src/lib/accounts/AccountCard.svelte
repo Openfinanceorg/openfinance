@@ -10,11 +10,18 @@
   const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
     | string
     | undefined;
-  const logoUrl = $derived(
-    logoDevKey
-      ? `https://img.logo.dev/name/${encodeURIComponent(account.institutionName)}?token=${logoDevKey}&size=64&format=png`
-      : null,
-  );
+  const logoUrl = $derived.by(() => {
+    if (!logoDevKey || !account.institutionUrl) return null;
+    try {
+      const url = account.institutionUrl.startsWith("http")
+        ? account.institutionUrl
+        : `https://${account.institutionUrl}`;
+      const domain = new URL(url).hostname;
+      return `https://img.logo.dev/${domain}?token=${logoDevKey}&size=64&format=png`;
+    } catch {
+      return null;
+    }
+  });
 
   function formatBalance(
     balance: string | null,
@@ -28,56 +35,38 @@
     }).format(num);
   }
 
-  function formatAccountType(type: string, subtype: string | null): string {
-    const display = subtype || type;
-    return (
-      display.charAt(0).toUpperCase() + display.slice(1).replace(/_/g, " ")
-    );
-  }
+  const shortName = $derived(() => {
+    const sub = account.subtype || account.type;
+    const label = sub.charAt(0).toUpperCase() + sub.slice(1).replace(/_/g, " ");
+    return account.mask ? `${label} ····${account.mask}` : label;
+  });
 </script>
 
 <div
-  class="border border-gray-100 rounded-xl p-5 hover:border-gray-200 transition-colors flex items-start gap-4"
+  class="bg-gray-100 rounded-2xl p-5 w-[200px] flex flex-col justify-between h-[140px]"
 >
-  <div
-    class="flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center"
-  >
-    {#if logoUrl}
-      <img
-        src={logoUrl}
-        alt={account.institutionName}
-        class="w-full h-full object-contain"
-      />
-    {:else}
-      <span class="text-gray-500 font-medium text-lg" aria-hidden="true">
-        {account.institutionName.charAt(0).toUpperCase()}
-      </span>
-    {/if}
-  </div>
-  <div class="flex-1 min-w-0 flex items-start justify-between gap-4">
-    <div class="min-w-0">
-      <p class="text-sm text-gray-400 mb-1">
-        {account.institutionName}
-      </p>
-      <p class="text-base font-medium text-gray-900">
-        {account.name}
-        {#if account.mask}
-          <span class="text-gray-400 font-normal">····{account.mask}</span>
-        {/if}
-      </p>
-      <p class="text-sm text-gray-400 mt-0.5">
-        {formatAccountType(account.type, account.subtype)}
-      </p>
-    </div>
-    <div class="text-right flex-shrink-0">
-      <p class="text-base font-medium text-gray-900">
-        {formatBalance(account.currentBalance, account.isoCurrencyCode)}
-      </p>
-      {#if account.availableBalance && account.availableBalance !== account.currentBalance}
-        <p class="text-sm text-gray-400 mt-0.5">
-          {formatBalance(account.availableBalance, account.isoCurrencyCode)} available
-        </p>
+  <div class="flex items-center gap-2.5">
+    <div
+      class="w-8 h-8 rounded-full overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
+    >
+      {#if logoUrl}
+        <img
+          src={logoUrl}
+          alt={account.institutionName}
+          class="w-full h-full object-contain"
+        />
+      {:else}
+        <span class="text-gray-500 font-medium text-sm" aria-hidden="true">
+          {account.institutionName.charAt(0).toUpperCase()}
+        </span>
       {/if}
     </div>
+    <p class="text-sm font-medium text-gray-900 truncate">{account.name}</p>
+  </div>
+  <div>
+    <p class="text-xs text-gray-400 mb-0.5">{shortName()}</p>
+    <p class="text-base font-semibold text-gray-900">
+      {formatBalance(account.currentBalance, account.isoCurrencyCode)}
+    </p>
   </div>
 </div>

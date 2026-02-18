@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { AccountList } from "$lib/accounts";
+  import { AccountCarousel } from "$lib/accounts";
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
   import { fetchAccounts } from "$lib/accounts/api";
+  import TasksSection from "$lib/components/TasksSection.svelte";
+  import RecentTransactions from "$lib/transactions/RecentTransactions.svelte";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
   import MXLink from "$lib/sync/MXLink.svelte";
@@ -59,6 +61,21 @@
     }
   }
 
+  let totalBalanceFormatted = $derived.by(() => {
+    const totals: Record<string, number> = {};
+    for (const a of accounts) {
+      const cur = a.isoCurrencyCode ?? "USD";
+      totals[cur] = (totals[cur] ?? 0) + parseFloat(a.currentBalance ?? "0");
+    }
+    const [currency, amount] = Object.entries(totals).sort(
+      (a, b) => b[1] - a[1],
+    )[0] ?? ["USD", 0];
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+    }).format(amount);
+  });
+
   function handleAccountLinked() {
     loadAccounts();
   }
@@ -87,37 +104,36 @@
   onProviderSelect={handleProviderSelect}
 />
 
-<div class="max-w-3xl mx-auto px-8 pt-8">
+<div class="max-w-3xl mx-auto px-8 pt-8 space-y-8">
   {#if loading}
     <div class="text-center py-20">
-      <p class="text-gray-500 text-sm">Loading accounts...</p>
-    </div>
-  {:else if accounts.length === 0}
-    <div class="text-center py-20">
-      <p class="text-gray-900 text-xl font-medium mb-2">
-        No accounts connected
-      </p>
-      <p class="text-gray-500 text-sm mb-8">
-        Connect your bank account to get started.
-      </p>
-      <Button onclick={() => (searchOpen = true)}>
-        <Plus class="h-4 w-4" />
-        Connect bank account
-      </Button>
+      <p class="text-gray-500 text-sm">Loading...</p>
     </div>
   {:else}
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-sm font-medium text-gray-500">Accounts</h2>
-      <Button
-        variant="linkBlue"
-        size="link"
-        onclick={() => (searchOpen = true)}
-      >
-        <Plus class="h-3.5 w-3.5" />
-        add account
-      </Button>
-    </div>
+    <TasksSection {accounts} onConnectAccount={() => (searchOpen = true)} />
 
-    <AccountList {accounts} onDelete={loadAccounts} />
+    {#if accounts.length > 0}
+      <section>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-xs text-gray-500">Total balance</p>
+            <p class="text-2xl font-semibold text-gray-900">
+              {totalBalanceFormatted}
+            </p>
+          </div>
+          <Button
+            variant="linkBlue"
+            size="link"
+            onclick={() => (searchOpen = true)}
+          >
+            <Plus class="h-3.5 w-3.5" />
+            add account
+          </Button>
+        </div>
+        <AccountCarousel {accounts} />
+      </section>
+
+      <RecentTransactions />
+    {/if}
   {/if}
 </div>
