@@ -1,9 +1,11 @@
 #!/usr/bin/env tsx
 
+import "../env.js";
 import { Command } from "commander";
 import { PlaidInstitutionSyncer } from "$lib/sync/plaid-institution-syncer.js";
+import { MXInstitutionSyncer } from "$lib/sync/mx-institution-syncer.js";
 
-type Provider = "plaid" | "update-status";
+type Provider = "plaid" | "mx" | "update-status";
 
 const program = new Command();
 
@@ -12,7 +14,7 @@ program
   .description("Sync financial institutions from Plaid to the database")
   .argument(
     "[provider]",
-    "Provider to sync from: plaid (default), update-status",
+    "Provider to sync from: plaid (default), mx, update-status",
     "plaid",
   )
   .option(
@@ -24,6 +26,7 @@ program
     `
 Examples:
   tsx server/src/scripts/sync-institutions.ts plaid --limit 10
+  tsx server/src/scripts/sync-institutions.ts mx --limit 10
   tsx server/src/scripts/sync-institutions.ts update-status
 `,
   )
@@ -52,6 +55,12 @@ Examples:
           console.log("Syncing Plaid institutions...");
           await plaidSyncer.refreshInstitutions(limit);
           break;
+        case "mx": {
+          console.log("Syncing MX institutions...");
+          const mxSyncer = new MXInstitutionSyncer();
+          await mxSyncer.refreshInstitutions(limit);
+          break;
+        }
         case "update-status":
           console.log("Updating connection status for Plaid institutions...");
           await plaidSyncer.updateConnectionHealthStatus();

@@ -123,9 +123,6 @@ export class MXInstitutionSyncer implements InstitutionSyncer {
               });
 
             totalInstitutions += validInstitutions.length;
-            console.log(
-              `Batch ${totalBatches + 1}: Upserted ${validInstitutions.length} MX institutions`,
-            );
           }
 
           totalBatches++;

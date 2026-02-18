@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { fetchAccounts } from "./api";
+import { fetchAccounts } from "$lib/accounts/api";
 import type { ConnectedAccount } from "@openfinance/shared";
 
 interface SyncStatus {

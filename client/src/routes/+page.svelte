@@ -3,9 +3,11 @@
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
   import ProfileDropdown from "$lib/components/ProfileDropdown.svelte";
-  import { createApiKey, fetchAccounts } from "$lib/sync/api";
+  import { createApiKey } from "$lib/sync/api";
+  import { fetchAccounts } from "$lib/accounts/api";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
+  import MXLink from "$lib/sync/MXLink.svelte";
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
   import { triggerPoll, setOnSyncComplete } from "$lib/sync/sync-status";
   import * as Tabs from "$lib/components/ui/tabs";
@@ -22,6 +24,7 @@
   let loading = $state(true);
   let searchOpen = $state(false);
   let plaidLink: PlaidLink;
+  let mxLink: MXLink;
   let selectedInstitutionId = $state<string | undefined>();
   let generatingKey = $state(false);
   let revealedKey = $state<string | null>(null);
@@ -86,6 +89,8 @@
     if (provider === "plaid") {
       selectedInstitutionId = institution.plaidData?.institutionId;
       plaidLink.initiatePlaidLink(selectedInstitutionId);
+    } else if (provider === "mx") {
+      mxLink.initiateMXLink(institution.mxData?.institutionCode);
     }
   }
 
@@ -128,6 +133,12 @@
 
 <PlaidLink
   bind:this={plaidLink}
+  onAccountLinked={handleAccountLinked}
+  onSyncStarted={handleSyncStarted}
+/>
+
+<MXLink
+  bind:this={mxLink}
   onAccountLinked={handleAccountLinked}
   onSyncStarted={handleSyncStarted}
 />

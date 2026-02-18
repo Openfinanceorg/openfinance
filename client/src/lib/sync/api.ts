@@ -1,6 +1,4 @@
-import type { ConnectedAccount } from "@openfinance/shared";
-
-const API_BASE = import.meta.env.VITE_API_URL || "";
+import { apiFetch } from "$lib/api-client";
 
 export interface ApiKey {
   id: number;
@@ -16,25 +14,6 @@ export interface CreatedApiKey {
   prefix: string;
   name: string | null;
   createdAt: string;
-}
-
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
-  }
-  return response.json();
-}
-
-export function fetchAccounts() {
-  return apiFetch<{ accounts: ConnectedAccount[] }>("/api/accounts");
 }
 
 export function createPlaidLinkToken() {
@@ -65,4 +44,52 @@ export function createApiKey(name?: string) {
     method: "POST",
     body: JSON.stringify({ name }),
   });
+}
+
+// MX API functions
+
+export function createMxWidgetUrl(params?: { institutionCode?: string }) {
+  return apiFetch<{ widget_url: string; user_guid: string }>(
+    "/api/mx/create_widget_url",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        institution_code: params?.institutionCode,
+      }),
+    },
+  );
+}
+
+export function connectMxMember(
+  memberGuid: string,
+  userGuid: string,
+  institutionCode?: string,
+) {
+  return apiFetch<{ message: string }>("/api/mx/connect_member", {
+    method: "POST",
+    body: JSON.stringify({
+      member_guid: memberGuid,
+      user_guid: userGuid,
+      institution_code: institutionCode,
+    }),
+  });
+}
+
+export function createMxWidgetUrlForUpdate(accountId: number) {
+  return apiFetch<{
+    widget_url: string;
+    user_guid: string;
+    member_guid: string;
+  }>("/api/mx/create_widget_url_for_update", {
+    method: "POST",
+    body: JSON.stringify({ account_id: accountId }),
+  });
+}
+
+export function getMxMemberStatus(memberGuid: string) {
+  return apiFetch<{
+    connection_status: string;
+    is_being_aggregated: boolean;
+    successfully_aggregated_at: string | null;
+  }>(`/api/mx/member_status?member_guid=${encodeURIComponent(memberGuid)}`);
 }

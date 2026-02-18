@@ -46,16 +46,33 @@ class PlaidService {
     return rows[0]?.id ?? null;
   }
 
-  async performInitialSync(params: {
-    connectionId: number;
+  async connectAndPerformInitialSync(params: {
     userId: string;
-    accessToken: string;
+    institutionRegistryId: number | null;
+    plaidItemId: string;
+    plaidAccessToken: string;
   }) {
-    const { connectionId, userId, accessToken } = params;
+    const { userId, institutionRegistryId, plaidItemId, plaidAccessToken } =
+      params;
+
+    // Create account connection
+    const [connection] = await db
+      .insert(accountConnections)
+      .values({
+        userId,
+        provider: "plaid",
+        institutionRegistryId,
+        plaidItemId,
+        plaidAccessToken,
+        status: "active",
+      })
+      .returning();
+
+    const connectionId = connection.id;
 
     // Fetch and upsert accounts
     const accountsResponse = await plaidClient.accountsGet({
-      access_token: accessToken,
+      access_token: plaidAccessToken,
     });
 
     for (const account of accountsResponse.data.accounts) {

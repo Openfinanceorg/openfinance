@@ -5,8 +5,6 @@ import { Products, CountryCode } from "plaid";
 import { plaidClient } from "$lib/sync/plaid.client";
 import { plaidService } from "$lib/sync/plaid.service";
 import { requireAuth, type AuthEnv } from "$lib/middleware";
-import { db } from "../db";
-import { accountConnections } from "../schema";
 
 const exchangeTokenSchema = z.object({
   public_token: z.string(),
@@ -55,24 +53,11 @@ plaidRoutes.post(
       registryId = await plaidService.findRegistryId(institution_id);
     }
 
-    // Create account connection
-    const [connection] = await db
-      .insert(accountConnections)
-      .values({
-        userId: user.id,
-        provider: "plaid",
-        institutionRegistryId: registryId,
-        plaidItemId: itemId,
-        plaidAccessToken: accessToken,
-        status: "active",
-      })
-      .returning();
-
-    // Sync accounts and create transaction sync job
-    await plaidService.performInitialSync({
-      connectionId: connection.id,
+    await plaidService.connectAndPerformInitialSync({
       userId: user.id,
-      accessToken,
+      institutionRegistryId: registryId,
+      plaidItemId: itemId,
+      plaidAccessToken: accessToken,
     });
 
     return c.json({ message: "Account connected successfully" });

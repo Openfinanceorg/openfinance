@@ -16,8 +16,24 @@
   import BackButton from "$lib/components/ui/BackButton.svelte";
   import { Badge } from "$lib/components/ui/badge";
   import InstitutionLogo from "./InstitutionLogo.svelte";
+  import ProviderLogo from "./ProviderLogo.svelte";
   import type { InstitutionType, SyncProvider } from "@openfinance/shared";
   import { extractBaseDomain } from "$lib/utils/url";
+
+  const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
+    | string
+    | undefined;
+
+  const PROVIDER_LOGO_DOMAINS: Record<SyncProvider, string> = {
+    plaid: "plaid.com",
+    mx: "mx.com",
+  };
+
+  function getProviderLogoUrl(provider: SyncProvider): string | null {
+    if (!logoDevKey) return null;
+    const domain = PROVIDER_LOGO_DOMAINS[provider];
+    return `https://img.logo.dev/${domain}?token=${logoDevKey}&size=64&format=png`;
+  }
 
   // Provider display name mapping
   const PROVIDER_DISPLAY_NAMES: Record<SyncProvider, string> = {
@@ -169,16 +185,14 @@
 
   function getProviderList(institution: InstitutionType) {
     const status = getProviderStatus(institution);
-    const disabled = institution.disabledProviders || {};
 
     const providers = [
       {
         type: "plaid" as const,
         ...status.plaid,
         name: "Plaid",
-        disabled: !!disabled.plaid,
+        disabled: false,
         description:
-          disabled.plaid ||
           status.plaid.issueDescription ||
           "2 years of transaction history. Single authentication.",
       },
@@ -186,12 +200,10 @@
         type: "mx" as const,
         ...status.mx,
         name: "MX",
-        disabled: !!disabled.mx,
-        description:
-          disabled.mx ||
-          (status.mx.recommended
-            ? "Most stable connection available"
-            : "Requires 2FA twice but very reliable"),
+        disabled: false,
+        description: status.mx.recommended
+          ? "Most stable connection available"
+          : "Requires 2FA twice but very reliable",
       },
     ]
       .filter((p) => p.available)
@@ -282,15 +294,16 @@
         <div class="space-y-3">
           {#each providers as provider}
             {#if provider.disabled}
+              {@const logoUrl = getProviderLogoUrl(provider.type)}
               <div
                 class="w-full flex items-center justify-between p-4 border rounded-lg border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
               >
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-500"
-                  >
-                    {provider.name.charAt(0)}
-                  </div>
+                  <ProviderLogo
+                    {logoUrl}
+                    name={provider.name}
+                    variant="disabled"
+                  />
                   <div class="text-left">
                     <div
                       class="font-medium text-gray-500 flex items-center gap-2"
@@ -305,6 +318,7 @@
                 </div>
               </div>
             {:else}
+              {@const logoUrl = getProviderLogoUrl(provider.type)}
               <button
                 onclick={() => handleProviderSelection(provider.type)}
                 class="w-full flex items-center justify-between p-4 border rounded-lg transition-colors group {provider.hasIssues
@@ -312,19 +326,17 @@
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}"
               >
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600"
-                  >
-                    {provider.name.charAt(0)}
-                  </div>
+                  <ProviderLogo
+                    {logoUrl}
+                    name={provider.name}
+                    variant="active"
+                  />
                   <div class="text-left">
                     <div
                       class="font-medium text-gray-900 flex items-center gap-2"
                     >
                       {provider.name}
-                      {#if provider.recommended}
-                        <Badge variant="blue">Recommended</Badge>
-                      {:else if provider.hasWarning}
+                      {#if provider.hasWarning}
                         <Badge variant="amber">
                           {provider.hasIssues
                             ? "Lower Success Rate"

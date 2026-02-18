@@ -47,7 +47,6 @@ export interface InstitutionType {
     supportsAccountStatement?: boolean;
     supportsAccountVerification?: boolean;
   } | null;
-  disabledProviders?: Partial<Record<SyncProvider, string>>;
   providers?: SyncProvider[];
   matchConfidence?: number;
   rank?: number;
