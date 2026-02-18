@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "mx_user_guid" text;

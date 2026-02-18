@@ -43,6 +43,13 @@
       "when": 1771209500729,
       "tag": "0005_reflective_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771378250985,
+      "tag": "0006_abandoned_cable",
+      "breakpoints": true
     }
   ]
 }
