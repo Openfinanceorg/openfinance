@@ -202,7 +202,12 @@
               Generate a key, then install the MCP server in Claude or Codex.
             </p>
           </div>
-          <Button onclick={handleCreateKey} disabled={generatingKey}>
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={handleCreateKey}
+            disabled={generatingKey}
+          >
             {generatingKey ? "Generating..." : "New key"}
           </Button>
         </div>
@@ -268,7 +273,7 @@
               <a
                 href="/api/mcp-bundle"
                 download="openfinance.mcpb"
-                class="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800 transition-colors"
+                class="inline-flex items-center gap-1.5 rounded-md bg-[#E87B35] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#D16A2A] transition-colors"
               >
                 <Download class="h-3.5 w-3.5" />
                 Add to Claude
