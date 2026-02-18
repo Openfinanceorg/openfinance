@@ -3,11 +3,12 @@
   import { groupAccounts, formatSubtotal, isLiabilityGroup } from "./utils";
   import AccountRow from "./AccountRow.svelte";
 
-  interface Props {
+  export interface Props {
     accounts: ConnectedAccount[];
+    onDelete?: () => void;
   }
 
-  let { accounts }: Props = $props();
+  let { accounts, onDelete = undefined }: Props = $props();
 
   const groups = $derived(groupAccounts(accounts));
 </script>
@@ -23,7 +24,7 @@
       </div>
       <div class="divide-y divide-gray-100">
         {#each group.accounts as account (account.id)}
-          <AccountRow {account} groupKey={group.key} />
+          <AccountRow {account} groupKey={group.key} {onDelete} />
         {/each}
       </div>
     </section>

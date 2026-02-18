@@ -35,6 +35,9 @@
         >{getInitials($session.data?.user?.name)}</AvatarFallback
       >
     </Avatar>
+    <span class="text-sm font-medium text-gray-900"
+      >{$session.data?.user?.name}</span
+    >
     <ChevronsUpDown class="h-3.5 w-3.5 text-gray-400" />
   </DropdownMenuTrigger>
   <DropdownMenuContent class="bg-white text-gray-900 border-gray-200">
