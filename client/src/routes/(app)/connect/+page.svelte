@@ -61,7 +61,7 @@
   }
 </script>
 
-<div class="max-w-3xl mx-auto px-8 pt-8">
+<div class="max-w-4xl mx-auto px-8 pt-8">
   <section class="p-2">
     <div class="flex items-start justify-between gap-4 mb-4">
       <div>
