@@ -1,12 +1,19 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import Circle from "lucide-svelte/icons/circle";
+  import CircleCheck from "lucide-svelte/icons/circle-check";
 
   interface Props {
     onConnectAccount: () => void;
+    accountConnected?: boolean;
+    mcpLinked?: boolean;
   }
 
-  let { onConnectAccount }: Props = $props();
+  let {
+    onConnectAccount,
+    accountConnected = false,
+    mcpLinked = false,
+  }: Props = $props();
 </script>
 
 <section class="mb-8">
@@ -16,24 +23,44 @@
       class="flex items-center justify-between rounded-lg p-4 hover:bg-gray-50 transition-colors"
     >
       <div class="flex items-center gap-3">
-        <Circle class="h-4 w-4 text-gray-300 shrink-0" />
+        {#if accountConnected}
+          <CircleCheck class="h-4 w-4 text-green-500 shrink-0" />
+        {:else}
+          <Circle class="h-4 w-4 text-gray-300 shrink-0" />
+        {/if}
         <div>
-          <p class="text-sm font-medium text-gray-900">Connect an account</p>
+          <p
+            class="text-sm font-medium text-gray-900"
+            class:line-through={accountConnected}
+            class:text-gray-400={accountConnected}
+          >
+            Connect an account
+          </p>
           <p class="text-xs text-gray-500 mt-0.5">
             Link a bank to start tracking your finances.
           </p>
         </div>
       </div>
-      <Button size="sm" onclick={onConnectAccount}>Connect</Button>
+      {#if !accountConnected}
+        <Button size="sm" onclick={onConnectAccount}>Connect</Button>
+      {/if}
     </div>
 
     <div
       class="flex items-center justify-between rounded-lg p-4 hover:bg-gray-50 transition-colors"
     >
       <div class="flex items-center gap-3">
-        <Circle class="h-4 w-4 text-gray-300 shrink-0" />
+        {#if mcpLinked}
+          <CircleCheck class="h-4 w-4 text-green-500 shrink-0" />
+        {:else}
+          <Circle class="h-4 w-4 text-gray-300 shrink-0" />
+        {/if}
         <div>
-          <p class="text-sm font-medium text-gray-900">
+          <p
+            class="text-sm font-medium text-gray-900"
+            class:line-through={mcpLinked}
+            class:text-gray-400={mcpLinked}
+          >
             Link to your MCP server
           </p>
           <p class="text-xs text-gray-500 mt-0.5">
@@ -41,11 +68,13 @@
           </p>
         </div>
       </div>
-      <a
-        href="/connect"
-        class="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
-        >Set up</a
-      >
+      {#if !mcpLinked}
+        <a
+          href="/connect"
+          class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
+          >Set up</a
+        >
+      {/if}
     </div>
   </div>
 </section>
