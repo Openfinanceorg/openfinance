@@ -21,7 +21,7 @@
           <ProfileDropdown />
         </div>
       </header>
-      <div class="flex">
+      <div class="flex gap-12">
         <Sidebar />
         <main class="flex-1 min-w-0">
           {@render children()}

@@ -106,7 +106,7 @@
 
 <div class="max-w-4xl mx-auto px-8 pt-8 space-y-8">
   {#if !loading}
-    <TasksSection {accounts} onConnectAccount={() => (searchOpen = true)} />
+    <TasksSection onConnectAccount={() => (searchOpen = true)} />
 
     {#if accounts.length > 0}
       <section>
