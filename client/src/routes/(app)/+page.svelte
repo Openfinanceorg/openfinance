@@ -7,20 +7,14 @@
   import type { OnboardingState } from "$lib/accounts/api";
 
   import RecentTransactions from "$lib/transactions/RecentTransactions.svelte";
-  import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
-  import PlaidLink from "$lib/sync/PlaidLink.svelte";
-  import MXLink from "$lib/sync/MXLink.svelte";
-  import SyncBanner from "$lib/sync/SyncBanner.svelte";
-  import { triggerPoll, setOnSyncComplete } from "$lib/sync/sync-status";
+  import { setOnSyncComplete } from "$lib/sync/sync-status";
+  import { getLinkContext } from "$lib/sync/link-context";
   import GettingStarted from "$lib/components/GettingStarted.svelte";
   import { Plus } from "lucide-svelte";
-  import type {
-    ConnectedAccount,
-    InstitutionType,
-    SyncProvider,
-  } from "@openfinance/shared";
+  import type { ConnectedAccount } from "@openfinance/shared";
 
   const session = authClient.useSession();
+  const { openSearch, onAccountLinked } = getLinkContext();
 
   let accounts = $state<ConnectedAccount[]>([]);
   let onboarding = $state<OnboardingState>({
@@ -29,9 +23,6 @@
     dismissed: false,
   });
   let loading = $state(true);
-  let searchOpen = $state(false);
-  let plaidLink: PlaidLink;
-  let mxLink: MXLink;
 
   async function loadAccounts() {
     try {
@@ -58,17 +49,9 @@
     });
   });
 
-  function handleProviderSelect(
-    institution: InstitutionType,
-    provider: SyncProvider,
-  ) {
-    searchOpen = false;
-    if (provider === "plaid") {
-      plaidLink.initiatePlaidLink(institution.plaidData?.institutionId);
-    } else if (provider === "mx") {
-      mxLink.initiateMXLink(institution.mxData?.institutionCode);
-    }
-  }
+  $effect(() => {
+    onAccountLinked(loadAccounts);
+  });
 
   let totalBalanceFormatted = $derived.by(() => {
     const totals: Record<string, number> = {};
@@ -85,44 +68,17 @@
     }).format(amount);
   });
 
-  function handleAccountLinked() {
-    loadAccounts();
-  }
-
-  function handleSyncStarted() {
-    triggerPoll();
-  }
-
   async function handleDismissOnboarding() {
     onboarding = { ...onboarding, dismissed: true };
     await dismissOnboarding();
   }
 </script>
 
-<PlaidLink
-  bind:this={plaidLink}
-  onAccountLinked={handleAccountLinked}
-  onSyncStarted={handleSyncStarted}
-/>
-
-<MXLink
-  bind:this={mxLink}
-  onAccountLinked={handleAccountLinked}
-  onSyncStarted={handleSyncStarted}
-/>
-
-<SyncBanner />
-
-<InstitutionSearchContainer
-  bind:isOpen={searchOpen}
-  onProviderSelect={handleProviderSelect}
-/>
-
 <div class="max-w-4xl mx-auto px-8 pt-2 space-y-8">
   {#if !loading}
     {#if !onboarding.dismissed}
       <GettingStarted
-        onConnectAccount={() => (searchOpen = true)}
+        onConnectAccount={openSearch}
         accountConnected={onboarding.accountConnected}
         mcpLinked={onboarding.mcpLinked}
         onDismiss={handleDismissOnboarding}
@@ -140,11 +96,7 @@
               {totalBalanceFormatted}
             </p>
           </div>
-          <Button
-            variant="linkBlue"
-            size="link"
-            onclick={() => (searchOpen = true)}
-          >
+          <Button variant="linkBlue" size="link" onclick={openSearch}>
             <Plus class="h-3.5 w-3.5" />
             add account
           </Button>
