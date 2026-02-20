@@ -21,6 +21,7 @@
   let accounts = $state<ConnectedAccount[]>([]);
   let loading = $state(true);
   let searchOpen = $state(false);
+  let isConnectorLoading = $state(false);
   let plaidLink: PlaidLink;
   let mxLink: MXLink;
 
@@ -67,6 +68,16 @@
   function handleSyncStarted() {
     triggerPoll();
   }
+
+  function handleReauth(account: ConnectedAccount) {
+    isConnectorLoading = true;
+    if (account.provider === "mx") {
+      mxLink.initiateReauthentication(account.id);
+    } else if (account.provider === "plaid") {
+      plaidLink.initiatePlaidLink();
+    }
+    isConnectorLoading = false;
+  }
 </script>
 
 <PlaidLink
@@ -100,6 +111,11 @@
   {#if !loading && accounts.length === 0}
     <EmptyAccountsState />
   {:else}
-    <AccountList {accounts} onDelete={loadAccounts} />
+    <AccountList
+      {accounts}
+      onDelete={loadAccounts}
+      onReauth={handleReauth}
+      {isConnectorLoading}
+    />
   {/if}
 </div>

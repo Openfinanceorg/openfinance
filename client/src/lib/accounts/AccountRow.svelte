@@ -4,6 +4,8 @@
   import { deleteAccount } from "./api";
   import { toast } from "svelte-sonner";
   import { Trash2 } from "lucide-svelte";
+  import Loader2Icon from "@lucide/svelte/icons/loader-2";
+  import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
   import {
     Dialog,
     DialogContent,
@@ -13,14 +15,28 @@
     DialogFooter,
   } from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
+  import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+  } from "$lib/components/ui/tooltip";
 
   export interface Props {
     account: ConnectedAccount;
     groupKey: string;
     onDelete?: () => void;
+    onReauth?: (account: ConnectedAccount) => void;
+    isConnectorLoading?: boolean;
   }
 
-  let { account, groupKey, onDelete = undefined }: Props = $props();
+  let {
+    account,
+    groupKey,
+    onDelete = undefined,
+    onReauth = undefined,
+    isConnectorLoading = false,
+  }: Props = $props();
 
   let dialogOpen = $state(false);
   let deleting = $state(false);
@@ -69,9 +85,37 @@
   }
 </script>
 
-<div class="group flex items-center gap-3 py-2.5 px-1">
+{#snippet syncErrorReconnect()}
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <button
+          class="flex-shrink-0 p-1.5 rounded-md text-amber-600 hover:bg-amber-100 transition-colors"
+          onclick={() => {
+            if (!isConnectorLoading) onReauth?.(account);
+          }}
+          disabled={isConnectorLoading}
+          aria-label="Reconnect account"
+        >
+          {#if isConnectorLoading}
+            <Loader2Icon class="w-4 h-4 animate-spin" />
+          {:else}
+            <AlertTriangleIcon class="w-4 h-4" />
+          {/if}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Account disconnected</TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+{/snippet}
+
+<div
+  class="group flex items-center gap-3 py-2.5 px-1 rounded-lg {account.syncError
+    ? 'border border-red-200 bg-red-50'
+    : ''}"
+>
   <div
-    class="flex-shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center"
+    class="relative flex-shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center"
   >
     {#if logoUrl}
       <img
@@ -83,6 +127,13 @@
       <span class="text-gray-500 font-medium text-sm" aria-hidden="true">
         {account.institutionName.charAt(0).toUpperCase()}
       </span>
+    {/if}
+    {#if account.isSyncing}
+      <div
+        class="absolute inset-0 flex items-center justify-center bg-white/70 rounded-lg"
+      >
+        <Loader2Icon class="w-4 h-4 text-gray-500 animate-spin" />
+      </div>
     {/if}
   </div>
   <div class="flex-1 min-w-0">
@@ -97,6 +148,9 @@
   <div class="flex-shrink-0 text-sm font-medium text-gray-900">
     {displayBalance}
   </div>
+  {#if account.syncError}
+    {@render syncErrorReconnect()}
+  {/if}
   <button
     class="flex-shrink-0 p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
     onclick={() => (dialogOpen = true)}

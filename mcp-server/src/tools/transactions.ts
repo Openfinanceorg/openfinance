@@ -8,7 +8,7 @@ export function registerTransactionTools(
 ) {
   server.tool(
     "get_transactions",
-    "Search and filter financial transactions. Returns transactions sorted by date (newest first) by default.",
+    "Search and filter financial transactions. Returns transactions sorted by date (newest first) by default. For spending analysis, category breakdowns, or questions like 'how much do I spend on X', fetch all transactions (high limit, no search filter) and categorize them client-side by analyzing merchant/transaction names, since transactions do not have category labels.",
     {
       startDate: z
         .string()

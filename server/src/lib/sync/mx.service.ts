@@ -8,7 +8,8 @@ import {
   institutionRegistry,
   transactions,
 } from "../../schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, isNull } from "drizzle-orm";
+import { user as userTable } from "../../schema";
 import type { AccountType } from "$lib/sql/institution-registry.sql";
 
 // MX API Types
@@ -380,6 +381,8 @@ class MXService {
 
     const connectionId = connection.id;
 
+    this.markFirstAccountConnected(userId);
+
     // Fetch and upsert accounts
     const mxAccounts = await this.getMemberAccounts(userGuid, memberGuid);
 
@@ -522,6 +525,21 @@ class MXService {
       .where(eq(accountConnections.id, connectionId));
 
     return { added };
+  }
+
+  private markFirstAccountConnected(userId: string): void {
+    db.update(userTable)
+      .set({ firstAccountConnectedAt: new Date() })
+      .where(
+        and(
+          eq(userTable.id, userId),
+          isNull(userTable.firstAccountConnectedAt),
+        ),
+      )
+      .then(
+        () => {},
+        () => {},
+      );
   }
 }
 

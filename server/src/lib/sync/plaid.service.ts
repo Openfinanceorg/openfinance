@@ -10,7 +10,8 @@ import {
   institutionRegistry,
   transactions,
 } from "../../schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, isNull } from "drizzle-orm";
+import { user as userTable } from "../../schema";
 
 class PlaidService {
   async exchangePublicToken(publicToken: string) {
@@ -69,6 +70,8 @@ class PlaidService {
       .returning();
 
     const connectionId = connection.id;
+
+    this.markFirstAccountConnected(userId);
 
     // Fetch and upsert accounts
     const accountsResponse = await plaidClient.accountsGet({
@@ -288,6 +291,21 @@ class PlaidService {
     } catch {
       return false;
     }
+  }
+
+  private markFirstAccountConnected(userId: string): void {
+    db.update(userTable)
+      .set({ firstAccountConnectedAt: new Date() })
+      .where(
+        and(
+          eq(userTable.id, userId),
+          isNull(userTable.firstAccountConnectedAt),
+        ),
+      )
+      .then(
+        () => {},
+        () => {},
+      );
   }
 }
 

@@ -6,9 +6,16 @@
   export interface Props {
     accounts: ConnectedAccount[];
     onDelete?: () => void;
+    onReauth?: (account: ConnectedAccount) => void;
+    isConnectorLoading?: boolean;
   }
 
-  let { accounts, onDelete = undefined }: Props = $props();
+  let {
+    accounts,
+    onDelete = undefined,
+    onReauth = undefined,
+    isConnectorLoading = false,
+  }: Props = $props();
 
   const groups = $derived(groupAccounts(accounts));
 </script>
@@ -24,7 +31,13 @@
       </div>
       <div class="divide-y divide-gray-100">
         {#each group.accounts as account (account.id)}
-          <AccountRow {account} groupKey={group.key} {onDelete} />
+          <AccountRow
+            {account}
+            groupKey={group.key}
+            {onDelete}
+            {onReauth}
+            {isConnectorLoading}
+          />
         {/each}
       </div>
     </section>
