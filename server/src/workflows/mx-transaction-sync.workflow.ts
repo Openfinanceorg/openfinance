@@ -20,6 +20,7 @@ export class MxTransactionSyncWorkflow {
     connectionId: number;
     userGuid: string;
     memberGuid: string;
+    fromDate?: string;
   }) {
     return mxService.syncTransactions(params);
   }
@@ -100,10 +101,16 @@ export class MxTransactionSyncWorkflow {
     }
 
     try {
+      // Use lastSyncedAt as fromDate for incremental syncs
+      const fromDate = connection.lastSyncedAt
+        ? connection.lastSyncedAt.toISOString().split("T")[0]
+        : undefined;
+
       const result = await MxTransactionSyncWorkflow.runSync({
         connectionId,
         userGuid,
         memberGuid: connection.mxMemberGuid,
+        fromDate,
       });
 
       await MxTransactionSyncWorkflow.markComplete(syncJobId, result.added);

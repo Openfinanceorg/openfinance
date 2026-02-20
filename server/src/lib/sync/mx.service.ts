@@ -449,8 +449,9 @@ class MXService {
     connectionId: number;
     userGuid: string;
     memberGuid: string;
+    fromDate?: string;
   }) {
-    const { connectionId, userGuid, memberGuid } = params;
+    const { connectionId, userGuid, memberGuid, fromDate } = params;
 
     // Get accounts for this connection
     const accounts = await db
@@ -464,10 +465,11 @@ class MXService {
 
     const accountMap = new Map(accounts.map((a) => [a.providerAccountId, a]));
 
-    // Fetch all transactions from MX
+    // Fetch transactions from MX (use fromDate to limit scope on incremental syncs)
     const mxTransactions = await this.getMemberTransactions(
       userGuid,
       memberGuid,
+      fromDate ? { fromDate } : undefined,
     );
 
     let added = 0;
