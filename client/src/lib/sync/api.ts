@@ -22,6 +22,16 @@ export function createPlaidLinkToken() {
   });
 }
 
+export function createPlaidLinkTokenForUpdate(accountId: number) {
+  return apiFetch<{ link_token: string }>(
+    "/api/plaid/create_link_token_for_update",
+    {
+      method: "POST",
+      body: JSON.stringify({ account_id: accountId }),
+    },
+  );
+}
+
 export function exchangePlaidPublicToken(
   publicToken: string,
   institutionId?: string,

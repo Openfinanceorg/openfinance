@@ -47,7 +47,11 @@
 </script>
 
 <script lang="ts">
-  import { createPlaidLinkToken, exchangePlaidPublicToken } from "./api";
+  import {
+    createPlaidLinkToken,
+    createPlaidLinkTokenForUpdate,
+    exchangePlaidPublicToken,
+  } from "./api";
 
   interface Props {
     onAccountLinked?: () => void;
@@ -98,6 +102,35 @@
           onSyncStarted();
         } catch (err) {
           console.error("Failed to exchange token:", err);
+        }
+      },
+      onExit: (_err, _metadata) => {
+        handler = null;
+        onExit();
+      },
+      onEvent: (_eventName, _metadata) => {},
+    });
+
+    handler.open();
+  }
+
+  export async function initiateReauthentication(accountId: number) {
+    await loadPlaidSdk();
+
+    const { link_token } = await createPlaidLinkTokenForUpdate(accountId);
+
+    handler = window.Plaid.create({
+      token: link_token,
+      onSuccess: async (publicToken, metadata) => {
+        try {
+          await exchangePlaidPublicToken(
+            publicToken,
+            metadata.institution?.institution_id,
+          );
+          onAccountLinked();
+          onSyncStarted();
+        } catch (err) {
+          console.error("Failed to exchange token during reauth:", err);
         }
       },
       onExit: (_err, _metadata) => {

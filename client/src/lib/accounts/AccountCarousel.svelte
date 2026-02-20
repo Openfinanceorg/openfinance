@@ -8,9 +8,10 @@
 
   interface Props {
     accounts: ConnectedAccount[];
+    onReauth?: (account: ConnectedAccount) => void;
   }
 
-  let { accounts }: Props = $props();
+  let { accounts, onReauth = undefined }: Props = $props();
 
   let emblaApi: EmblaCarouselType | undefined = $state();
   let canScrollPrev = $state(false);
@@ -28,7 +29,6 @@
     canScrollPrev = emblaApi.canScrollPrev();
     canScrollNext = emblaApi.canScrollNext();
   }
-
 </script>
 
 <div class="relative group -mx-8" role="region" aria-label="Accounts carousel">
@@ -43,7 +43,7 @@
     <div class="flex gap-4 px-8">
       {#each accounts as account (account.id)}
         <div class="flex-shrink-0">
-          <AccountCard {account} />
+          <AccountCard {account} {onReauth} />
         </div>
       {/each}
     </div>

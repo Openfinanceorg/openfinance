@@ -48,7 +48,7 @@
     if (account.provider === "mx") {
       mxLink.initiateReauthentication(account.id);
     } else if (account.provider === "plaid") {
-      plaidLink.initiatePlaidLink();
+      plaidLink.initiateReauthentication(account.id);
     }
   }
 

@@ -1,11 +1,13 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
+  import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 
   interface Props {
     account: ConnectedAccount;
+    onReauth?: (account: ConnectedAccount) => void;
   }
 
-  let { account }: Props = $props();
+  let { account, onReauth = undefined }: Props = $props();
 
   const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
     | string
@@ -43,7 +45,9 @@
 </script>
 
 <div
-  class="bg-gray-100 rounded-2xl p-5 w-[200px] flex flex-col justify-between h-[140px]"
+  class="rounded-2xl p-5 w-[200px] flex flex-col justify-between h-[140px] {account.syncError
+    ? 'bg-red-50'
+    : 'bg-gray-100'}"
 >
   <div class="flex items-center gap-2.5">
     <div
@@ -65,8 +69,18 @@
   </div>
   <div>
     <p class="text-xs text-gray-400 mb-0.5">{shortName()}</p>
-    <p class="text-base font-semibold text-gray-900">
-      {formatBalance(account.currentBalance, account.isoCurrencyCode)}
-    </p>
+    {#if account.syncError}
+      <button
+        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+        onclick={() => onReauth?.(account)}
+      >
+        <AlertTriangleIcon class="w-3.5 h-3.5" />
+        Reconnect
+      </button>
+    {:else}
+      <p class="text-base font-semibold text-gray-900">
+        {formatBalance(account.currentBalance, account.isoCurrencyCode)}
+      </p>
+    {/if}
   </div>
 </div>

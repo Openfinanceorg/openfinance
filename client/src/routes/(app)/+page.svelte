@@ -14,7 +14,7 @@
   import type { ConnectedAccount } from "@openfinance/shared";
 
   const session = authClient.useSession();
-  const { openSearch, onAccountLinked } = getLinkContext();
+  const { openSearch, onAccountLinked, triggerReauth } = getLinkContext();
 
   let accounts = $state<ConnectedAccount[]>([]);
   let onboarding = $state<OnboardingState>({
@@ -101,7 +101,7 @@
             add account
           </Button>
         </div>
-        <AccountCarousel {accounts} />
+        <AccountCarousel {accounts} onReauth={triggerReauth} />
       </section>
 
       <RecentTransactions />

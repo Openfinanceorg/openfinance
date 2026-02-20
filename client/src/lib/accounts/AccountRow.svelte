@@ -15,12 +15,6 @@
     DialogFooter,
   } from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
-  import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-  } from "$lib/components/ui/tooltip";
 
   export interface Props {
     account: ConnectedAccount;
@@ -86,32 +80,25 @@
 </script>
 
 {#snippet syncErrorReconnect()}
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger>
-        <button
-          class="flex-shrink-0 p-1.5 rounded-md text-amber-600 hover:bg-amber-100 transition-colors"
-          onclick={() => {
-            if (!isConnectorLoading) onReauth?.(account);
-          }}
-          disabled={isConnectorLoading}
-          aria-label="Reconnect account"
-        >
-          {#if isConnectorLoading}
-            <Loader2Icon class="w-4 h-4 animate-spin" />
-          {:else}
-            <AlertTriangleIcon class="w-4 h-4" />
-          {/if}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>Account disconnected</TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+  <button
+    class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+    onclick={() => {
+      if (!isConnectorLoading) onReauth?.(account);
+    }}
+    disabled={isConnectorLoading}
+  >
+    {#if isConnectorLoading}
+      <Loader2Icon class="w-3.5 h-3.5 animate-spin" />
+    {:else}
+      <AlertTriangleIcon class="w-3.5 h-3.5" />
+    {/if}
+    Reconnect
+  </button>
 {/snippet}
 
 <div
   class="group flex items-center gap-3 py-2.5 px-1 rounded-lg {account.syncError
-    ? 'border border-red-200 bg-red-50'
+    ? 'bg-red-50'
     : ''}"
 >
   <div
@@ -145,11 +132,12 @@
     </p>
     <p class="text-xs text-gray-500 truncate">{account.institutionName}</p>
   </div>
-  <div class="flex-shrink-0 text-sm font-medium text-gray-900">
-    {displayBalance}
-  </div>
   {#if account.syncError}
     {@render syncErrorReconnect()}
+  {:else}
+    <div class="flex-shrink-0 text-sm font-medium text-gray-900">
+      {displayBalance}
+    </div>
   {/if}
   <button
     class="flex-shrink-0 p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
