@@ -5,6 +5,9 @@ import { Products, CountryCode } from "plaid";
 import { plaidClient } from "$lib/sync/plaid.client";
 import { plaidService } from "$lib/sync/plaid.service";
 import { requireAuth, type AuthEnv } from "$lib/middleware";
+import { db } from "../db";
+import { financialAccounts, accountConnections } from "../schema";
+import { eq, and } from "drizzle-orm";
 
 const exchangeTokenSchema = z.object({
   public_token: z.string(),
@@ -23,12 +26,56 @@ plaidRoutes.post("/create_link_token", async (c) => {
     user: { client_user_id: user.id },
     client_name: "Open Finance",
     products: [Products.Transactions],
+    transactions: { days_requested: 730 },
     country_codes: [CountryCode.Us, CountryCode.Ca],
     language: "en",
   });
 
   return c.json({ link_token: response.data.link_token });
 });
+
+// POST /api/plaid/create_link_token_for_update
+plaidRoutes.post(
+  "/create_link_token_for_update",
+  zValidator("json", z.object({ account_id: z.number() })),
+  async (c) => {
+    const user = c.get("user");
+    const { account_id } = c.req.valid("json");
+
+    // Look up the account's connection to get the access token
+    const [result] = await db
+      .select({
+        plaidAccessToken: accountConnections.plaidAccessToken,
+      })
+      .from(financialAccounts)
+      .innerJoin(
+        accountConnections,
+        eq(financialAccounts.accountConnectionId, accountConnections.id),
+      )
+      .where(
+        and(
+          eq(financialAccounts.id, account_id),
+          eq(financialAccounts.userId, user.id),
+          eq(accountConnections.provider, "plaid"),
+        ),
+      )
+      .limit(1);
+
+    if (!result?.plaidAccessToken) {
+      return c.json({ error: "Plaid account not found" }, 404);
+    }
+
+    const response = await plaidClient.linkTokenCreate({
+      user: { client_user_id: user.id },
+      client_name: "Open Finance",
+      access_token: result.plaidAccessToken,
+      country_codes: [CountryCode.Us, CountryCode.Ca],
+      language: "en",
+    });
+
+    return c.json({ link_token: response.data.link_token });
+  },
+);
 
 // POST /api/plaid/exchange_public_token
 plaidRoutes.post(
