@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AccountList } from "$lib/accounts";
+  import EmptyAccountsState from "$lib/accounts/EmptyAccountsState.svelte";
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
   import { fetchAccounts } from "$lib/accounts/api";
@@ -97,9 +98,7 @@
   </div>
 
   {#if !loading && accounts.length === 0}
-    <div class="text-center py-10">
-      <p class="text-gray-500 text-sm">No accounts connected yet.</p>
-    </div>
+    <EmptyAccountsState />
   {:else}
     <AccountList {accounts} onDelete={loadAccounts} />
   {/if}

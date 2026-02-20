@@ -373,7 +373,7 @@
           {/each}
         </div>
 
-        <div class="border-t pt-4 mt-4 px-4 sm:px-8">
+        <div class="border-t border-gray-300 pt-4 mt-4 px-4 sm:px-8">
           <p
             class="text-xs text-gray-500 text-center flex items-center justify-center gap-1"
           >

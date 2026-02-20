@@ -1,9 +1,10 @@
 <script lang="ts">
   import { AccountCarousel } from "$lib/accounts";
+  import EmptyAccountsState from "$lib/accounts/EmptyAccountsState.svelte";
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
   import { fetchAccounts } from "$lib/accounts/api";
-  import TasksSection from "$lib/components/TasksSection.svelte";
+
   import RecentTransactions from "$lib/transactions/RecentTransactions.svelte";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
@@ -106,9 +107,9 @@
 
 <div class="max-w-4xl mx-auto px-8 pt-2 space-y-8">
   {#if !loading}
-    <TasksSection onConnectAccount={() => (searchOpen = true)} />
-
-    {#if accounts.length > 0}
+    {#if accounts.length === 0}
+      <EmptyAccountsState />
+    {:else}
       <section>
         <div class="flex items-center justify-between mb-4">
           <div>
