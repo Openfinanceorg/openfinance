@@ -2,13 +2,21 @@ import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { DBOS } from "@dbos-inc/dbos-sdk";
 import { InstitutionSyncWorkflow } from "./institution-sync.workflow";
 
-const mockSyncer = {
+const mockPlaidSyncer = {
   refreshInstitutions: vi.fn(),
   updateConnectionHealthStatus: vi.fn(),
 };
 
+const mockMxSyncer = {
+  refreshInstitutions: vi.fn(),
+};
+
 vi.mock("$lib/sync/plaid-institution-syncer.js", () => ({
-  PlaidInstitutionSyncer: vi.fn(() => mockSyncer),
+  PlaidInstitutionSyncer: vi.fn(() => mockPlaidSyncer),
+}));
+
+vi.mock("$lib/sync/mx-institution-syncer.js", () => ({
+  MXInstitutionSyncer: vi.fn(() => mockMxSyncer),
 }));
 
 describe("InstitutionSyncWorkflow", () => {
@@ -27,9 +35,10 @@ describe("InstitutionSyncWorkflow", () => {
     await DBOS.shutdown();
   });
 
-  it("should call both steps on success", async () => {
-    mockSyncer.refreshInstitutions.mockResolvedValue(undefined);
-    mockSyncer.updateConnectionHealthStatus.mockResolvedValue(undefined);
+  it("should call all steps on success", async () => {
+    mockPlaidSyncer.refreshInstitutions.mockResolvedValue(undefined);
+    mockMxSyncer.refreshInstitutions.mockResolvedValue(undefined);
+    mockPlaidSyncer.updateConnectionHealthStatus.mockResolvedValue(undefined);
 
     const handle = await DBOS.startWorkflow(
       InstitutionSyncWorkflow,
@@ -38,18 +47,20 @@ describe("InstitutionSyncWorkflow", () => {
     const result = await handle.getResult();
 
     expect(result.success).toBe(true);
-    expect(result.institutionsRefreshed).toBe(true);
+    expect(result.providersRefreshed).toEqual(["plaid", "mx"]);
     expect(result.healthStatusUpdated).toBe(true);
     expect(result.errors).toBeUndefined();
-    expect(mockSyncer.refreshInstitutions).toHaveBeenCalledOnce();
-    expect(mockSyncer.updateConnectionHealthStatus).toHaveBeenCalledOnce();
+    expect(mockPlaidSyncer.refreshInstitutions).toHaveBeenCalledOnce();
+    expect(mockMxSyncer.refreshInstitutions).toHaveBeenCalledOnce();
+    expect(mockPlaidSyncer.updateConnectionHealthStatus).toHaveBeenCalledOnce();
   });
 
   it("should handle partial failure gracefully", async () => {
-    mockSyncer.refreshInstitutions.mockRejectedValue(
+    mockPlaidSyncer.refreshInstitutions.mockRejectedValue(
       new Error("Plaid API error"),
     );
-    mockSyncer.updateConnectionHealthStatus.mockResolvedValue(undefined);
+    mockMxSyncer.refreshInstitutions.mockResolvedValue(undefined);
+    mockPlaidSyncer.updateConnectionHealthStatus.mockResolvedValue(undefined);
 
     const handle = await DBOS.startWorkflow(
       InstitutionSyncWorkflow,
@@ -58,17 +69,20 @@ describe("InstitutionSyncWorkflow", () => {
     const result = await handle.getResult();
 
     expect(result.success).toBe(false);
-    expect(result.institutionsRefreshed).toBe(false);
+    expect(result.providersRefreshed).toEqual(["mx"]);
     expect(result.healthStatusUpdated).toBe(true);
     expect(result.errors).toHaveLength(1);
-    expect(result.errors![0]).toContain("Plaid API error");
+    expect(result.errors![0]).toContain("Plaid");
   });
 
-  it("should handle both steps failing", async () => {
-    mockSyncer.refreshInstitutions.mockRejectedValue(
+  it("should handle all steps failing", async () => {
+    mockPlaidSyncer.refreshInstitutions.mockRejectedValue(
       new Error("Plaid API error"),
     );
-    mockSyncer.updateConnectionHealthStatus.mockRejectedValue(
+    mockMxSyncer.refreshInstitutions.mockRejectedValue(
+      new Error("MX API error"),
+    );
+    mockPlaidSyncer.updateConnectionHealthStatus.mockRejectedValue(
       new Error("Health check error"),
     );
 
@@ -79,8 +93,8 @@ describe("InstitutionSyncWorkflow", () => {
     const result = await handle.getResult();
 
     expect(result.success).toBe(false);
-    expect(result.institutionsRefreshed).toBe(false);
+    expect(result.providersRefreshed).toEqual([]);
     expect(result.healthStatusUpdated).toBe(false);
-    expect(result.errors).toHaveLength(2);
+    expect(result.errors).toHaveLength(3);
   });
 });

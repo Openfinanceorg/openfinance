@@ -1,10 +1,11 @@
 import { DBOS, SchedulerMode } from "@dbos-inc/dbos-sdk";
 import { PlaidInstitutionSyncer } from "$lib/sync/plaid-institution-syncer.js";
+import { MXInstitutionSyncer } from "$lib/sync/mx-institution-syncer.js";
 
 interface InstitutionSyncResult {
   success: boolean;
   message: string;
-  institutionsRefreshed: boolean;
+  providersRefreshed: string[];
   healthStatusUpdated: boolean;
   errors?: string[];
   timestamp: string;
@@ -27,21 +28,40 @@ export class InstitutionSyncWorkflow {
       `Starting institution sync workflow (scheduled: ${schedTime?.toISOString() ?? "manual"})`,
     );
 
+    // Add jitter delay for scheduled runs to avoid API overload
+    if (schedTime) {
+      const jitterMs = (Math.floor(Math.random() * 16) + 5) * 60 * 1000; // 5–20 minutes
+      DBOS.logger.info(
+        `Applying jitter delay of ${Math.round(jitterMs / 60000)} minutes for scheduled run`,
+      );
+      await DBOS.sleep(jitterMs);
+    }
+
     const errors: string[] = [];
-    let institutionsRefreshed = false;
+    const providersRefreshed: string[] = [];
     let healthStatusUpdated = false;
 
     // Step 1: Refresh institutions from Plaid
     try {
-      await InstitutionSyncWorkflow.refreshInstitutions();
-      institutionsRefreshed = true;
+      await InstitutionSyncWorkflow.refreshPlaidInstitutions();
+      providersRefreshed.push("plaid");
     } catch (error: any) {
-      const errorMessage = `Failed to refresh institutions: ${error.message}`;
+      const errorMessage = `Failed to refresh Plaid institutions: ${error.message}`;
       DBOS.logger.error(errorMessage);
       errors.push(errorMessage);
     }
 
-    // Step 2: Update connection health status
+    // Step 2: Refresh institutions from MX
+    try {
+      await InstitutionSyncWorkflow.refreshMxInstitutions();
+      providersRefreshed.push("mx");
+    } catch (error: any) {
+      const errorMessage = `Failed to refresh MX institutions: ${error.message}`;
+      DBOS.logger.error(errorMessage);
+      errors.push(errorMessage);
+    }
+
+    // Step 3: Update connection health status
     try {
       await InstitutionSyncWorkflow.updateConnectionHealthStatus();
       healthStatusUpdated = true;
@@ -58,22 +78,28 @@ export class InstitutionSyncWorkflow {
       message: success
         ? "Institution sync completed successfully"
         : `Partial failure: ${errors.length} error(s) occurred`,
-      institutionsRefreshed,
+      providersRefreshed,
       healthStatusUpdated,
       errors: errors.length > 0 ? errors : undefined,
       timestamp: new Date().toISOString(),
     };
 
     DBOS.logger.info(
-      `Institution sync workflow completed: success=${success}, refreshed=${institutionsRefreshed}, healthUpdated=${healthStatusUpdated}, errors=${errors.length}`,
+      `Institution sync workflow completed: success=${success}, providers=${providersRefreshed.join(",")}, healthUpdated=${healthStatusUpdated}, errors=${errors.length}`,
     );
 
     return result;
   }
 
   @DBOS.step()
-  static async refreshInstitutions(): Promise<void> {
+  static async refreshPlaidInstitutions(): Promise<void> {
     const syncer = new PlaidInstitutionSyncer();
+    await syncer.refreshInstitutions();
+  }
+
+  @DBOS.step()
+  static async refreshMxInstitutions(): Promise<void> {
+    const syncer = new MXInstitutionSyncer();
     await syncer.refreshInstitutions();
   }
 
