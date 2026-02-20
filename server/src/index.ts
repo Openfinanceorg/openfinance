@@ -12,6 +12,7 @@ import mxRoutes from "./routes/mx.js";
 import accountRoutes from "./routes/accounts.js";
 import transactionRoutes from "./routes/transactions.js";
 import keyRoutes from "./routes/keys.js";
+import meRoutes from "./routes/me.js";
 
 const app = new Hono();
 
@@ -25,6 +26,7 @@ app.route("/api/mx", mxRoutes);
 app.route("/api/accounts", accountRoutes);
 app.route("/api/transactions", transactionRoutes);
 app.route("/api/keys", keyRoutes);
+app.route("/api/me", meRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 

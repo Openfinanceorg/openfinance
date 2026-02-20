@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { requireAuth, type AuthEnv } from "../lib/middleware";
 import { financialAccountService } from "../lib/financial-account.service";
+import { db } from "../db";
+import { apiKeys, user as userTable } from "../schema";
+import { eq, and, isNull, isNotNull } from "drizzle-orm";
 
 const accountRoutes = new Hono<AuthEnv>();
 
@@ -10,7 +13,37 @@ accountRoutes.use("*", requireAuth);
 accountRoutes.get("/", async (c) => {
   const user = c.get("user");
   const accounts = await financialAccountService.getAccountsByUserId(user.id);
-  return c.json({ accounts });
+
+  // Fetch onboarding state
+  const [[mcpRow], [userRow]] = await Promise.all([
+    db
+      .select({ lastUsedAt: apiKeys.lastUsedAt })
+      .from(apiKeys)
+      .where(
+        and(
+          eq(apiKeys.userId, user.id),
+          isNull(apiKeys.revokedAt),
+          isNotNull(apiKeys.lastUsedAt),
+        ),
+      )
+      .limit(1),
+    db
+      .select({
+        firstAccountConnectedAt: userTable.firstAccountConnectedAt,
+        onboardingDismissedAt: userTable.onboardingDismissedAt,
+      })
+      .from(userTable)
+      .where(eq(userTable.id, user.id))
+      .limit(1),
+  ]);
+
+  const onboarding = {
+    accountConnected: userRow?.firstAccountConnectedAt != null,
+    mcpLinked: mcpRow?.lastUsedAt != null,
+    dismissed: userRow?.onboardingDismissedAt != null,
+  };
+
+  return c.json({ accounts, onboarding });
 });
 
 // DELETE /api/accounts/:id

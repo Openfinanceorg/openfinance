@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
-import TasksSection from "./TasksSection.svelte";
+import GettingStarted from "./GettingStarted.svelte";
 
 const meta: Meta = {
-  title: "Components/TasksSection",
-  component: TasksSection as any,
+  title: "Components/GettingStarted",
+  component: GettingStarted as any,
   tags: ["autodocs"],
   argTypes: {
     accountConnected: { control: "boolean" },
@@ -19,6 +19,7 @@ export const Unchecked: Story = {
     accountConnected: false,
     mcpLinked: false,
     onConnectAccount: () => console.log("Connect account clicked"),
+    onDismiss: () => console.log("Dismiss clicked"),
   },
 };
 

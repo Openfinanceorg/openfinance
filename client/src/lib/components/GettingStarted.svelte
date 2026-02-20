@@ -2,22 +2,36 @@
   import { Button } from "$lib/components/ui/button";
   import Circle from "lucide-svelte/icons/circle";
   import CircleCheck from "lucide-svelte/icons/circle-check";
+  import X from "lucide-svelte/icons/x";
 
   interface Props {
     onConnectAccount: () => void;
+    onDismiss: () => void;
     accountConnected?: boolean;
     mcpLinked?: boolean;
   }
 
   let {
     onConnectAccount,
+    onDismiss,
     accountConnected = false,
     mcpLinked = false,
   }: Props = $props();
 </script>
 
 <section class="mb-8">
-  <h2 class="text-base font-semibold text-gray-700 mb-4">Tasks</h2>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-base font-semibold text-gray-700">Getting Started</h2>
+    <Button
+      variant="ghost"
+      size="icon"
+      class="text-gray-400 hover:text-gray-600 -mr-1"
+      onclick={onDismiss}
+      aria-label="Dismiss getting started"
+    >
+      <X class="h-4 w-4" />
+    </Button>
+  </div>
   <div class="space-y-1">
     <div
       class="flex items-center justify-between rounded-lg p-4 hover:bg-gray-50 transition-colors"

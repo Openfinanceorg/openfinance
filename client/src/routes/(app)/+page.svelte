@@ -3,7 +3,8 @@
   import EmptyAccountsState from "$lib/accounts/EmptyAccountsState.svelte";
   import { authClient } from "$lib/auth-client";
   import { Button } from "$lib/components/ui/button";
-  import { fetchAccounts } from "$lib/accounts/api";
+  import { fetchAccounts, dismissOnboarding } from "$lib/accounts/api";
+  import type { OnboardingState } from "$lib/accounts/api";
 
   import RecentTransactions from "$lib/transactions/RecentTransactions.svelte";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
@@ -11,6 +12,7 @@
   import MXLink from "$lib/sync/MXLink.svelte";
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
   import { triggerPoll, setOnSyncComplete } from "$lib/sync/sync-status";
+  import GettingStarted from "$lib/components/GettingStarted.svelte";
   import { Plus } from "lucide-svelte";
   import type {
     ConnectedAccount,
@@ -21,6 +23,11 @@
   const session = authClient.useSession();
 
   let accounts = $state<ConnectedAccount[]>([]);
+  let onboarding = $state<OnboardingState>({
+    accountConnected: false,
+    mcpLinked: false,
+    dismissed: false,
+  });
   let loading = $state(true);
   let searchOpen = $state(false);
   let plaidLink: PlaidLink;
@@ -31,6 +38,7 @@
       loading = true;
       const data = await fetchAccounts();
       accounts = data.accounts;
+      onboarding = data.onboarding;
     } catch {
       accounts = [];
     } finally {
@@ -84,6 +92,11 @@
   function handleSyncStarted() {
     triggerPoll();
   }
+
+  async function handleDismissOnboarding() {
+    onboarding = { ...onboarding, dismissed: true };
+    await dismissOnboarding();
+  }
 </script>
 
 <PlaidLink
@@ -107,6 +120,15 @@
 
 <div class="max-w-4xl mx-auto px-8 pt-2 space-y-8">
   {#if !loading}
+    {#if !onboarding.dismissed}
+      <GettingStarted
+        onConnectAccount={() => (searchOpen = true)}
+        accountConnected={onboarding.accountConnected}
+        mcpLinked={onboarding.mcpLinked}
+        onDismiss={handleDismissOnboarding}
+      />
+    {/if}
+
     {#if accounts.length === 0}
       <EmptyAccountsState />
     {:else}
