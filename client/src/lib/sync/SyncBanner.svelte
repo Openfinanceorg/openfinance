@@ -5,10 +5,10 @@
 
 {#if $syncStatus.syncing}
   <div
-    class="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 z-50"
+    class="fixed top-4 left-1/2 -translate-x-1/2 bg-zinc-900/95 border border-white/15 rounded-full shadow-xl px-6 py-3 flex items-center gap-3 z-50 backdrop-blur-sm"
   >
-    <LoaderCircle class="animate-spin h-4 w-4 text-gray-500" />
-    <span class="text-sm text-gray-600">
+    <LoaderCircle class="animate-spin h-4 w-4 text-white/80" />
+    <span class="text-sm text-white">
       Syncing{$syncStatus.syncingInstitutions.length > 0
         ? ` ${$syncStatus.syncingInstitutions.join(", ")}`
         : ""}...
@@ -16,12 +16,12 @@
   </div>
 {:else if $syncStatus.completed}
   <div
-    class="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 z-50"
+    class="fixed top-4 left-1/2 -translate-x-1/2 bg-zinc-900/95 border border-white/15 rounded-full shadow-xl px-6 py-3 flex items-center gap-3 z-50 backdrop-blur-sm"
   >
-    <Check class="h-4 w-4 text-green-500" />
-    <span class="text-sm text-gray-600">Account sync completed</span>
+    <Check class="h-4 w-4 text-green-400" />
+    <span class="text-sm text-white">Account sync completed</span>
     <button
-      class="text-gray-400 hover:text-gray-600 ml-1"
+      class="text-white/60 hover:text-white ml-1"
       onclick={dismiss}
       aria-label="Dismiss"
     >
