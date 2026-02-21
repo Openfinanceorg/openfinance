@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAuth, type AuthEnv } from "../lib/middleware";
 import { transactionService } from "../lib/transaction.service";
 import type {
+  ApiTransaction,
   GetTransactionsResponse,
   TransactionFilter,
 } from "@openfinance/shared";
@@ -56,6 +57,7 @@ const transactionQuerySchema = z.object({
   status: csv
     .pipe(z.array(z.enum(["active", "hidden", "deleted"])).min(1))
     .optional(),
+  fields: csv.optional(),
 });
 
 const transactionRoutes = new Hono<AuthEnv>();
@@ -86,10 +88,20 @@ transactionRoutes.get(
         status: q.status,
       };
 
-      const transactions = await transactionService.getTransactionsByUserId(
+      let transactions = await transactionService.getTransactionsByUserId(
         user.id,
         filter,
       );
+
+      if (q.fields?.length) {
+        const allowedFields = new Set(q.fields);
+        transactions = transactions.map(
+          (t) =>
+            Object.fromEntries(
+              Object.entries(t).filter(([key]) => allowedFields.has(key)),
+            ) as ApiTransaction,
+        );
+      }
 
       const response: GetTransactionsResponse = { transactions };
       return c.json(response);
@@ -97,6 +109,27 @@ transactionRoutes.get(
       console.error("Error fetching transactions", error);
       return c.json({ error: "Failed to fetch transactions" }, 500);
     }
+  },
+);
+
+// POST /api/transactions/query — raw SQL against a safe CTE
+const queryBodySchema = z.object({
+  sql: z.string().min(1).max(2000),
+});
+
+transactionRoutes.post(
+  "/query",
+  zValidator("json", queryBodySchema),
+  async (c) => {
+    const user = c.get("user");
+    const { sql: userSql } = c.req.valid("json");
+
+    const result = await transactionService.queryTransactions(user.id, userSql);
+
+    if ("error" in result) {
+      return c.json(result, 400);
+    }
+    return c.json(result);
   },
 );
 

@@ -7,6 +7,9 @@ export type {
 export type {
   ApiTransaction,
   GetTransactionsResponse,
+  QueryTransactionsRequest,
+  QueryTransactionsResponse,
+  QueryTransactionsErrorResponse,
   TransactionFilter,
   TransactionStatus,
   SortOption,

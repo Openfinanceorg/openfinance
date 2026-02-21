@@ -45,3 +45,18 @@ pnpm dlx shadcn-svelte@latest add <component-name>
 ```
 
 Components are installed to `src/lib/components/ui/<component-name>/`.
+
+## How to test
+
+From the repo root:
+
+```sh
+cd server
+pnpm vitest run -t "queryTransactions"
+```
+
+Run a specific test by name with `-t "pattern"`, e.g.:
+
+```sh
+pnpm vitest run -t "blocks mutation queries"
+```

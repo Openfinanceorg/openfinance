@@ -28,6 +28,7 @@ export interface TransactionFilter {
   cursor?: string;
   pending?: boolean;
   status?: TransactionStatus[];
+  fields?: string[];
 }
 
 export interface ApiTransaction {
@@ -49,4 +50,17 @@ export interface ApiTransaction {
 
 export interface GetTransactionsResponse {
   transactions: ApiTransaction[];
+}
+
+export interface QueryTransactionsRequest {
+  sql: string;
+}
+
+export interface QueryTransactionsResponse {
+  rows: Record<string, unknown>[];
+  rowCount: number;
+}
+
+export interface QueryTransactionsErrorResponse {
+  error: string;
 }

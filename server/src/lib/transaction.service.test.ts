@@ -170,4 +170,73 @@ describe("TransactionService", () => {
       expect(t.amount).toBeGreaterThanOrEqual(45);
     }
   });
+
+  describe("queryTransactions", () => {
+    it("runs an aggregation query", async () => {
+      const result = await transactionService.queryTransactions(
+        testUserId,
+        "SELECT merchant_name, SUM(amount) as total FROM txns GROUP BY 1 ORDER BY total DESC",
+      );
+
+      expect(result).not.toHaveProperty("error");
+      expect(result).toHaveProperty("rows");
+
+      const { rows } = result as { rows: Record<string, unknown>[] };
+      expect(rows).toHaveLength(3);
+      expect(
+        Number(rows.find((r) => r.merchant_name === "Amazon")?.total),
+      ).toBe(120);
+      expect(
+        Number(rows.find((r) => r.merchant_name === "Whole Foods")?.total),
+      ).toBe(45);
+      expect(
+        Number(rows.find((r) => r.merchant_name === "Starbucks")?.total),
+      ).toBe(5.5);
+    });
+
+    it("filters with WHERE clause", async () => {
+      const result = await transactionService.queryTransactions(
+        testUserId,
+        "SELECT * FROM txns WHERE merchant_name ILIKE '%starbucks%'",
+      );
+
+      expect(result).not.toHaveProperty("error");
+      const { rows, rowCount } = result as {
+        rows: Record<string, unknown>[];
+        rowCount: number;
+      };
+      expect(rowCount).toBe(1);
+      expect(rows[0].merchant_name).toBe("Starbucks");
+      expect(Number(rows[0].amount)).toBe(5.5);
+    });
+
+    it("excludes deleted transactions", async () => {
+      const result = await transactionService.queryTransactions(
+        testUserId,
+        "SELECT * FROM txns WHERE merchant_name = 'Ghost Store'",
+      );
+
+      expect(result).not.toHaveProperty("error");
+      const { rowCount } = result as { rowCount: number };
+      expect(rowCount).toBe(0);
+    });
+
+    it("returns error for invalid SQL", async () => {
+      const result = await transactionService.queryTransactions(
+        testUserId,
+        "SELECT * FROM nonexistent_table",
+      );
+
+      expect(result).toHaveProperty("error");
+    });
+
+    it("blocks mutation queries", async () => {
+      const result = await transactionService.queryTransactions(
+        testUserId,
+        "DELETE FROM txns",
+      );
+
+      expect(result).toHaveProperty("error");
+    });
+  });
 });

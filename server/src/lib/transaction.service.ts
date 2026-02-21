@@ -11,11 +11,13 @@ import {
   sql,
   type SQL,
 } from "drizzle-orm";
-import { db } from "../db";
+import { client, db } from "../db";
 import { transactions } from "../schema";
 import type {
   AmountFilter,
   ApiTransaction,
+  QueryTransactionsResponse,
+  QueryTransactionsErrorResponse,
   TransactionFilter,
   TransactionStatus,
 } from "@openfinance/shared";
@@ -227,6 +229,35 @@ class TransactionService {
       .limit(normalizeLimit(filter?.limit));
 
     return rows.map(toApiTransaction);
+  }
+
+  async queryTransactions(
+    userId: string,
+    userSql: string,
+  ): Promise<QueryTransactionsResponse | QueryTransactionsErrorResponse> {
+    try {
+      const rows = await client.begin("READ ONLY", async (tx) => {
+        await tx.unsafe("SET LOCAL statement_timeout = '5s'");
+        return tx.unsafe(
+          `WITH txns AS (
+  SELECT
+    id, name, amount::numeric, date, authorized_date,
+    merchant_name, pending, iso_currency_code,
+    account_id, status, created_at, updated_at
+  FROM transactions
+  WHERE user_id = $1 AND status != 'deleted'
+)
+${userSql}
+LIMIT 1000`,
+          [userId],
+        );
+      });
+      return { rows: Array.from(rows), rowCount: rows.length };
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Query execution failed";
+      return { error: message };
+    }
   }
 }
 
