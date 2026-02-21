@@ -1,3 +1,10 @@
+/**
+ * Transaction Poll Workflow
+ *
+ * Scheduled workflow that runs every 30 minutes to sync transactions for all
+ * active account connections. Dispatches to provider-specific sync workflows
+ * (Plaid cursor-based, MX date-filtered) with jitter to spread API load.
+ */
 import { DBOS, SchedulerMode } from "@dbos-inc/dbos-sdk";
 import { db } from "../db";
 import { accountConnections, syncJobs } from "../schema";
