@@ -41,7 +41,21 @@ export class TransactionPollWorkflow {
 
     for (const connection of connections) {
       try {
-        await TransactionPollWorkflow.dispatchSync(connection);
+        const syncJob = await TransactionPollWorkflow.createSyncJob(connection);
+
+        if (connection.provider === "plaid") {
+          await DBOS.startWorkflow(TransactionSyncWorkflow).run({
+            connectionId: connection.id,
+            userId: connection.userId,
+            syncJobId: syncJob.id,
+          });
+        } else if (connection.provider === "mx") {
+          await DBOS.startWorkflow(MxTransactionSyncWorkflow).run({
+            connectionId: connection.id,
+            userId: connection.userId,
+            syncJobId: syncJob.id,
+          });
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
         errors.push(
@@ -69,7 +83,7 @@ export class TransactionPollWorkflow {
   }
 
   @DBOS.step()
-  static async dispatchSync(
+  static async createSyncJob(
     connection: typeof accountConnections.$inferSelect,
   ) {
     const [syncJob] = await db
@@ -83,18 +97,6 @@ export class TransactionPollWorkflow {
       })
       .returning();
 
-    if (connection.provider === "plaid") {
-      await DBOS.startWorkflow(TransactionSyncWorkflow).run({
-        connectionId: connection.id,
-        userId: connection.userId,
-        syncJobId: syncJob.id,
-      });
-    } else if (connection.provider === "mx") {
-      await DBOS.startWorkflow(MxTransactionSyncWorkflow).run({
-        connectionId: connection.id,
-        userId: connection.userId,
-        syncJobId: syncJob.id,
-      });
-    }
+    return syncJob;
   }
 }
