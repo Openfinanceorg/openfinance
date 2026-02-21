@@ -1,6 +1,8 @@
 import type {
   ConnectedAccount,
   GetTransactionsResponse,
+  QueryTransactionsResponse,
+  QueryTransactionsErrorResponse,
   TransactionFilter,
 } from "@openfinance/shared";
 
@@ -65,7 +67,27 @@ export class OpenFinanceClient {
     if (filter?.cursor) params.cursor = filter.cursor;
     if (filter?.pending !== undefined) params.pending = String(filter.pending);
     if (filter?.status?.length) params.status = filter.status.join(",");
+    if (filter?.fields?.length) params.fields = filter.fields.join(",");
+    if (filter?.amountFilters?.length)
+      params.amountFilters = JSON.stringify(filter.amountFilters);
 
     return this.request("/api/transactions", params);
+  }
+
+  async queryTransactions(
+    sql: string,
+  ): Promise<QueryTransactionsResponse | QueryTransactionsErrorResponse> {
+    const res = await fetch(`${this.baseUrl}/api/transactions/query`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sql }),
+    });
+
+    return res.json() as Promise<
+      QueryTransactionsResponse | QueryTransactionsErrorResponse
+    >;
   }
 }

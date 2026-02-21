@@ -43,6 +43,17 @@ export function registerTransactionTools(
           "Return only these fields per transaction (e.g. ['name', 'amount', 'date', 'merchantName']). Omit to return all fields.",
         )
         .optional(),
+      amountFilters: z
+        .array(
+          z.object({
+            operator: z.enum([">", "<", ">=", "<=", "="]),
+            amount: z.number(),
+          }),
+        )
+        .describe(
+          "Filter by amount using comparison operators (e.g. [{ operator: '>', amount: 100 }])",
+        )
+        .optional(),
     },
     async (params) => {
       const result = await client.getTransactions({
@@ -56,6 +67,7 @@ export function registerTransactionTools(
         pending: params.pending,
         status: params.status,
         fields: params.fields,
+        amountFilters: params.amountFilters,
       });
 
       return {
