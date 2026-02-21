@@ -56,7 +56,9 @@
         </div>
       </div>
       {#if !accountConnected}
-        <Button size="sm" onclick={onConnectAccount}>Connect</Button>
+        <Button variant="outline" size="sm" onclick={onConnectAccount}
+          >Connect</Button
+        >
       {/if}
     </div>
 
