@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { mxService } from "$lib/sync/mx.service";
 import { requireAuth, type AuthEnv } from "$lib/middleware";
+import { billingService } from "$lib/billing";
 import { db } from "../db";
 import { accountConnections, user as userTable } from "../schema";
 import { eq } from "drizzle-orm";
@@ -68,6 +69,15 @@ mxRoutes.post(
   async (c) => {
     const authUser = c.get("user");
     const { member_guid, user_guid, institution_code } = c.req.valid("json");
+
+    // Check billing limits before connecting
+    const connectCheck = await billingService.checkCanConnect(authUser.id);
+    if (!connectCheck.allowed) {
+      return c.json(
+        { error: "upgrade_required", requiredPlan: connectCheck.requiredPlan },
+        402,
+      );
+    }
 
     await mxService.connectAndPerformInitialSync({
       userId: authUser.id,

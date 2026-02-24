@@ -2,7 +2,7 @@ import { getContext, setContext } from "svelte";
 import type { ConnectedAccount } from "@openfinance/shared";
 
 export interface LinkContext {
-  openSearch: () => void;
+  openSearch: () => void | Promise<void>;
   triggerReauth: (account: ConnectedAccount) => void;
   onAccountLinked: (cb: () => void) => void;
 }

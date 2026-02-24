@@ -61,7 +61,20 @@ Run a specific test by name with `-t "pattern"`, e.g.:
 pnpm vitest run -t "blocks mutation queries"
 ```
 
-Run Scripts
+## Stripe testing
+
+1. Install the [Stripe CLI](https://docs.stripe.com/stripe-cli)
+2. Login: `stripe login`
+3. Forward webhooks to the local server:
+
+```sh
+stripe listen --forward-to http://localhost:3000/api/stripe/webhook
+```
+
+4. Copy the webhook signing secret (`whsec_...`) into your `.env` as `STRIPE_WEBHOOK_SECRET`.
+
+## How to run scripts (development only)
+
 ```sh
 cd server
 npx tsx src/scripts/sync-accounts.ts list <email>

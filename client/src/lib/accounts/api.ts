@@ -1,5 +1,8 @@
 import { apiFetch } from "$lib/api-client";
-import type { ConnectedAccount } from "@openfinance/shared";
+import type {
+  ConnectedAccount,
+  DowngradeEligibility,
+} from "@openfinance/shared";
 
 export interface OnboardingState {
   accountConnected: boolean;
@@ -15,9 +18,10 @@ export function fetchAccounts() {
 }
 
 export function deleteAccount(id: number) {
-  return apiFetch<{ success: boolean }>(`/api/accounts/${id}`, {
-    method: "DELETE",
-  });
+  return apiFetch<{ success: boolean; downgrade?: DowngradeEligibility }>(
+    `/api/accounts/${id}`,
+    { method: "DELETE" },
+  );
 }
 
 export function dismissOnboarding() {

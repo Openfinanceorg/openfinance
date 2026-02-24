@@ -12,11 +12,11 @@ export default defineConfig({
     env: {
       DATABASE_URL:
         "postgresql://postgres:postgres@localhost:5433/openfin_test",
+      STRIPE_SECRET_KEY: "sk_test_fake",
+      STRIPE_WEBHOOK_SECRET: "whsec_test_fake",
     },
     globalSetup: "./src/tests/test-setup.ts",
     pool: "forks",
-    poolOptions: {
-      forks: { singleFork: true },
-    },
+    maxWorkers: 1,
   },
 });

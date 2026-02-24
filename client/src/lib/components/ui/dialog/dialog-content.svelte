@@ -15,6 +15,7 @@
     ...restProps
   }: WithoutChildrenOrChild<DialogPrimitive.ContentProps> & {
     portalProps?: DialogPrimitive.PortalProps;
+
     overlayClass?: string;
     children: Snippet;
     showCloseButton?: boolean;
@@ -27,7 +28,7 @@
     bind:ref
     data-slot="dialog-content"
     class={cn(
-      "bg-white dark:bg-gray-900 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed left-[50%] top-[50%] z-[80] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-lg duration-200 sm:max-w-lg",
+      "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed left-[50%] top-[50%] z-[80] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-lg duration-200 sm:max-w-lg",
       className,
     )}
     {...restProps}

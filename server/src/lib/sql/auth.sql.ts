@@ -9,6 +9,10 @@ export const user = pgTable("user", {
   mxUserGuid: text("mx_user_guid"),
   firstAccountConnectedAt: timestamp("first_account_connected_at"),
   onboardingDismissedAt: timestamp("onboarding_dismissed_at"),
+  planType: text("plan_type").notNull().default("free"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripeSubscriptionStatus: text("stripe_subscription_status"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

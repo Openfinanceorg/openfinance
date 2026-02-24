@@ -5,6 +5,7 @@ import { Products, CountryCode } from "plaid";
 import { plaidClient } from "$lib/sync/plaid.client";
 import { plaidService } from "$lib/sync/plaid.service";
 import { requireAuth, type AuthEnv } from "$lib/middleware";
+import { billingService } from "$lib/billing";
 import { db } from "../db";
 import { financialAccounts, accountConnections } from "../schema";
 import { eq, and } from "drizzle-orm";
@@ -84,6 +85,15 @@ plaidRoutes.post(
   async (c) => {
     const user = c.get("user");
     const { public_token, institution_id } = c.req.valid("json");
+
+    // Check billing limits before connecting
+    const connectCheck = await billingService.checkCanConnect(user.id);
+    if (!connectCheck.allowed) {
+      return c.json(
+        { error: "upgrade_required", requiredPlan: connectCheck.requiredPlan },
+        402,
+      );
+    }
 
     // Exchange public token for access token
     const { accessToken, itemId } =

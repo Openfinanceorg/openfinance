@@ -64,6 +64,13 @@
       "when": 1771899036766,
       "tag": "0008_brave_forgotten_one",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1771904958428,
+      "tag": "0009_quick_stardust",
+      "breakpoints": true
     }
   ]
 }

@@ -6,12 +6,23 @@
   import MXLink from "$lib/sync/MXLink.svelte";
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
+  import UpgradeModal from "$lib/billing/UpgradeModal.svelte";
+  import { checkCanConnect } from "$lib/billing/api";
   import { triggerPoll } from "$lib/sync/sync-status";
   import { setLinkContext } from "$lib/sync/link-context";
+  import {
+    billingState,
+    loadBillingState,
+    refreshBillingState,
+  } from "$lib/billing-state";
+  import { page } from "$app/state";
+  import { replaceState } from "$app/navigation";
+  import { toast } from "svelte-sonner";
   import type {
     ConnectedAccount,
     InstitutionType,
     SyncProvider,
+    PlanType,
   } from "@openfinance/shared";
 
   let { children } = $props();
@@ -24,11 +35,48 @@
 
   let accountLinkedCallback: (() => void) | undefined;
 
+  // Billing state
+  let upgradeModalOpen = $state(false);
+  let upgradeRequiredPlan = $state<Exclude<PlanType, "free">>("plus");
+  let hasExistingSubscription = $state(false);
+
+  // Load user state (billing/plan) once session is available
+  $effect(() => {
+    if ($session.data) {
+      loadBillingState();
+    }
+  });
+
+  // Handle checkout return from Stripe
+  $effect(() => {
+    const checkoutParam = page.url.searchParams.get("checkout");
+    if (checkoutParam === "success") {
+      toast.success(
+        "Subscription activated! You can now connect more accounts.",
+      );
+      refreshBillingState();
+    } else if (checkoutParam === "cancel") {
+      toast("Checkout cancelled.");
+    }
+    if (checkoutParam) {
+      const url = new URL(page.url);
+      url.searchParams.delete("checkout");
+      replaceState(url, {});
+    }
+  });
+
   function handleProviderSelect(
     institution: InstitutionType,
     provider: SyncProvider,
   ) {
     searchOpen = false;
+    launchProvider(institution, provider);
+  }
+
+  function launchProvider(
+    institution: InstitutionType,
+    provider: SyncProvider,
+  ) {
     if (provider === "plaid") {
       plaidLink.initiatePlaidLink(institution.plaidData?.institutionId);
     } else if (provider === "mx") {
@@ -53,7 +101,21 @@
   }
 
   setLinkContext({
-    openSearch: () => {
+    openSearch: async () => {
+      try {
+        const result = await checkCanConnect();
+        if (!result.allowed) {
+          upgradeRequiredPlan = (result.requiredPlan ?? "plus") as Exclude<
+            PlanType,
+            "free"
+          >;
+          hasExistingSubscription = result.currentPlan !== "free";
+          upgradeModalOpen = true;
+          return;
+        }
+      } catch {
+        // If billing check fails, let them through (server will enforce)
+      }
       searchOpen = true;
     },
     triggerReauth,
@@ -78,6 +140,13 @@
 
   <SyncBanner />
 
+  <UpgradeModal
+    bind:isOpen={upgradeModalOpen}
+    requiredPlan={upgradeRequiredPlan}
+    {hasExistingSubscription}
+    onClose={() => {}}
+  />
+
   <InstitutionSearchContainer
     bind:isOpen={searchOpen}
     onProviderSelect={handleProviderSelect}
@@ -86,10 +155,15 @@
   <div class="min-h-screen bg-white">
     <div class="max-w-6xl mx-auto px-8">
       <header class="flex items-center py-6">
-        <div class="w-48 shrink-0 text-center">
+        <div
+          class="w-48 shrink-0 text-center inline-flex items-center justify-center"
+        >
           <span class="text-base font-semibold tracking-tight text-gray-800"
             >OpenFinance</span
-          >
+          >{#if $billingState && $billingState.planType !== "free"}<span
+              class="ml-1.5 text-[10px] font-medium uppercase tracking-wide border rounded-full px-1.5 py-0.5 text-gray-400 border-gray-300 leading-none"
+              >{$billingState.planType}</span
+            >{/if}
         </div>
         <div class="flex-1 flex justify-end">
           <ProfileDropdown />
