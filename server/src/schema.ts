@@ -40,3 +40,11 @@ export {
   type SyncJob,
   type NewSyncJob,
 } from "./lib/sql/sync-jobs.sql";
+
+export {
+  notificationLogs,
+  type AccountDisconnectedMetadata,
+  type NotificationMetadata,
+  type NotificationLog,
+  type NewNotificationLog,
+} from "./lib/sql/notifications.sql";
