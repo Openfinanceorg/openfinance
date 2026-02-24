@@ -3,6 +3,7 @@ import { plaidClient } from "./plaid.client";
 import { db } from "../../db";
 import { DBOS } from "@dbos-inc/dbos-sdk";
 import { TransactionSyncWorkflow } from "../../workflows/plaid-transaction-sync.workflow";
+import { sleep } from "../utils";
 import {
   financialAccounts,
   accountConnections,
@@ -155,18 +156,24 @@ class PlaidService {
     const accountMap = new Map(accounts.map((a) => [a.providerAccountId, a]));
 
     let nextCursor = cursor ?? "";
-    let hasMore = true;
     let added = 0;
     let modified = 0;
     let removed = 0;
 
-    while (hasMore) {
+    const initialDelay = 5000;
+    const maxDelay = 30000;
+    const maxRetries = 5;
+    let retryIndex = 0;
+
+    // Single loop: pages through results, then polls with backoff if NOT_READY
+    for (;;) {
       const response = await plaidClient.transactionsSync({
         access_token: accessToken,
         cursor: nextCursor || undefined,
       });
 
       const data = response.data;
+      nextCursor = data.next_cursor;
 
       // Process added transactions
       for (const tx of data.added) {
@@ -268,8 +275,25 @@ class PlaidService {
         removed++;
       }
 
-      nextCursor = data.next_cursor;
-      hasMore = data.has_more;
+      // More pages available — continue immediately
+      if (data.has_more) continue;
+
+      // During initial sync, keep polling until historical data is ready
+      const isInitialSync = cursor === null;
+      const needsMoreData =
+        data.transactions_update_status !== "HISTORICAL_UPDATE_COMPLETE";
+
+      if (isInitialSync && needsMoreData && retryIndex < maxRetries) {
+        const delay = Math.min(initialDelay * 2 ** retryIndex, maxDelay);
+        console.debug(
+          `connection ${connectionId}: ${data.transactions_update_status}, retrying in ${delay}ms (attempt ${retryIndex + 1}/${maxRetries})`,
+        );
+        await sleep(delay);
+        retryIndex++;
+        continue;
+      }
+
+      break;
     }
 
     // Update cursor on connection
