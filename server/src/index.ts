@@ -13,6 +13,8 @@ import accountRoutes from "./routes/accounts.js";
 import transactionRoutes from "./routes/transactions.js";
 import keyRoutes from "./routes/keys.js";
 import meRoutes from "./routes/me.js";
+import mcpBundleRoutes from "./routes/mcp-bundle.js";
+import taskRoutes from "./routes/tasks.js";
 
 const app = new Hono();
 
@@ -27,6 +29,8 @@ app.route("/api/accounts", accountRoutes);
 app.route("/api/transactions", transactionRoutes);
 app.route("/api/keys", keyRoutes);
 app.route("/api/me", meRoutes);
+app.route("/api/mcp-bundle", mcpBundleRoutes);
+app.route("/api/tasks", taskRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 
