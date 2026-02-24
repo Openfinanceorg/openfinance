@@ -12,12 +12,6 @@ export const PLAN_PRICES: Record<Exclude<PlanType, "free">, number> = {
   pro: 8.99,
 };
 
-// Replace with actual Stripe price IDs from your Stripe Dashboard
-export const STRIPE_PRICES: Record<Exclude<PlanType, "free">, string> = {
-  plus: "price_plus_monthly",
-  pro: "price_pro_monthly",
-};
-
 export interface BillingStatus {
   planType: PlanType;
   connectionCount: number;
