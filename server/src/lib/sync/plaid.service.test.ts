@@ -178,13 +178,13 @@ describe("PlaidService.syncTransactions", () => {
     vi.useRealTimers();
   });
 
-  // Edge case: Plaid never becomes ready within the retry window (~95s).
-  // Service should give up after 5 retries and return 0 results.
+  // Edge case: Plaid never becomes ready within the retry window (~245s).
+  // Service should give up after 10 retries and return 0 results.
   it("exhausts all retries when data never becomes ready", async () => {
     vi.useFakeTimers();
 
-    // 6 calls total: 1 initial + 5 retries, all NOT_READY
-    for (let i = 0; i < 6; i++) {
+    // 11 calls total: 1 initial + 10 retries, all NOT_READY
+    for (let i = 0; i < 11; i++) {
       mockTransactionsSync.mockResolvedValueOnce(
         makeSyncResponse({
           next_cursor: `cursor-${i}`,
@@ -199,15 +199,63 @@ describe("PlaidService.syncTransactions", () => {
       cursor: null,
     });
 
-    // Advance through all backoff delays: 5s + 10s + 20s + 30s + 30s
-    for (const delay of [5000, 10000, 20000, 30000, 30000]) {
+    // Advance through all backoff delays: 5s + 10s + 20s + 30s×7
+    for (const delay of [
+      5000, 10000, 20000, 30000, 30000, 30000, 30000, 30000, 30000, 30000,
+    ]) {
       await vi.advanceTimersByTimeAsync(delay);
     }
 
     const result = await resultPromise;
 
-    expect(mockTransactionsSync).toHaveBeenCalledTimes(6);
+    expect(mockTransactionsSync).toHaveBeenCalledTimes(11);
     expect(result.added).toBe(0);
+
+    vi.useRealTimers();
+  });
+
+  // Timeout still saves initial data: even if retries are exhausted,
+  // transactions from earlier responses are persisted and cursor is updated.
+  it("saves initial data and cursor even when polling times out", async () => {
+    vi.useFakeTimers();
+
+    // First call: INITIAL_UPDATE_COMPLETE with transactions
+    mockTransactionsSync.mockResolvedValueOnce(
+      makeSyncResponse({
+        added: [makeTx("tx-1"), makeTx("tx-2")],
+        next_cursor: "cursor-1",
+        transactions_update_status: "INITIAL_UPDATE_COMPLETE",
+      }),
+    );
+
+    // Remaining 10 retries: all NOT_READY, no new data
+    for (let i = 0; i < 10; i++) {
+      mockTransactionsSync.mockResolvedValueOnce(
+        makeSyncResponse({
+          next_cursor: "cursor-1",
+          transactions_update_status: "NOT_READY",
+        }),
+      );
+    }
+
+    const resultPromise = plaidService.syncTransactions({
+      connectionId: 1,
+      accessToken: "access-token",
+      cursor: null,
+    });
+
+    // Advance through all backoff delays
+    for (const delay of [
+      5000, 10000, 20000, 30000, 30000, 30000, 30000, 30000, 30000, 30000,
+    ]) {
+      await vi.advanceTimersByTimeAsync(delay);
+    }
+
+    const result = await resultPromise;
+
+    expect(mockTransactionsSync).toHaveBeenCalledTimes(11);
+    expect(result.added).toBe(2);
+    expect(result.nextCursor).toBe("cursor-1");
 
     vi.useRealTimers();
   });

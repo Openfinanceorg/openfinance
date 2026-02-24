@@ -162,7 +162,7 @@ class PlaidService {
 
     const initialDelay = 5000;
     const maxDelay = 30000;
-    const maxRetries = 5;
+    const maxRetries = 10;
     let retryIndex = 0;
 
     // Single loop: pages through results, then polls with backoff if NOT_READY
@@ -174,6 +174,12 @@ class PlaidService {
 
       const data = response.data;
       nextCursor = data.next_cursor;
+
+      console.debug(
+        `connection ${connectionId}: status=${data.transactions_update_status}, ` +
+          `added=${data.added.length}, modified=${data.modified.length}, removed=${data.removed.length}, ` +
+          `has_more=${data.has_more}`,
+      );
 
       // Process added transactions
       for (const tx of data.added) {
@@ -305,6 +311,10 @@ class PlaidService {
         updatedAt: new Date(),
       })
       .where(eq(accountConnections.id, connectionId));
+
+    console.debug(
+      `connection ${connectionId}: sync complete — added=${added}, modified=${modified}, removed=${removed}`,
+    );
 
     return { nextCursor, added, modified, removed };
   }
