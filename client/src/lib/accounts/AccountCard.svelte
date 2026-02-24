@@ -28,13 +28,15 @@
   function formatBalance(
     balance: string | null,
     currency: string | null,
+    type: string,
   ): string {
     if (!balance) return "--";
     const num = parseFloat(balance);
+    const isLiability = type === "credit" || type === "loan";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency || "USD",
-    }).format(num);
+    }).format(isLiability ? -num : num);
   }
 
   const shortName = $derived(() => {
@@ -79,7 +81,11 @@
       </button>
     {:else}
       <p class="text-base font-semibold text-gray-900">
-        {formatBalance(account.currentBalance, account.isoCurrencyCode)}
+        {formatBalance(
+          account.currentBalance,
+          account.isoCurrencyCode,
+          account.type,
+        )}
       </p>
     {/if}
   </div>

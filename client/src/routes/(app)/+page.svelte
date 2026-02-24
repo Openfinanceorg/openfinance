@@ -65,7 +65,9 @@
     const totals: Record<string, number> = {};
     for (const a of accounts) {
       const cur = a.isoCurrencyCode ?? "USD";
-      totals[cur] = (totals[cur] ?? 0) + parseFloat(a.currentBalance ?? "0");
+      const balance = parseFloat(a.currentBalance ?? "0");
+      const isLiability = a.type === "credit" || a.type === "loan";
+      totals[cur] = (totals[cur] ?? 0) + (isLiability ? -balance : balance);
     }
     const [currency, amount] = Object.entries(totals).sort(
       (a, b) => b[1] - a[1],
