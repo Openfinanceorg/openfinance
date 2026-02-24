@@ -63,7 +63,7 @@ export class TransactionSyncWorkflow {
     connectionId: number;
     userId: string;
     syncJobId: number;
-  }) {
+  }): Promise<{ added: number; modified: number; removed: number } | null> {
     const { connectionId, syncJobId } = input;
 
     await TransactionSyncWorkflow.markStarted(syncJobId);
@@ -76,7 +76,7 @@ export class TransactionSyncWorkflow {
         syncJobId,
         "Connection not found or missing access token",
       );
-      return;
+      return null;
     }
 
     try {
@@ -88,16 +88,14 @@ export class TransactionSyncWorkflow {
 
       const total = result.added + result.modified + result.removed;
       await TransactionSyncWorkflow.markComplete(syncJobId, total);
-
-      DBOS.logger.info(
-        `Transaction sync complete for connection ${connectionId}: +${result.added} ~${result.modified} -${result.removed}`,
-      );
+      return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown sync error";
       await TransactionSyncWorkflow.markError(syncJobId, message);
       DBOS.logger.error(
         `Transaction sync failed for connection ${connectionId}: ${message}`,
       );
+      return null;
     }
   }
 }

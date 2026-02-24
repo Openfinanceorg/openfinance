@@ -75,7 +75,7 @@ export class MxTransactionSyncWorkflow {
     connectionId: number;
     userId: string;
     syncJobId: number;
-  }) {
+  }): Promise<{ added: number; modified: number; removed: number } | null> {
     const { connectionId, userId, syncJobId } = input;
 
     await MxTransactionSyncWorkflow.markStarted(syncJobId);
@@ -88,7 +88,7 @@ export class MxTransactionSyncWorkflow {
         syncJobId,
         "Connection not found or missing MX member GUID",
       );
-      return;
+      return null;
     }
 
     const userGuid = await MxTransactionSyncWorkflow.getUserGuid(userId);
@@ -97,7 +97,7 @@ export class MxTransactionSyncWorkflow {
         syncJobId,
         "User does not have an MX user GUID",
       );
-      return;
+      return null;
     }
 
     try {
@@ -114,16 +114,14 @@ export class MxTransactionSyncWorkflow {
       });
 
       await MxTransactionSyncWorkflow.markComplete(syncJobId, result.added);
-
-      DBOS.logger.info(
-        `MX transaction sync complete for connection ${connectionId}: +${result.added}`,
-      );
+      return { added: result.added, modified: 0, removed: 0 };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown sync error";
       await MxTransactionSyncWorkflow.markError(syncJobId, message);
       DBOS.logger.error(
         `MX transaction sync failed for connection ${connectionId}: ${message}`,
       );
+      return null;
     }
   }
 }

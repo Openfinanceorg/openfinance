@@ -17,6 +17,19 @@ interface PollResult {
   errors: string[];
 }
 
+interface ConnectionSyncDelta {
+  added: number;
+  modified: number;
+  removed: number;
+}
+
+interface AggregateDeltas {
+  added: number;
+  modified: number;
+  removed: number;
+  changedConnections: number;
+}
+
 export class TransactionPollWorkflow {
   @DBOS.scheduled({
     crontab: "*/30 * * * *",
@@ -27,14 +40,14 @@ export class TransactionPollWorkflow {
     schedTime?: Date,
     _atTime?: Date,
   ): Promise<PollResult> {
-    DBOS.logger.info(
+    DBOS.logger.debug(
       `Starting transaction poll workflow (scheduled: ${schedTime?.toISOString() ?? "manual"})`,
     );
 
     // Add jitter (0–5 min) to spread API load
     if (schedTime) {
       const jitterMs = Math.floor(Math.random() * 5 * 60 * 1000);
-      DBOS.logger.info(
+      DBOS.logger.debug(
         `Applying jitter delay of ${Math.round(jitterMs / 1000)}s`,
       );
       await DBOS.sleep(jitterMs);
@@ -42,26 +55,31 @@ export class TransactionPollWorkflow {
 
     const connections = await TransactionPollWorkflow.fetchActiveConnections();
 
-    DBOS.logger.info(`Found ${connections.length} active connections to poll`);
-
     const errors: string[] = [];
+    const deltas: ConnectionSyncDelta[] = [];
 
     for (const connection of connections) {
       try {
         const syncJob = await TransactionPollWorkflow.createSyncJob(connection);
 
         if (connection.provider === "plaid") {
-          await DBOS.startWorkflow(TransactionSyncWorkflow).run({
+          const handle = await DBOS.startWorkflow(TransactionSyncWorkflow).run({
             connectionId: connection.id,
             userId: connection.userId,
             syncJobId: syncJob.id,
           });
+          const result = await handle.getResult();
+          if (result) deltas.push(result);
         } else if (connection.provider === "mx") {
-          await DBOS.startWorkflow(MxTransactionSyncWorkflow).run({
+          const handle = await DBOS.startWorkflow(
+            MxTransactionSyncWorkflow,
+          ).run({
             connectionId: connection.id,
             userId: connection.userId,
             syncJobId: syncJob.id,
           });
+          const result = await handle.getResult();
+          if (result) deltas.push(result);
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
@@ -74,9 +92,28 @@ export class TransactionPollWorkflow {
       }
     }
 
-    DBOS.logger.info(
-      `Transaction poll complete: ${connections.length} connections processed, ${errors.length} errors`,
+    const totals = deltas.reduce<AggregateDeltas>(
+      (acc, delta) => {
+        acc.added += delta.added;
+        acc.modified += delta.modified;
+        acc.removed += delta.removed;
+        if (delta.added > 0 || delta.modified > 0 || delta.removed > 0) {
+          acc.changedConnections += 1;
+        }
+        return acc;
+      },
+      { added: 0, modified: 0, removed: 0, changedConnections: 0 },
     );
+
+    if (totals.changedConnections === 0) {
+      DBOS.logger.info(
+        `Transaction poll: no transaction changes across ${connections.length} processed connections (${errors.length} errors)`,
+      );
+    } else {
+      DBOS.logger.info(
+        `Transaction poll: +${totals.added} ~${totals.modified} -${totals.removed} across ${totals.changedConnections} changed of ${connections.length} processed (${errors.length} errors)`,
+      );
+    }
 
     return { connectionsProcessed: connections.length, errors };
   }
