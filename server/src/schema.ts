@@ -42,9 +42,9 @@ export {
 } from "./lib/sql/sync-jobs.sql";
 
 export {
-  notificationLogs,
+  notifications,
   type AccountDisconnectedMetadata,
   type NotificationMetadata,
-  type NotificationLog,
-  type NewNotificationLog,
+  type Notification,
+  type NewNotification,
 } from "./lib/sql/notifications.sql";
