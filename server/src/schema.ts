@@ -44,6 +44,7 @@ export {
 export {
   notifications,
   type AccountDisconnectedMetadata,
+  type TransactionSyncMetadata,
   type NotificationMetadata,
   type Notification,
   type NewNotification,

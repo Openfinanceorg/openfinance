@@ -78,6 +78,29 @@ export class TransactionSyncWorkflow {
     }
   }
 
+  @DBOS.step()
+  static async notifySync(
+    userId: string,
+    connectionId: number,
+    added: number,
+    modified: number,
+    removed: number,
+  ) {
+    try {
+      await notificationService.logTransactionSync({
+        userId,
+        connectionId,
+        added,
+        modified,
+        removed,
+      });
+    } catch (e) {
+      DBOS.logger.error(
+        `Failed to log sync notification for connection ${connectionId}: ${e}`,
+      );
+    }
+  }
+
   @DBOS.workflow()
   static async run(input: {
     connectionId: number;
@@ -108,6 +131,15 @@ export class TransactionSyncWorkflow {
 
       const total = result.added + result.modified + result.removed;
       await TransactionSyncWorkflow.markComplete(syncJobId, total);
+      if (total > 0) {
+        await TransactionSyncWorkflow.notifySync(
+          input.userId,
+          connectionId,
+          result.added,
+          result.modified,
+          result.removed,
+        );
+      }
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown sync error";

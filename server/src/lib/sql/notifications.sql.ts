@@ -17,7 +17,19 @@ export type AccountDisconnectedMetadata = {
   errorMessage?: string;
 };
 
-export type NotificationMetadata = AccountDisconnectedMetadata;
+export type TransactionSyncMetadata = {
+  type: "transaction_sync";
+  connectionId: number;
+  institutionName: string;
+  institutionUrl: string | null;
+  added: number;
+  modified: number;
+  removed: number;
+};
+
+export type NotificationMetadata =
+  | AccountDisconnectedMetadata
+  | TransactionSyncMetadata;
 
 // ==================== Table ====================
 

@@ -90,6 +90,29 @@ export class MxTransactionSyncWorkflow {
     return row?.mxUserGuid ?? null;
   }
 
+  @DBOS.step()
+  static async notifySync(
+    userId: string,
+    connectionId: number,
+    added: number,
+    modified: number,
+    removed: number,
+  ) {
+    try {
+      await notificationService.logTransactionSync({
+        userId,
+        connectionId,
+        added,
+        modified,
+        removed,
+      });
+    } catch (e) {
+      DBOS.logger.error(
+        `Failed to log sync notification for connection ${connectionId}: ${e}`,
+      );
+    }
+  }
+
   @DBOS.workflow()
   static async run(input: {
     connectionId: number;
@@ -134,6 +157,15 @@ export class MxTransactionSyncWorkflow {
       });
 
       await MxTransactionSyncWorkflow.markComplete(syncJobId, result.added);
+      if (result.added > 0) {
+        await MxTransactionSyncWorkflow.notifySync(
+          userId,
+          connectionId,
+          result.added,
+          0,
+          0,
+        );
+      }
       return { added: result.added, modified: 0, removed: 0 };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown sync error";

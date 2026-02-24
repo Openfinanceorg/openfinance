@@ -5,7 +5,10 @@ import {
   accountConnections,
   institutionRegistry,
 } from "../schema";
-import type { AccountDisconnectedMetadata } from "../schema";
+import type {
+  AccountDisconnectedMetadata,
+  TransactionSyncMetadata,
+} from "../schema";
 import { eq, and, gt, sql } from "drizzle-orm";
 import { sendEmail } from "./emails/resend.client";
 import { accountDisconnectEmail } from "./emails/templates/account-disconnect";
@@ -88,6 +91,56 @@ export const notificationService = {
         userId,
         channel: "email",
         title: subject,
+        metadata,
+      })
+      .returning();
+
+    return log;
+  },
+
+  async logTransactionSync(params: {
+    userId: string;
+    connectionId: number;
+    added: number;
+    modified: number;
+    removed: number;
+  }) {
+    const { userId, connectionId, added, modified, removed } = params;
+
+    const total = added + modified + removed;
+    if (total === 0) return null;
+
+    const [institution] = await db
+      .select({
+        name: institutionRegistry.name,
+        url: institutionRegistry.url,
+      })
+      .from(accountConnections)
+      .innerJoin(
+        institutionRegistry,
+        eq(accountConnections.institutionRegistryId, institutionRegistry.id),
+      )
+      .where(eq(accountConnections.id, connectionId))
+      .limit(1);
+
+    const institutionName = institution?.name ?? "Unknown institution";
+
+    const metadata: TransactionSyncMetadata = {
+      type: "transaction_sync",
+      connectionId,
+      institutionName,
+      institutionUrl: institution?.url ?? null,
+      added,
+      modified,
+      removed,
+    };
+
+    const [log] = await db
+      .insert(notifications)
+      .values({
+        userId,
+        channel: "system",
+        title: `Synced ${total} transaction${total === 1 ? "" : "s"}`,
         metadata,
       })
       .returning();
