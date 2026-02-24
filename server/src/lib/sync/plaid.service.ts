@@ -2,7 +2,7 @@ import { CountryCode } from "plaid";
 import { plaidClient } from "./plaid.client";
 import { db } from "../../db";
 import { DBOS } from "@dbos-inc/dbos-sdk";
-import { TransactionSyncWorkflow } from "../../workflows/transaction-sync.workflow";
+import { TransactionSyncWorkflow } from "../../workflows/plaid-transaction-sync.workflow";
 import {
   financialAccounts,
   accountConnections,

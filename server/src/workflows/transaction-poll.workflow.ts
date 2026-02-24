@@ -9,7 +9,7 @@ import { DBOS, SchedulerMode } from "@dbos-inc/dbos-sdk";
 import { db } from "../db";
 import { accountConnections, syncJobs } from "../schema";
 import { eq } from "drizzle-orm";
-import { TransactionSyncWorkflow } from "./transaction-sync.workflow";
+import { TransactionSyncWorkflow } from "./plaid-transaction-sync.workflow";
 import { MxTransactionSyncWorkflow } from "./mx-transaction-sync.workflow";
 
 interface PollResult {
