@@ -83,7 +83,7 @@ export function registerTransactionTools(
 
   server.tool(
     "query_transactions",
-    `Run a SQL query against the user's transactions. Write a SELECT query referencing the \`txns\` CTE which has columns: id, name, amount (numeric), date, authorized_date, merchant_name, pending, iso_currency_code, account_id, status, created_at, updated_at. The query runs in a read-only transaction with a 5s timeout and 1000 row limit. Errors are returned so you can self-correct SQL syntax.
+    `Run a SQL query against the user's transactions. Write a SELECT query referencing the \`txns\` CTE which has columns: id, name, amount (numeric), date, authorized_date, merchant_name, pending, iso_currency_code, account_id, status, created_at, updated_at. The query runs in a read-only transaction with a 5s timeout. Errors are returned so you can self-correct SQL syntax.
 
 Example queries:
 - SELECT SUM(amount), COUNT(*) FROM txns WHERE merchant_name ILIKE '%starbucks%'
@@ -93,7 +93,7 @@ Example queries:
       sql: z
         .string()
         .describe(
-          "SQL SELECT query referencing the `txns` CTE. Do not include CTE definition, LIMIT, or transaction control statements.",
+          "SQL SELECT query referencing the `txns` CTE. Do not include CTE definition or transaction control statements.",
         ),
     },
     async (params) => {

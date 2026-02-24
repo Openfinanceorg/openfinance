@@ -247,8 +247,7 @@ class TransactionService {
   FROM transactions
   WHERE user_id = $1 AND status != 'deleted'
 )
-${userSql}
-LIMIT 1000`,
+${userSql}`,
           [userId],
         );
       });
