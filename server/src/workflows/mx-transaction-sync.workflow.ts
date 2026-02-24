@@ -3,6 +3,7 @@ import { db } from "../db";
 import { accountConnections, syncJobs } from "../schema";
 import { eq } from "drizzle-orm";
 import { mxService } from "../lib/sync/mx.service";
+import { notificationService } from "../lib/notification.service";
 
 export class MxTransactionSyncWorkflow {
   @DBOS.step()
@@ -57,6 +58,25 @@ export class MxTransactionSyncWorkflow {
         updatedAt: new Date(),
       })
       .where(eq(syncJobs.id, syncJobId));
+  }
+
+  @DBOS.step()
+  static async notifyDisconnect(
+    userId: string,
+    connectionId: number,
+    errorMessage?: string,
+  ) {
+    try {
+      await notificationService.sendAccountDisconnectEmail({
+        userId,
+        connectionId,
+        errorMessage,
+      });
+    } catch (e) {
+      DBOS.logger.error(
+        `Failed to send disconnect notification for connection ${connectionId}: ${e}`,
+      );
+    }
   }
 
   @DBOS.step()
@@ -121,6 +141,13 @@ export class MxTransactionSyncWorkflow {
       DBOS.logger.error(
         `MX transaction sync failed for connection ${connectionId}: ${message}`,
       );
+
+      await MxTransactionSyncWorkflow.notifyDisconnect(
+        userId,
+        connectionId,
+        message,
+      );
+
       return null;
     }
   }

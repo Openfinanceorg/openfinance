@@ -1,7 +1,12 @@
 import { db } from "../db";
-import { notifications, user } from "../schema";
+import {
+  notifications,
+  user,
+  accountConnections,
+  institutionRegistry,
+} from "../schema";
 import type { AccountDisconnectedMetadata } from "../schema";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, sql } from "drizzle-orm";
 import { sendEmail } from "./emails/resend.client";
 import { accountDisconnectEmail } from "./emails/templates/account-disconnect";
 
@@ -12,12 +17,11 @@ export const notificationService = {
   async sendAccountDisconnectEmail(params: {
     userId: string;
     connectionId: number;
-    institutionName: string;
     errorMessage?: string;
   }) {
-    const { userId, connectionId, institutionName, errorMessage } = params;
+    const { userId, connectionId, errorMessage } = params;
 
-    // Dedup: skip if we already sent one for this user in the last 24h
+    // Dedup: skip if we already sent one for this connection in the last 24h
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const existing = await db
       .select({ id: notifications.id })
@@ -26,6 +30,7 @@ export const notificationService = {
         and(
           eq(notifications.userId, userId),
           gt(notifications.sentAt, oneDayAgo),
+          sql`${notifications.metadata}->>'connectionId' = ${String(connectionId)}`,
         ),
       )
       .limit(1);
@@ -33,6 +38,18 @@ export const notificationService = {
     if (existing.length > 0) {
       return null;
     }
+
+    // Look up institution name from connection
+    const [institution] = await db
+      .select({ name: institutionRegistry.name })
+      .from(accountConnections)
+      .innerJoin(
+        institutionRegistry,
+        eq(accountConnections.institutionRegistryId, institutionRegistry.id),
+      )
+      .where(eq(accountConnections.id, connectionId))
+      .limit(1);
+    const institutionName = institution?.name ?? "your financial institution";
 
     // Fetch user email and name
     const [row] = await db
@@ -48,7 +65,6 @@ export const notificationService = {
     const { subject, html } = accountDisconnectEmail({
       userName: row.name,
       institutionName,
-      errorMessage,
     });
 
     await sendEmail({

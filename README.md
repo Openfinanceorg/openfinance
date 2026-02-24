@@ -60,3 +60,9 @@ Run a specific test by name with `-t "pattern"`, e.g.:
 ```sh
 pnpm vitest run -t "blocks mutation queries"
 ```
+
+Run Scripts
+```sh
+cd server
+npx tsx src/scripts/sync-accounts.ts list <email>
+```

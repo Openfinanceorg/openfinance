@@ -3,6 +3,7 @@ import { db } from "../db";
 import { accountConnections, syncJobs } from "../schema";
 import { eq } from "drizzle-orm";
 import { plaidService } from "../lib/sync/plaid.service";
+import { notificationService } from "../lib/notification.service";
 
 export class TransactionSyncWorkflow {
   @DBOS.step()
@@ -58,6 +59,25 @@ export class TransactionSyncWorkflow {
       .where(eq(syncJobs.id, syncJobId));
   }
 
+  @DBOS.step()
+  static async notifyDisconnect(
+    userId: string,
+    connectionId: number,
+    errorMessage?: string,
+  ) {
+    try {
+      await notificationService.sendAccountDisconnectEmail({
+        userId,
+        connectionId,
+        errorMessage,
+      });
+    } catch (e) {
+      DBOS.logger.error(
+        `Failed to send disconnect notification for connection ${connectionId}: ${e}`,
+      );
+    }
+  }
+
   @DBOS.workflow()
   static async run(input: {
     connectionId: number;
@@ -95,6 +115,13 @@ export class TransactionSyncWorkflow {
       DBOS.logger.error(
         `Transaction sync failed for connection ${connectionId}: ${message}`,
       );
+
+      await TransactionSyncWorkflow.notifyDisconnect(
+        input.userId,
+        connectionId,
+        message,
+      );
+
       return null;
     }
   }
