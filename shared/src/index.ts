@@ -20,3 +20,15 @@ export type {
 } from "./types/transaction.js";
 
 export type { ConnectedAccount } from "./types/account.js";
+
+export {
+  PLAN_TYPES,
+  PLAN_LIMITS,
+  PLAN_PRICES,
+  type PlanType,
+  type BillingStatus,
+  type CheckConnectResult,
+  type DowngradeEligibility,
+  requiredPlanForConnectionCount,
+  canAddConnection,
+} from "./types/billing.js";
