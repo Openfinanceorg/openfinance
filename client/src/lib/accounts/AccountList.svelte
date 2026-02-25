@@ -5,14 +5,12 @@
 
   export interface Props {
     accounts: ConnectedAccount[];
-    onDelete?: () => void;
     onReauth?: (account: ConnectedAccount) => void;
     isConnectorLoading?: boolean;
   }
 
   let {
     accounts,
-    onDelete = undefined,
     onReauth = undefined,
     isConnectorLoading = false,
   }: Props = $props();
@@ -34,7 +32,6 @@
           <AccountRow
             {account}
             groupKey={group.key}
-            {onDelete}
             {onReauth}
             {isConnectorLoading}
           />

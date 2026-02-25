@@ -29,7 +29,6 @@
   {:else}
     <AccountList
       {accounts}
-      onDelete={() => refreshAccountsState()}
       onReauth={triggerReauth}
     />
   {/if}
