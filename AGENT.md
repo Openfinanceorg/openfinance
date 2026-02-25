@@ -1,3 +1,6 @@
+## UI Components
+- Prefer using existing ShadCN components from `client/src/lib/components/ui/`. Don't create custom components when a ShadCN variant will work.
+
 ## How to test
 
 From the repo root:
