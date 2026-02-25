@@ -13,6 +13,7 @@
   import { PLAN_LIMITS, PLAN_PRICES, type PlanType } from "@openfinance/shared";
   import type { ConnectedAccount } from "@openfinance/shared";
   import AlertTriangle from "lucide-svelte/icons/triangle-alert";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     isOpen?: boolean;
@@ -68,6 +69,7 @@
       }
       await refreshBillingState();
       isOpen = false;
+      toast.success(`Plan downgraded to ${targetPlan}`);
       onComplete();
     } catch (e) {
       error = e instanceof Error ? e.message : "Failed to downgrade plan";
