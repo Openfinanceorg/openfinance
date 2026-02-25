@@ -17,6 +17,21 @@ export function fetchAccounts() {
   }>("/api/accounts");
 }
 
+export function fetchAllAccounts() {
+  return apiFetch<{
+    accounts: ConnectedAccount[];
+    onboarding: OnboardingState;
+  }>("/api/accounts?includeHidden=true");
+}
+
+export function updateAccountStatus(id: number, status: "active" | "hidden") {
+  return apiFetch<{ success: boolean }>(`/api/accounts/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export function deleteAccount(id: number) {
   return apiFetch<{ success: boolean; downgrade?: DowngradeEligibility }>(
     `/api/accounts/${id}`,

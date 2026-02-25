@@ -12,7 +12,14 @@ accountRoutes.use("*", requireAuth);
 // GET /api/accounts
 accountRoutes.get("/", async (c) => {
   const user = c.get("user");
-  const accounts = await financialAccountService.getAccountsByUserId(user.id);
+  const includeHidden = c.req.query("includeHidden") === "true";
+  const includeStatus: ("active" | "hidden")[] = includeHidden
+    ? ["active", "hidden"]
+    : ["active"];
+  const accounts = await financialAccountService.getAccountsByUserId(
+    user.id,
+    includeStatus,
+  );
 
   // Fetch onboarding state
   const [[mcpRow], [userRow]] = await Promise.all([
@@ -44,6 +51,27 @@ accountRoutes.get("/", async (c) => {
   };
 
   return c.json({ accounts, onboarding });
+});
+
+// PATCH /api/accounts/:id/status
+accountRoutes.patch("/:id/status", async (c) => {
+  const user = c.get("user");
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid account ID" }, 400);
+
+  const body = await c.req.json<{ status?: string }>();
+  if (body.status !== "active" && body.status !== "hidden") {
+    return c.json({ error: "Status must be 'active' or 'hidden'" }, 400);
+  }
+
+  const updated = await financialAccountService.updateAccountStatus(
+    id,
+    user.id,
+    body.status,
+  );
+  if (!updated) return c.json({ error: "Account not found" }, 404);
+
+  return c.json({ success: true });
 });
 
 // DELETE /api/accounts/:id

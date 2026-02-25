@@ -7,7 +7,7 @@ import {
   type FinancialAccount,
   type NewFinancialAccount,
 } from "../schema";
-import { eq, inArray, and, desc } from "drizzle-orm";
+import { eq, inArray, and, desc, sql } from "drizzle-orm";
 import type { ConnectedAccount } from "@openfinance/shared";
 import { plaidService } from "./sync/plaid.service";
 import { mxService } from "./sync/mx.service";
@@ -18,7 +18,10 @@ interface SyncError {
 }
 
 class FinancialAccountService {
-  async getAccountsByUserId(userId: string): Promise<ConnectedAccount[]> {
+  async getAccountsByUserId(
+    userId: string,
+    includeStatus: ("active" | "hidden")[] = ["active"],
+  ): Promise<ConnectedAccount[]> {
     const rows = await db
       .select({
         account: financialAccounts,
@@ -36,7 +39,12 @@ class FinancialAccountService {
         institutionRegistry,
         eq(accountConnections.institutionRegistryId, institutionRegistry.id),
       )
-      .where(eq(financialAccounts.userId, userId));
+      .where(
+        and(
+          eq(financialAccounts.userId, userId),
+          inArray(financialAccounts.status, includeStatus),
+        ),
+      );
 
     const connectionIds = [...new Set(rows.map((r) => r.connectionId))];
     const syncErrorMap = await this.getSyncErrors(connectionIds);
@@ -58,6 +66,7 @@ class FinancialAccountService {
       isSyncing: syncingConnections.has(row.connectionId),
       connectionId: row.connectionId,
       provider: row.provider,
+      status: row.account.status as "active" | "hidden",
     }));
   }
 
@@ -109,6 +118,7 @@ class FinancialAccountService {
       isSyncing: syncingConnections.has(row.connectionId),
       connectionId: row.connectionId,
       provider: row.provider,
+      status: row.account.status as "active" | "hidden",
     };
   }
 
@@ -132,12 +142,32 @@ class FinancialAccountService {
           currentBalance: data.currentBalance,
           availableBalance: data.availableBalance,
           isoCurrencyCode: data.isoCurrencyCode,
+          status: sql`financial_accounts.status`,
           updatedAt: new Date(),
         },
       })
       .returning();
 
     return result;
+  }
+
+  async updateAccountStatus(
+    accountId: number,
+    userId: string,
+    status: "active" | "hidden",
+  ): Promise<FinancialAccount | null> {
+    const [updated] = await db
+      .update(financialAccounts)
+      .set({ status, updatedAt: new Date() })
+      .where(
+        and(
+          eq(financialAccounts.id, accountId),
+          eq(financialAccounts.userId, userId),
+        ),
+      )
+      .returning();
+
+    return updated ?? null;
   }
 
   async deleteAccount(

@@ -72,6 +72,7 @@ billingRoutes.post(
     }
 
     await billingService.changePlan(userPlan.stripeSubscriptionId, planType);
+    await billingService.updateUserPlan(user.id, { planType });
 
     return c.json({ success: true });
   },

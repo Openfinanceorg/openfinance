@@ -12,7 +12,7 @@ import {
   type SQL,
 } from "drizzle-orm";
 import { client, db } from "../db";
-import { transactions } from "../schema";
+import { financialAccounts, transactions } from "../schema";
 import type {
   AmountFilter,
   ApiTransaction,
@@ -93,7 +93,10 @@ class TransactionService {
     userId: string,
     filter?: TransactionFilter,
   ): Promise<ApiTransaction[]> {
-    const conditions: SQL<unknown>[] = [eq(transactions.userId, userId)];
+    const conditions: SQL<unknown>[] = [
+      eq(transactions.userId, userId),
+      sql`${transactions.accountId} NOT IN (SELECT ${financialAccounts.id} FROM ${financialAccounts} WHERE ${financialAccounts.status} = 'hidden' AND ${financialAccounts.userId} = ${userId})`,
+    ];
 
     const statusFilter = filter?.status;
     if (statusFilter && statusFilter.length > 0) {
@@ -246,6 +249,7 @@ class TransactionService {
     account_id, status, created_at, updated_at
   FROM transactions
   WHERE user_id = $1 AND status != 'deleted'
+    AND account_id NOT IN (SELECT id FROM financial_accounts WHERE status = 'hidden' AND user_id = $1)
 )
 ${userSql}`,
           [userId],

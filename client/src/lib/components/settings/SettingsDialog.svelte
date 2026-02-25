@@ -4,8 +4,10 @@
   import Settings2 from "lucide-svelte/icons/settings-2";
   import CreditCard from "lucide-svelte/icons/credit-card";
   import X from "lucide-svelte/icons/x";
+  import Link from "lucide-svelte/icons/link";
   import GeneralTab from "./GeneralTab.svelte";
   import BillingTab from "./BillingTab.svelte";
+  import ConnectionsTab from "./ConnectionsTab.svelte";
   import { loadBillingState } from "$lib/billing-state";
 
   interface Props {
@@ -28,6 +30,10 @@
     {
       label: "General",
       items: [{ id: "general", label: "General", icon: Settings2 }],
+    },
+    {
+      label: "Data",
+      items: [{ id: "connections", label: "Connections", icon: Link }],
     },
     {
       label: "Account",
@@ -94,6 +100,8 @@
         <div class="flex-1 overflow-y-auto px-6 pb-6">
           {#if activeTab === "general"}
             <GeneralTab />
+          {:else if activeTab === "connections"}
+            <ConnectionsTab />
           {:else if activeTab === "billing"}
             <BillingTab />
           {/if}

@@ -14,4 +14,5 @@ export interface ConnectedAccount {
   isSyncing: boolean;
   connectionId: number;
   provider: "plaid" | "mx";
+  status: "active" | "hidden";
 }
