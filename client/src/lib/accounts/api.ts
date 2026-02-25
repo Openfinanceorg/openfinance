@@ -24,6 +24,12 @@ export function deleteAccount(id: number) {
   );
 }
 
+export function deleteUserAccount() {
+  return apiFetch<{ success: boolean }>("/api/me/delete-account", {
+    method: "DELETE",
+  });
+}
+
 export function dismissOnboarding() {
   return apiFetch<{ ok: boolean }>("/api/me/dismiss-onboarding", {
     method: "POST",

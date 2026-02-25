@@ -9,11 +9,15 @@
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "$lib/components/ui/dropdown-menu";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
+  import SettingsDialog from "$lib/components/settings/SettingsDialog.svelte";
 
   const session = authClient.useSession();
+
+  let settingsOpen = $state(false);
 
   function getInitials(name: string | null | undefined): string {
     if (!name?.trim()) return "?";
@@ -42,6 +46,13 @@
   </DropdownMenuTrigger>
   <DropdownMenuContent class="bg-white text-gray-900 border-gray-200">
     <DropdownMenuItem
+      onclick={() => (settingsOpen = true)}
+      class="cursor-pointer"
+    >
+      Settings
+    </DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem
       onclick={() => authClient.signOut()}
       class="cursor-pointer"
     >
@@ -49,3 +60,5 @@
     </DropdownMenuItem>
   </DropdownMenuContent>
 </DropdownMenu>
+
+<SettingsDialog bind:isOpen={settingsOpen} />

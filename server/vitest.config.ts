@@ -14,6 +14,7 @@ export default defineConfig({
         "postgresql://postgres:postgres@localhost:5433/openfin_test",
       STRIPE_SECRET_KEY: "sk_test_fake",
       STRIPE_WEBHOOK_SECRET: "whsec_test_fake",
+      RESEND_API_KEY: "re_test_fake",
     },
     globalSetup: "./src/tests/test-setup.ts",
     pool: "forks",

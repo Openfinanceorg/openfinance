@@ -18,6 +18,7 @@
   import { page } from "$app/state";
   import { replaceState } from "$app/navigation";
   import { toast } from "svelte-sonner";
+  import { Badge } from "$lib/components/ui/badge";
   import type {
     ConnectedAccount,
     InstitutionType,
@@ -160,9 +161,9 @@
         >
           <span class="text-base font-semibold tracking-tight text-gray-800"
             >OpenFinance</span
-          >{#if $billingState && $billingState.planType !== "free"}<span
-              class="ml-1.5 text-[10px] font-medium uppercase tracking-wide border rounded-full px-1.5 py-0.5 text-gray-400 border-gray-300 leading-none"
-              >{$billingState.planType}</span
+          >{#if $billingState && $billingState.planType !== "free"}<Badge
+              variant="pill"
+              class="ml-1.5">{$billingState.planType}</Badge
             >{/if}
         </div>
         <div class="flex-1 flex justify-end">

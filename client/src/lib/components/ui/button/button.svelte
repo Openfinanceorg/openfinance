@@ -15,6 +15,8 @@
         linkBlue:
           "cursor-pointer text-[#007AFF] hover:text-[#0051D5] h-auto min-h-0 font-normal dark:text-[#0A84FF] dark:hover:text-[#409CFF]",
         outline: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+        outlineRed:
+          "border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-neutral-700 text-outline-red shadow-[0_1px_2px_0_rgb(0_0_0_/_0.05)]",
       },
       size: {
         default: "h-10 px-5 py-2.5",

@@ -1,2 +1,6 @@
 @import "tailwindcss";
 @custom-variant dark (&.dark);
+
+@theme {
+  --color-outline-red: #B85C5C;
+}
