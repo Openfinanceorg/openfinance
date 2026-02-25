@@ -12,6 +12,7 @@
   import type { ConnectedAccount } from "@openfinance/shared";
   import DowngradeModal from "./DowngradeModal.svelte";
   import CreditCard from "lucide-svelte/icons/credit-card";
+  import { toast } from "svelte-sonner";
 
   let upgradeLoading = $state<PlanType | null>(null);
   let portalLoading = $state(false);
@@ -58,6 +59,7 @@
       if (isPaid) {
         await changePlan(plan);
         await refreshBillingState();
+        toast.success(`Plan upgraded to ${plan}`);
       } else {
         const { url } = await createCheckoutSession(plan);
         window.location.href = url;
