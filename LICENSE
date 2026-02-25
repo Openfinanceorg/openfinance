@@ -1,0 +1,16 @@
+OpenFinance App is licensed under the GNU Affero General Public License v3.0.
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+You may obtain a copy of the full license text at:
+https://www.gnu.org/licenses/agpl-3.0.txt
+
+Summary:
+- You may run, study, share, and modify this software under AGPLv3 terms.
+- If you modify this software and make it available for users to interact with over a network,
+  you must provide those users access to the corresponding source code of your modified version,
+  as required by AGPLv3 Section 13.
+
+This software is distributed WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
+License for details.

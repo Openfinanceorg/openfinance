@@ -1,5 +1,5 @@
 {
-  "name": "@openfinance/mcp-server",
+  "name": "@openfinance-sh/mcp",
   "version": "0.1.0",
   "type": "module",
   "bin": {
@@ -16,7 +16,11 @@
     "@openfinance/shared": "workspace:*",
     "zod": "^3.24.0"
   },
-  "files": ["build", "manifest.json", "openfinance.mcpb"],
+  "files": [
+    "build",
+    "manifest.json",
+    "openfinance.mcpb"
+  ],
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@anthropic-ai/mcpb": "^2.1.2",

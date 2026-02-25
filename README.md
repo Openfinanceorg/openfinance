@@ -79,3 +79,9 @@ stripe listen --forward-to http://localhost:3000/api/stripe/webhook
 cd server
 npx tsx src/scripts/sync-accounts.ts list <email>
 ```
+
+## Licensing
+
+This project is licensed under `AGPL-3.0-only`.
+
+- See `LICENSE` for the project license.
