@@ -75,6 +75,6 @@ export function formatAccountType(
   type: string,
   subtype: string | null,
 ): string {
-  const display = subtype || type;
+  const display = subtype && subtype.toUpperCase() !== "NONE" ? subtype : type;
   return display.charAt(0).toUpperCase() + display.slice(1).replace(/_/g, " ");
 }

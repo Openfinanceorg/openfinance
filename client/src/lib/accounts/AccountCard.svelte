@@ -40,7 +40,10 @@
   }
 
   const shortName = $derived(() => {
-    const sub = account.subtype || account.type;
+    const sub =
+      account.subtype && account.subtype.toUpperCase() !== "NONE"
+        ? account.subtype
+        : account.type;
     const label = sub.charAt(0).toUpperCase() + sub.slice(1).replace(/_/g, " ");
     return account.mask ? `${label} ····${account.mask}` : label;
   });

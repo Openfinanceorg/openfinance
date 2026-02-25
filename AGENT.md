@@ -20,6 +20,7 @@ pnpm vitest run -t "blocks mutation queries"
 ```
 
 ## How to run scripts
+Write a script manually for testing and execute it from the server directory.
 
 ```sh
 cd server
