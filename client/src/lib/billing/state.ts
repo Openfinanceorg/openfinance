@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { getBillingStatus } from "$lib/billing/api";
+import { getBillingStatus } from "./api";
 import type { BillingStatus } from "@openfinance/shared";
 
 export const billingState = writable<BillingStatus | null>(null);

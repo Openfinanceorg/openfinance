@@ -2,6 +2,7 @@
   import type { ConnectedAccount } from "@openfinance/shared";
   import { fetchAllAccounts, updateAccountStatus } from "$lib/accounts/api";
   import { deleteAccount } from "$lib/accounts/api";
+  import { refreshAccountsState } from "$lib/accounts/state";
   import { formatAccountType } from "$lib/accounts/utils";
   import { Switch } from "$lib/components/ui/switch";
   import { Button } from "$lib/components/ui/button";
@@ -92,6 +93,7 @@
     try {
       await updateAccountStatus(account.id, newStatus);
       account.status = newStatus;
+      refreshAccountsState();
       toast.success(
         newStatus === "hidden"
           ? `${account.name} hidden`
@@ -114,6 +116,7 @@
       toast.success(`${selectedGroup.institutionName} unlinked`);
       selectedGroup = null;
       await loadAccounts();
+      refreshAccountsState();
     } catch {
       toast.error("Failed to unlink institution");
     } finally {

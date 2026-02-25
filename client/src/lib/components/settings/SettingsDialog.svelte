@@ -8,7 +8,7 @@
   import GeneralTab from "./GeneralTab.svelte";
   import BillingTab from "./BillingTab.svelte";
   import ConnectionsTab from "./ConnectionsTab.svelte";
-  import { loadBillingState } from "$lib/billing-state";
+  import { loadBillingState } from "$lib/billing/state";
 
   interface Props {
     isOpen?: boolean;

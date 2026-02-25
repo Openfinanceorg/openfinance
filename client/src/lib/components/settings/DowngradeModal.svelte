@@ -9,7 +9,7 @@
   } from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
   import { changePlan, cancelSubscription } from "$lib/billing/api";
-  import { refreshBillingState } from "$lib/billing-state";
+  import { refreshBillingState } from "$lib/billing/state";
   import { PLAN_LIMITS, PLAN_PRICES, type PlanType } from "@openfinance/shared";
   import type { ConnectedAccount } from "@openfinance/shared";
   import AlertTriangle from "lucide-svelte/icons/triangle-alert";

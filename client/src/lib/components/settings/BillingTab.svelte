@@ -6,8 +6,8 @@
     changePlan,
     createPortalSession,
   } from "$lib/billing/api";
-  import { fetchAccounts } from "$lib/accounts/api";
-  import { billingState, refreshBillingState } from "$lib/billing-state";
+  import { billingState, refreshBillingState } from "$lib/billing/state";
+  import { accountsState } from "$lib/accounts/state";
   import { PLAN_LIMITS, PLAN_PRICES, type PlanType } from "@openfinance/shared";
   import type { ConnectedAccount } from "@openfinance/shared";
   import DowngradeModal from "./DowngradeModal.svelte";
@@ -72,8 +72,7 @@
   }
 
   async function handleDowngradeClick(plan: PlanType) {
-    const data = await fetchAccounts();
-    connections = data.accounts;
+    connections = $accountsState?.accounts ?? [];
     downgradeTarget = plan;
   }
 

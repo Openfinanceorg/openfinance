@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { fetchAccounts } from "$lib/accounts/api";
-import type { ConnectedAccount } from "@openfinance/shared";
+import { refreshAccountsState } from "$lib/accounts/state";
 
 interface SyncStatus {
   syncing: boolean;
@@ -17,14 +17,6 @@ export const syncStatus = writable<SyncStatus>({
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let idlePollCount = 0;
 let dismissTimer: ReturnType<typeof setTimeout> | null = null;
-let onSyncCompleteCallback: ((accounts: ConnectedAccount[]) => void) | null =
-  null;
-
-export function setOnSyncComplete(
-  cb: (accounts: ConnectedAccount[]) => void,
-): void {
-  onSyncCompleteCallback = cb;
-}
 
 export function triggerPoll(): void {
   idlePollCount = 0;
@@ -68,7 +60,7 @@ async function poll(): Promise<void> {
           syncingInstitutions: [],
           completed: true,
         });
-        onSyncCompleteCallback?.(data.accounts);
+        refreshAccountsState();
         dismissTimer = setTimeout(dismiss, 8000);
       }
     }

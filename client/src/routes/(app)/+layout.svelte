@@ -14,7 +14,8 @@
     billingState,
     loadBillingState,
     refreshBillingState,
-  } from "$lib/billing-state";
+  } from "$lib/billing/state";
+  import { loadAccountsState, refreshAccountsState } from "$lib/accounts/state";
   import { page } from "$app/state";
   import { replaceState } from "$app/navigation";
   import { toast } from "svelte-sonner";
@@ -41,10 +42,11 @@
   let upgradeRequiredPlan = $state<Exclude<PlanType, "free">>("plus");
   let hasExistingSubscription = $state(false);
 
-  // Load user state (billing/plan) once session is available
+  // Load user state (billing/plan, accounts) once session is available
   $effect(() => {
     if ($session.data) {
       loadBillingState();
+      loadAccountsState();
     }
   });
 
@@ -86,6 +88,7 @@
   }
 
   function handleAccountLinked() {
+    refreshAccountsState();
     accountLinkedCallback?.();
   }
 
