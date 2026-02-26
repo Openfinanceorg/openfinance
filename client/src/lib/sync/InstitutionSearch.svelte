@@ -18,7 +18,7 @@
   import InstitutionLogo from "./InstitutionLogo.svelte";
   import ProviderLogo from "./ProviderLogo.svelte";
   import type { InstitutionType, SyncProvider } from "@openfinance/shared";
-  import { extractBaseDomain } from "$lib/utils/url";
+  import { extractBaseDomain } from "$lib/url";
 
   const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
     | string

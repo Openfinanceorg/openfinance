@@ -71,12 +71,11 @@
     </DialogHeader>
 
     <div class="py-4">
-      <p class="text-xl font-bold capitalize">{requiredPlan}</p>
-      <p class="mt-1 text-sm text-gray-500">
+      <p class="text-sm text-gray-500">
         Up to {PLAN_LIMITS[requiredPlan]} connected institutions
       </p>
 
-      <p class="mt-4">
+      <p class="mt-3">
         <span class="text-3xl font-bold">${PLAN_PRICES[requiredPlan]}</span>
         <span class="text-sm text-gray-500">/ month</span>
       </p>
