@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "first_mcp_linked_at" timestamp;
