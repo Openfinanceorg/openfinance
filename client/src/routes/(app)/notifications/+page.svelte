@@ -92,10 +92,8 @@
   }
 
   function getInstitutionUrl(n: ApiNotification): string | null {
-    if (n.metadata.type === "transaction_sync") {
-      return n.metadata.institutionUrl;
-    }
-    return null;
+    const meta = n.metadata;
+    return "institutionUrl" in meta ? meta.institutionUrl : null;
   }
 
   function getInstitutionName(n: ApiNotification): string {

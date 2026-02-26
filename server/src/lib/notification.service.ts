@@ -44,7 +44,7 @@ export const notificationService = {
 
     // Look up institution name from connection
     const [institution] = await db
-      .select({ name: institutionRegistry.name })
+      .select({ name: institutionRegistry.name, url: institutionRegistry.url })
       .from(accountConnections)
       .innerJoin(
         institutionRegistry,
@@ -81,6 +81,7 @@ export const notificationService = {
       type: "account_disconnected",
       connectionId,
       institutionName,
+      institutionUrl: institution?.url ?? null,
       ...(errorMessage && { errorMessage }),
     };
 

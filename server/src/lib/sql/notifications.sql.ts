@@ -14,6 +14,7 @@ export type AccountDisconnectedMetadata = {
   type: "account_disconnected";
   connectionId: number;
   institutionName: string;
+  institutionUrl: string | null;
   errorMessage?: string;
 };
 
