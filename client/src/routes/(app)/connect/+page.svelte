@@ -20,8 +20,8 @@
   let codexCopied = $state(false);
   let keyLoaded = $state(false);
 
-  const MCP_PACKAGE_NAME = "@openfinance/mcp-server";
-  const DEFAULT_OPENFINANCE_URL = "http://localhost:3000";
+  const MCP_PACKAGE_NAME = "@openfinance-sh/mcp";
+  const DEFAULT_OPENFINANCE_URL = "https://api.openfinance.sh";
 
   const mcpConfigSnippet = $derived(
     JSON.stringify(
@@ -193,7 +193,7 @@
       <Tabs.Content value="other" class="rounded-lg border border-gray-200 p-4">
         <h3 class="text-sm font-medium text-gray-700 mb-2">Manual config</h3>
         <p class="text-xs text-gray-500 mb-2">
-          Paste into <code>claude_desktop_config.json</code>. Uses
+          Use this MCP server configuration in your MCP client. Uses
           <code>{MCP_PACKAGE_NAME}</code>.
         </p>
         <pre

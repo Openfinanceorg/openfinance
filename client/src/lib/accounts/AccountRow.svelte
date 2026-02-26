@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
   import { isLiabilityGroup } from "./utils";
-  import InstitutionLogo from "./InstitutionLogo.svelte";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
   import Loader2Icon from "@lucide/svelte/icons/loader-2";
   import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 

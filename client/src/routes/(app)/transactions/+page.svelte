@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
   import { fetchAccounts } from "$lib/accounts/api";
-  import InstitutionLogo from "$lib/accounts/InstitutionLogo.svelte";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
   import TransactionsList from "$lib/transactions/TransactionsList.svelte";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";

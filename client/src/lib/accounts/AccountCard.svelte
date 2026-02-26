@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
-  import InstitutionLogo from "./InstitutionLogo.svelte";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
   import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 
   interface Props {

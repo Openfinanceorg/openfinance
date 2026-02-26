@@ -15,7 +15,7 @@
   } from "$lib/components/ui/tooltip";
   import BackButton from "$lib/components/ui/BackButton.svelte";
   import { Badge } from "$lib/components/ui/badge";
-  import InstitutionLogo from "./InstitutionLogo.svelte";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
   import ProviderLogo from "./ProviderLogo.svelte";
   import type { InstitutionType, SyncProvider } from "@openfinance/shared";
   import { extractBaseDomain } from "$lib/url";

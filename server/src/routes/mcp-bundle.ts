@@ -8,7 +8,7 @@ const BUNDLE_PATH = resolve(__dirname, "../../../mcp-server/openfinance.mcpb");
 
 // TODO: Update this once we have a CDN url
 const DEFAULT_CDN_URL =
-  "https://unpkg.com/@openfinance/mcp-server@latest/openfinance.mcpb";
+  "https://unpkg.com/@openfinance-sh/mcp@latest/openfinance.mcpb";
 
 const mcpBundleRoutes = new Hono();
 

@@ -16,6 +16,8 @@
     refreshBillingState,
   } from "$lib/billing/state";
   import { loadAccountsState, refreshAccountsState } from "$lib/accounts/state";
+  import { unreadCount, loadUnreadCount } from "$lib/notifications/state";
+  import Bell from "lucide-svelte/icons/bell";
   import { page } from "$app/state";
   import { replaceState } from "$app/navigation";
   import { toast } from "svelte-sonner";
@@ -47,6 +49,7 @@
     if ($session.data) {
       loadBillingState();
       loadAccountsState();
+      loadUnreadCount();
     }
   });
 
@@ -170,7 +173,21 @@
                 class="ml-1.5">{$billingState.planType}</Badge
               >{/if}
           </div>
-          <div class="flex-1 flex justify-end">
+          <div class="flex-1 flex items-center justify-end gap-3">
+            <a
+              href="/notifications"
+              class="relative p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell class="h-5 w-5" />
+              {#if $unreadCount > 0}
+                <span
+                  class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-medium px-1"
+                >
+                  {$unreadCount > 99 ? "99+" : $unreadCount}
+                </span>
+              {/if}
+            </a>
             <ProfileDropdown />
           </div>
         </header>

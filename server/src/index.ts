@@ -17,6 +17,7 @@ import mcpBundleRoutes from "./routes/mcp-bundle.js";
 import taskRoutes from "./routes/tasks.js";
 import billingRoutes from "./routes/billing.js";
 import stripeWebhookRoutes from "./routes/stripe-webhook.js";
+import notificationRoutes from "./routes/notifications.js";
 
 const app = new Hono();
 
@@ -35,6 +36,7 @@ app.route("/api/mcp-bundle", mcpBundleRoutes);
 app.route("/api/tasks", taskRoutes);
 app.route("/api/billing", billingRoutes);
 app.route("/api/stripe", stripeWebhookRoutes);
+app.route("/api/notifications", notificationRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 

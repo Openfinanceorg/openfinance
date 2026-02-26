@@ -4,7 +4,7 @@
     ConnectedAccount,
     TransactionFilter,
   } from "@openfinance/shared";
-  import InstitutionLogo from "$lib/accounts/InstitutionLogo.svelte";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
   import EmptyAccountsState from "$lib/accounts/EmptyAccountsState.svelte";
   import { fetchTransactions } from "./api";
   import { Spinner } from "$lib/components/ui/spinner";

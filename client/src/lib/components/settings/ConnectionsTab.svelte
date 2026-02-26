@@ -4,7 +4,7 @@
   import { deleteAccount } from "$lib/accounts/api";
   import { refreshAccountsState } from "$lib/accounts/state";
   import { formatAccountType } from "$lib/accounts/utils";
-  import InstitutionLogo from "$lib/accounts/InstitutionLogo.svelte";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
   import { Switch } from "$lib/components/ui/switch";
   import { Button } from "$lib/components/ui/button";
   import {
