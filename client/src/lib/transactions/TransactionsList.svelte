@@ -17,6 +17,7 @@
     accountId?: number;
     accounts?: ConnectedAccount[];
     onAccountClick?: (accountId: number) => void;
+    onAddAccount?: () => void;
   }
 
   let {
@@ -24,6 +25,7 @@
     accountId,
     accounts = [],
     onAccountClick,
+    onAddAccount,
   }: Props = $props();
 
   let transactions = $state<ApiTransaction[]>([]);
@@ -154,7 +156,7 @@
     <Spinner class="size-6 text-gray-400" />
   </div>
 {:else if transactions.length === 0 && accounts.length === 0 && !debouncedSearch && accountId === undefined}
-  <EmptyAccountsState />
+  <EmptyAccountsState {onAddAccount} />
 {:else if transactions.length === 0}
   <p class="text-gray-400 text-sm py-8 text-center">No transactions found.</p>
 {:else}

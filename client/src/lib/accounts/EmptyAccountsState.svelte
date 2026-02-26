@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+  import { Plus } from "lucide-svelte";
+
+  let { onAddAccount }: { onAddAccount?: () => void } = $props();
 </script>
 
 <div class="flex flex-col items-center py-16 px-4">
@@ -32,4 +36,9 @@
       and transactions will appear here once linked.
     </p>
   </div>
+
+  <Button variant="outline" onclick={onAddAccount}>
+    <Plus class="h-4 w-4" />
+    Add account
+  </Button>
 </div>

@@ -30,7 +30,7 @@
   </div>
 
   {#if $accountsState && accounts.length === 0}
-    <EmptyAccountsState />
+    <EmptyAccountsState onAddAccount={openSearch} />
   {:else}
     <AccountList
       {accounts}

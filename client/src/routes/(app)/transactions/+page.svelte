@@ -8,6 +8,9 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Search, ChevronDown } from "lucide-svelte";
   import { page } from "$app/state";
+  import { getLinkContext } from "$lib/sync/link-context";
+
+  const { openSearch } = getLinkContext();
 
   let searchText = $state("");
   let accounts = $state<ConnectedAccount[]>([]);
@@ -120,5 +123,6 @@
     accountId={selectedAccountId}
     {accounts}
     onAccountClick={setSelectedAccount}
+    onAddAccount={openSearch}
   />
 </div>

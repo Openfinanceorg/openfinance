@@ -88,7 +88,7 @@
     {/if}
 
     {#if accounts.length === 0}
-      <EmptyAccountsState />
+      <EmptyAccountsState onAddAccount={openSearch} />
     {:else}
       <section>
         <div class="flex items-center justify-between mb-4">

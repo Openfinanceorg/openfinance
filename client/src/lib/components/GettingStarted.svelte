@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
   import Circle from "lucide-svelte/icons/circle";
   import CircleCheck from "lucide-svelte/icons/circle-check";
@@ -85,11 +86,9 @@
         </div>
       </div>
       {#if !mcpLinked}
-        <a
-          href="/connect"
-          class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
-          >Set up</a
-        >
+        <Button variant="outline" size="sm" onclick={() => goto("/connect")}>
+          Set up
+        </Button>
       {/if}
     </div>
   </div>
