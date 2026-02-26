@@ -49,10 +49,22 @@ async function authenticateApiKey(authHeader: string): Promise<{
       name: userTable.name,
       email: userTable.email,
       image: userTable.image,
+      firstMcpLinkedAt: userTable.firstMcpLinkedAt,
     })
     .from(userTable)
     .where(eq(userTable.id, row.userId))
     .limit(1);
+
+  // Set firstMcpLinkedAt if not already set (fire-and-forget)
+  if (u && !u.firstMcpLinkedAt) {
+    db.update(userTable)
+      .set({ firstMcpLinkedAt: new Date() })
+      .where(eq(userTable.id, u.id))
+      .then(
+        () => {},
+        () => {},
+      );
+  }
 
   if (!u) return null;
   return u;

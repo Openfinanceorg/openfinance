@@ -2,6 +2,7 @@ import { apiFetch } from "$lib/api-client";
 
 export interface ApiKey {
   id: number;
+  key: string | null;
   prefix: string;
   name: string | null;
   createdAt: string;

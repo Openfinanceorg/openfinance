@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { requireAuth, type AuthEnv } from "../lib/middleware";
 import { financialAccountService } from "../lib/financial-account.service";
 import { db } from "../db";
-import { apiKeys, user as userTable } from "../schema";
-import { eq, isNotNull } from "drizzle-orm";
+import { user as userTable } from "../schema";
+import { eq } from "drizzle-orm";
 
 const accountRoutes = new Hono<AuthEnv>();
 
@@ -22,27 +22,19 @@ accountRoutes.get("/", async (c) => {
   );
 
   // Fetch onboarding state
-  const [[mcpRow], [userRow]] = await Promise.all([
-    db
-      .select({ lastUsedAt: apiKeys.lastUsedAt })
-      .from(apiKeys)
-      .where(
-        eq(apiKeys.userId, user.id),
-      )
-      .limit(1),
-    db
-      .select({
-        firstAccountConnectedAt: userTable.firstAccountConnectedAt,
-        onboardingDismissedAt: userTable.onboardingDismissedAt,
-      })
-      .from(userTable)
-      .where(eq(userTable.id, user.id))
-      .limit(1),
-  ]);
+  const [userRow] = await db
+    .select({
+      firstAccountConnectedAt: userTable.firstAccountConnectedAt,
+      firstMcpLinkedAt: userTable.firstMcpLinkedAt,
+      onboardingDismissedAt: userTable.onboardingDismissedAt,
+    })
+    .from(userTable)
+    .where(eq(userTable.id, user.id))
+    .limit(1);
 
   const onboarding = {
     accountConnected: userRow?.firstAccountConnectedAt != null,
-    mcpLinked: mcpRow?.lastUsedAt != null,
+    mcpLinked: userRow?.firstMcpLinkedAt != null,
     dismissed: userRow?.onboardingDismissedAt != null,
   };
 

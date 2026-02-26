@@ -21,6 +21,15 @@ export type {
 
 export type { ConnectedAccount } from "./types/account.js";
 
+export type {
+  ApiNotification,
+  GetNotificationsResponse,
+  NotificationFilter,
+  NotificationMetadata,
+  AccountDisconnectedMetadata,
+  TransactionSyncMetadata,
+} from "./types/notification.js";
+
 export {
   PLAN_TYPES,
   PLAN_LIMITS,

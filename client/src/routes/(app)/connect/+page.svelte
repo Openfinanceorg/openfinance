@@ -18,20 +18,25 @@
   let keyError = $state<string | null>(null);
   let keyCopied = $state(false);
   let codexCopied = $state(false);
+  let configCopied = $state(false);
   let keyLoaded = $state(false);
 
   const MCP_PACKAGE_NAME = "@openfinance-sh/mcp";
   const DEFAULT_OPENFINANCE_URL = "https://api.openfinance.sh";
 
-  const mcpConfigSnippet = $derived(
-    JSON.stringify(
+  const maskedKey = $derived(
+    fullKey ? fullKey.slice(0, 5) + "..." + fullKey.slice(-6) : "sk-...",
+  );
+
+  function buildMcpConfig(key: string) {
+    return JSON.stringify(
       {
         mcpServers: {
           openfinance: {
             command: "npx",
             args: ["-y", MCP_PACKAGE_NAME],
             env: {
-              OPENFINANCE_API_KEY: fullKey ?? "sk-...",
+              OPENFINANCE_API_KEY: key,
               OPENFINANCE_URL: DEFAULT_OPENFINANCE_URL,
             },
           },
@@ -39,10 +44,18 @@
       },
       null,
       2,
-    ),
-  );
+    );
+  }
 
-  const codexCommand = `codex mcp add openfinance -e OPENFINANCE_API_KEY=sk-... -e OPENFINANCE_URL=${DEFAULT_OPENFINANCE_URL} -- npx -y ${MCP_PACKAGE_NAME}`;
+  const mcpConfigSnippet = $derived(buildMcpConfig(fullKey ?? "sk-..."));
+  const displayMcpConfigSnippet = $derived(buildMcpConfig(maskedKey));
+
+  function buildCodexCommand(key: string) {
+    return `codex mcp add openfinance -e OPENFINANCE_API_KEY=${key} -e OPENFINANCE_URL=${DEFAULT_OPENFINANCE_URL} -- npx -y ${MCP_PACKAGE_NAME}`;
+  }
+
+  const codexCommand = $derived(buildCodexCommand(fullKey ?? "sk-..."));
+  const displayCodexCommand = $derived(buildCodexCommand(maskedKey));
 
   // Load existing key on mount
   $effect(() => {
@@ -53,6 +66,9 @@
     try {
       const { key } = await getApiKey();
       existingKey = key;
+      if (key?.key) {
+        fullKey = key.key;
+      }
     } catch {
       // ignore
     } finally {
@@ -80,6 +96,7 @@
       fullKey = created.key;
       existingKey = {
         id: created.id,
+        key: null,
         prefix: created.prefix,
         name: created.name,
         createdAt: created.createdAt,
@@ -104,6 +121,12 @@
     await navigator.clipboard.writeText(codexCommand);
     codexCopied = true;
     setTimeout(() => (codexCopied = false), 2000);
+  }
+
+  async function handleCopyConfig() {
+    await navigator.clipboard.writeText(mcpConfigSnippet);
+    configCopied = true;
+    setTimeout(() => (configCopied = false), 2000);
   }
 </script>
 
@@ -183,22 +206,30 @@
         </div>
         <pre
           class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
-            >{codexCommand}</code
+            >{displayCodexCommand}</code
           ></pre>
-        <p class="text-xs text-gray-500 mt-2">
-          Replace <code>sk-...</code> with your API key.
-        </p>
+        {#if !fullKey}
+          <p class="text-xs text-gray-500 mt-2">
+            Replace <code>sk-...</code> with your API key.
+          </p>
+        {/if}
       </Tabs.Content>
 
       <Tabs.Content value="other" class="rounded-lg border border-gray-200 p-4">
-        <h3 class="text-sm font-medium text-gray-700 mb-2">Manual config</h3>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-medium text-gray-700">Manual config</h3>
+          <Button variant="secondary" size="sm" onclick={handleCopyConfig}>
+            <Copy class="h-3.5 w-3.5 mr-1" />
+            {configCopied ? "Copied" : "Copy config"}
+          </Button>
+        </div>
         <p class="text-xs text-gray-500 mb-2">
           Use this MCP server configuration in your MCP client. Uses
           <code>{MCP_PACKAGE_NAME}</code>.
         </p>
         <pre
           class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
-            >{mcpConfigSnippet}</code
+            >{displayMcpConfigSnippet}</code
           ></pre>
       </Tabs.Content>
     </Tabs.Root>
