@@ -3,7 +3,7 @@
   import { fetchAllAccounts, updateAccountStatus } from "$lib/accounts/api";
   import { deleteAccount } from "$lib/accounts/api";
   import { refreshAccountsState } from "$lib/accounts/state";
-  import { formatAccountType } from "$lib/accounts/utils";
+  import { formatAccountType, getAccountLogoUrl } from "$lib/accounts/utils";
   import { Switch } from "$lib/components/ui/switch";
   import { Button } from "$lib/components/ui/button";
   import {
@@ -32,10 +32,6 @@
   let unlinking = $state(false);
   let togglingId = $state<number | null>(null);
 
-  const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
-    | string
-    | undefined;
-
   const groups = $derived.by(() => {
     const map = new Map<number, InstitutionGroup>();
     for (const account of accounts) {
@@ -53,19 +49,6 @@
     }
     return [...map.values()];
   });
-
-  function getLogoUrl(institutionUrl: string | null): string | null {
-    if (!logoDevKey || !institutionUrl) return null;
-    try {
-      const url = institutionUrl.startsWith("http")
-        ? institutionUrl
-        : `https://${institutionUrl}`;
-      const domain = new URL(url).hostname;
-      return `https://img.logo.dev/${domain}?token=${logoDevKey}&size=64&format=png`;
-    } catch {
-      return null;
-    }
-  }
 
   function formatBalance(balance: string | null, currency: string | null) {
     if (!balance) return "--";
@@ -148,9 +131,9 @@
     </button>
 
     <div class="flex items-center gap-3">
-      {#if getLogoUrl(selectedGroup.institutionUrl)}
+      {#if getAccountLogoUrl(selectedGroup.institutionUrl)}
         <img
-          src={getLogoUrl(selectedGroup.institutionUrl)}
+          src={getAccountLogoUrl(selectedGroup.institutionUrl)}
           alt={selectedGroup.institutionName}
           class="w-8 h-8 rounded-lg object-contain"
         />
@@ -274,9 +257,9 @@
           class="w-full flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
           onclick={() => (selectedGroup = group)}
         >
-          {#if getLogoUrl(group.institutionUrl)}
+          {#if getAccountLogoUrl(group.institutionUrl)}
             <img
-              src={getLogoUrl(group.institutionUrl)}
+              src={getAccountLogoUrl(group.institutionUrl)}
               alt={group.institutionName}
               class="w-9 h-9 rounded-lg object-contain flex-shrink-0"
             />

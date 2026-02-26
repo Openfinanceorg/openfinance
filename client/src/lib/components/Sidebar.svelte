@@ -2,11 +2,13 @@
   import { page } from "$app/stores";
   import House from "lucide-svelte/icons/house";
   import Wallet from "lucide-svelte/icons/wallet";
+  import ArrowLeftRight from "lucide-svelte/icons/arrow-left-right";
   import Plug from "lucide-svelte/icons/plug";
 
   const navItems = [
     { href: "/", label: "Home", icon: House },
     { href: "/accounts", label: "Accounts", icon: Wallet },
+    { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
     { href: "/connect", label: "Connect", icon: Plug },
   ];
 

@@ -36,7 +36,11 @@
 <section>
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-base font-semibold text-gray-700">Recent transactions</h2>
-    <span class="text-xs text-gray-400">See all</span>
+    <a
+      href="/transactions"
+      class="text-xs text-gray-600 hover:text-gray-900 underline underline-offset-2"
+      >View all</a
+    >
   </div>
 
   {#if loading}

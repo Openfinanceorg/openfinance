@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
+  import { getAccountLogoUrl } from "./utils";
   import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 
   interface Props {
@@ -9,21 +10,7 @@
 
   let { account, onReauth = undefined }: Props = $props();
 
-  const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
-    | string
-    | undefined;
-  const logoUrl = $derived.by(() => {
-    if (!logoDevKey || !account.institutionUrl) return null;
-    try {
-      const url = account.institutionUrl.startsWith("http")
-        ? account.institutionUrl
-        : `https://${account.institutionUrl}`;
-      const domain = new URL(url).hostname;
-      return `https://img.logo.dev/${domain}?token=${logoDevKey}&size=64&format=png`;
-    } catch {
-      return null;
-    }
-  });
+  const logoUrl = $derived(getAccountLogoUrl(account.institutionUrl));
 
   function formatBalance(
     balance: string | null,

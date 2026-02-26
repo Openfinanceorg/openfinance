@@ -78,3 +78,22 @@ export function formatAccountType(
   const display = subtype && subtype.toUpperCase() !== "NONE" ? subtype : type;
   return display.charAt(0).toUpperCase() + display.slice(1).replace(/_/g, " ");
 }
+
+export function getAccountLogoUrl(
+  institutionUrl: string | null,
+  size: number = 64,
+): string | null {
+  const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
+    | string
+    | undefined;
+  if (!logoDevKey || !institutionUrl) return null;
+  try {
+    const url = institutionUrl.startsWith("http")
+      ? institutionUrl
+      : `https://${institutionUrl}`;
+    const domain = new URL(url).hostname;
+    return `https://img.logo.dev/${domain}?token=${logoDevKey}&size=${size}&format=png`;
+  } catch {
+    return null;
+  }
+}

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
-  import { formatBalance, isLiabilityGroup } from "./utils";
+  import { getAccountLogoUrl, isLiabilityGroup } from "./utils";
   import Loader2Icon from "@lucide/svelte/icons/loader-2";
   import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 
@@ -18,22 +18,7 @@
     isConnectorLoading = false,
   }: Props = $props();
 
-  const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
-    | string
-    | undefined;
-
-  const logoUrl = $derived.by(() => {
-    if (!logoDevKey || !account.institutionUrl) return null;
-    try {
-      const url = account.institutionUrl.startsWith("http")
-        ? account.institutionUrl
-        : `https://${account.institutionUrl}`;
-      const domain = new URL(url).hostname;
-      return `https://img.logo.dev/${domain}?token=${logoDevKey}&size=64&format=png`;
-    } catch {
-      return null;
-    }
-  });
+  const logoUrl = $derived(getAccountLogoUrl(account.institutionUrl));
 
   const isLiability = $derived(isLiabilityGroup(groupKey));
 
@@ -46,7 +31,6 @@
       currency: account.isoCurrencyCode || "USD",
     }).format(value);
   });
-
 </script>
 
 {#snippet syncErrorReconnect()}

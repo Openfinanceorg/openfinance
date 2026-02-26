@@ -156,25 +156,31 @@
     onProviderSelect={handleProviderSelect}
   />
 
-  <div class="min-h-screen bg-white">
+  <div class="h-screen overflow-y-auto bg-white">
+    <div class="sticky top-0 z-10 bg-white">
+      <div class="max-w-6xl mx-auto px-8">
+        <header class="flex items-center py-6">
+          <div
+            class="w-48 shrink-0 text-center inline-flex items-center justify-center"
+          >
+            <span class="text-base font-semibold tracking-tight text-gray-800"
+              >OpenFinance</span
+            >{#if $billingState && $billingState.planType !== "free"}<Badge
+                variant="pill"
+                class="ml-1.5">{$billingState.planType}</Badge
+              >{/if}
+          </div>
+          <div class="flex-1 flex justify-end">
+            <ProfileDropdown />
+          </div>
+        </header>
+      </div>
+    </div>
     <div class="max-w-6xl mx-auto px-8">
-      <header class="flex items-center py-6">
-        <div
-          class="w-48 shrink-0 text-center inline-flex items-center justify-center"
-        >
-          <span class="text-base font-semibold tracking-tight text-gray-800"
-            >OpenFinance</span
-          >{#if $billingState && $billingState.planType !== "free"}<Badge
-              variant="pill"
-              class="ml-1.5">{$billingState.planType}</Badge
-            >{/if}
-        </div>
-        <div class="flex-1 flex justify-end">
-          <ProfileDropdown />
-        </div>
-      </header>
       <div class="flex gap-12">
-        <Sidebar />
+        <div class="w-48 shrink-0 self-start sticky top-[84px]">
+          <Sidebar />
+        </div>
         <main class="flex-1 min-w-0">
           {@render children()}
         </main>
