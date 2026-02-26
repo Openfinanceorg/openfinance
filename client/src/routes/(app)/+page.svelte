@@ -12,6 +12,7 @@
   import { fetchTasks, type Task } from "$lib/tasks/api";
   import { Plus } from "lucide-svelte";
   import { authClient } from "$lib/auth-client";
+  import { goto } from "$app/navigation";
 
   const session = authClient.useSession();
   const { openSearch, onAccountLinked, triggerReauth } = getLinkContext();
@@ -69,6 +70,10 @@
     const account = accounts.find((a) => a.id === accountId);
     if (account) triggerReauth(account);
   }
+
+  function handleAccountClick(accountId: number) {
+    goto(`/transactions?accountId=${accountId}`);
+  }
 </script>
 
 <div class="max-w-4xl mx-auto px-8 pt-2 space-y-8">
@@ -98,7 +103,11 @@
             add account
           </Button>
         </div>
-        <AccountCarousel {accounts} onReauth={triggerReauth} />
+        <AccountCarousel
+          {accounts}
+          onReauth={triggerReauth}
+          onAccountClick={handleAccountClick}
+        />
       </section>
 
       <Tasks {tasks} onReconnect={handleReconnect} />

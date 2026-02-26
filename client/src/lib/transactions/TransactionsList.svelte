@@ -182,7 +182,7 @@
                 </div>
                 {#if account && onAccountClick}
                   <div
-                    class="flex items-center gap-1.5 min-w-0 pl-2 ml-2 border-l border-gray-200 cursor-pointer hover:bg-gray-50 rounded pr-1.5 -ml-1 -mr-1"
+                    class="flex items-center gap-1.5 min-w-0 ml-2 cursor-pointer hover:bg-gray-100 rounded-md px-1.5 py-0.5"
                     role="button"
                     tabindex="0"
                     onclick={(e) => {

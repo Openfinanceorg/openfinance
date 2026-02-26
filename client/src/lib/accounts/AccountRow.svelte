@@ -10,6 +10,7 @@
     groupKey: string;
     onReauth?: (account: ConnectedAccount) => void;
     isConnectorLoading?: boolean;
+    onClick?: (accountId: number) => void;
   }
 
   let {
@@ -17,6 +18,7 @@
     groupKey,
     onReauth = undefined,
     isConnectorLoading = false,
+    onClick = undefined,
   }: Props = $props();
 
   const isLiability = $derived(isLiabilityGroup(groupKey));
@@ -35,7 +37,8 @@
 {#snippet syncErrorReconnect()}
   <button
     class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
-    onclick={() => {
+    onclick={(e) => {
+      e.stopPropagation();
       if (!isConnectorLoading) onReauth?.(account);
     }}
     disabled={isConnectorLoading}
@@ -52,7 +55,16 @@
 <div
   class="group flex items-center gap-3 py-2.5 px-1 rounded-lg {account.syncError
     ? 'bg-red-50'
-    : ''}"
+    : ''} cursor-pointer"
+  role="button"
+  tabindex="0"
+  onclick={() => onClick?.(account.id)}
+  onkeydown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick?.(account.id);
+    }
+  }}
 >
   <div class="relative flex-shrink-0">
     <InstitutionLogo

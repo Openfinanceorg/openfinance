@@ -5,6 +5,7 @@
   import { accountsState, refreshAccountsState } from "$lib/accounts/state";
   import { getLinkContext } from "$lib/sync/link-context";
   import { Plus } from "lucide-svelte";
+  import { goto } from "$app/navigation";
 
   const { openSearch, triggerReauth, onAccountLinked } = getLinkContext();
 
@@ -13,6 +14,10 @@
   });
 
   let accounts = $derived($accountsState?.accounts ?? []);
+
+  function handleAccountClick(accountId: number) {
+    goto(`/transactions?accountId=${accountId}`);
+  }
 </script>
 
 <div class="max-w-4xl mx-auto px-8 pt-2">
@@ -27,6 +32,10 @@
   {#if $accountsState && accounts.length === 0}
     <EmptyAccountsState />
   {:else}
-    <AccountList {accounts} onReauth={triggerReauth} />
+    <AccountList
+      {accounts}
+      onReauth={triggerReauth}
+      onAccountClick={handleAccountClick}
+    />
   {/if}
 </div>

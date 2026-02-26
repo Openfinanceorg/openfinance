@@ -6,9 +6,10 @@
   interface Props {
     account: ConnectedAccount;
     onReauth?: (account: ConnectedAccount) => void;
+    onClick?: (accountId: number) => void;
   }
 
-  let { account, onReauth = undefined }: Props = $props();
+  let { account, onReauth = undefined, onClick = undefined }: Props = $props();
 
   function formatBalance(
     balance: string | null,
@@ -37,7 +38,16 @@
 <div
   class="rounded-2xl p-5 w-[200px] flex flex-col justify-between h-[140px] {account.syncError
     ? 'bg-red-50'
-    : 'bg-gray-100'}"
+    : 'bg-gray-100'} cursor-pointer"
+  role="button"
+  tabindex="0"
+  onclick={() => onClick?.(account.id)}
+  onkeydown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick?.(account.id);
+    }
+  }}
 >
   <div class="flex items-center gap-2.5">
     <InstitutionLogo
@@ -53,7 +63,10 @@
     {#if account.syncError}
       <button
         class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
-        onclick={() => onReauth?.(account)}
+        onclick={(e) => {
+          e.stopPropagation();
+          onReauth?.(account);
+        }}
       >
         <AlertTriangleIcon class="w-3.5 h-3.5" />
         Reconnect

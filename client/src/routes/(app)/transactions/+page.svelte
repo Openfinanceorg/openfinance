@@ -7,16 +7,38 @@
   import { Button } from "$lib/components/ui/button";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Search, ChevronDown } from "lucide-svelte";
+  import { page } from "$app/state";
 
   let searchText = $state("");
-  let selectedAccountId = $state<number | undefined>(undefined);
   let accounts = $state<ConnectedAccount[]>([]);
+  let accountsLoaded = $state(false);
+  let selectedAccountId = $state<number | undefined>(undefined);
 
   $effect(() => {
-    fetchAccounts().then((data) => {
-      accounts = data.accounts;
-    });
+    fetchAccounts()
+      .then((data) => {
+        accounts = data.accounts;
+      })
+      .finally(() => {
+        accountsLoaded = true;
+      });
   });
+
+  // Read accountId from URL once after accounts load (for deep-linking)
+  $effect(() => {
+    if (!accountsLoaded) return;
+    const raw = page.url.searchParams.get("accountId");
+    if (raw) {
+      const parsed = Number.parseInt(raw, 10);
+      if (!Number.isNaN(parsed) && accounts.some((a) => a.id === parsed)) {
+        selectedAccountId = parsed;
+      }
+    }
+  });
+
+  function setSelectedAccount(accountId: number | undefined) {
+    selectedAccountId = accountId;
+  }
 
   let selectedAccount = $derived(
     selectedAccountId !== undefined
@@ -67,14 +89,14 @@
           {/snippet}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end">
-          <DropdownMenu.Item onclick={() => (selectedAccountId = undefined)}>
+          <DropdownMenu.Item onclick={() => setSelectedAccount(undefined)}>
             All accounts
           </DropdownMenu.Item>
           {#if accounts.length > 0}
             <DropdownMenu.Separator />
             {#each accounts as account}
               <DropdownMenu.Item
-                onclick={() => (selectedAccountId = account.id)}
+                onclick={() => setSelectedAccount(account.id)}
                 class="flex items-center gap-2"
               >
                 <InstitutionLogo
@@ -97,6 +119,6 @@
     {searchText}
     accountId={selectedAccountId}
     {accounts}
-    onAccountClick={(id) => (selectedAccountId = id)}
+    onAccountClick={setSelectedAccount}
   />
 </div>

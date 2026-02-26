@@ -9,9 +9,14 @@
   interface Props {
     accounts: ConnectedAccount[];
     onReauth?: (account: ConnectedAccount) => void;
+    onAccountClick?: (accountId: number) => void;
   }
 
-  let { accounts, onReauth = undefined }: Props = $props();
+  let {
+    accounts,
+    onReauth = undefined,
+    onAccountClick = undefined,
+  }: Props = $props();
 
   let emblaApi: EmblaCarouselType | undefined = $state();
   let canScrollPrev = $state(false);
@@ -43,7 +48,7 @@
     <div class="flex gap-4 px-8">
       {#each accounts as account (account.id)}
         <div class="flex-shrink-0">
-          <AccountCard {account} {onReauth} />
+          <AccountCard {account} {onReauth} onClick={onAccountClick} />
         </div>
       {/each}
     </div>

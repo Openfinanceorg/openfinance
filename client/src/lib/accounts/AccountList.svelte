@@ -7,12 +7,14 @@
     accounts: ConnectedAccount[];
     onReauth?: (account: ConnectedAccount) => void;
     isConnectorLoading?: boolean;
+    onAccountClick?: (accountId: number) => void;
   }
 
   let {
     accounts,
     onReauth = undefined,
     isConnectorLoading = false,
+    onAccountClick = undefined,
   }: Props = $props();
 
   const groups = $derived(groupAccounts(accounts));
@@ -34,6 +36,7 @@
             groupKey={group.key}
             {onReauth}
             {isConnectorLoading}
+            onClick={onAccountClick}
           />
         {/each}
       </div>
