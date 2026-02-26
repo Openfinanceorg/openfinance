@@ -44,6 +44,7 @@ export const notifications = pgTable(
     title: text("title").notNull(),
     metadata: jsonb("metadata").notNull().$type<NotificationMetadata>(),
     sentAt: timestamp("sent_at").notNull().defaultNow(),
+    readAt: timestamp("read_at"),
   },
   (table) => ({
     dedupIdx: index("idx_notifications_dedup").on(table.userId, table.sentAt),

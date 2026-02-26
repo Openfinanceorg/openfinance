@@ -71,6 +71,13 @@
       "when": 1771904958428,
       "tag": "0009_quick_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1772076832895,
+      "tag": "0010_easy_energizer",
+      "breakpoints": true
     }
   ]
 }
