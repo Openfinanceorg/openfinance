@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
-  import { getAccountLogoUrl, isLiabilityGroup } from "./utils";
+  import { isLiabilityGroup } from "./utils";
+  import InstitutionLogo from "./InstitutionLogo.svelte";
   import Loader2Icon from "@lucide/svelte/icons/loader-2";
   import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 
@@ -17,8 +18,6 @@
     onReauth = undefined,
     isConnectorLoading = false,
   }: Props = $props();
-
-  const logoUrl = $derived(getAccountLogoUrl(account.institutionUrl));
 
   const isLiability = $derived(isLiabilityGroup(groupKey));
 
@@ -55,20 +54,12 @@
     ? 'bg-red-50'
     : ''}"
 >
-  <div
-    class="relative flex-shrink-0 w-9 h-9 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center"
-  >
-    {#if logoUrl}
-      <img
-        src={logoUrl}
-        alt={account.institutionName}
-        class="w-full h-full object-contain"
-      />
-    {:else}
-      <span class="text-gray-500 font-medium text-sm" aria-hidden="true">
-        {account.institutionName.charAt(0).toUpperCase()}
-      </span>
-    {/if}
+  <div class="relative flex-shrink-0">
+    <InstitutionLogo
+      institutionUrl={account.institutionUrl}
+      institutionName={account.institutionName}
+      size="lg"
+    />
     {#if account.isSyncing}
       <div
         class="absolute inset-0 flex items-center justify-center bg-white/70 rounded-lg"

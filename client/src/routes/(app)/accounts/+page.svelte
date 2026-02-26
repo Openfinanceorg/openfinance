@@ -27,9 +27,6 @@
   {#if $accountsState && accounts.length === 0}
     <EmptyAccountsState />
   {:else}
-    <AccountList
-      {accounts}
-      onReauth={triggerReauth}
-    />
+    <AccountList {accounts} onReauth={triggerReauth} />
   {/if}
 </div>

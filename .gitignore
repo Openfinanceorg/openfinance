@@ -6,3 +6,4 @@ client-dist
 .env
 *.local
 .DS_Store
+tmp

@@ -3,7 +3,8 @@
   import { fetchAllAccounts, updateAccountStatus } from "$lib/accounts/api";
   import { deleteAccount } from "$lib/accounts/api";
   import { refreshAccountsState } from "$lib/accounts/state";
-  import { formatAccountType, getAccountLogoUrl } from "$lib/accounts/utils";
+  import { formatAccountType } from "$lib/accounts/utils";
+  import InstitutionLogo from "$lib/accounts/InstitutionLogo.svelte";
   import { Switch } from "$lib/components/ui/switch";
   import { Button } from "$lib/components/ui/button";
   import {
@@ -131,21 +132,11 @@
     </button>
 
     <div class="flex items-center gap-3">
-      {#if getAccountLogoUrl(selectedGroup.institutionUrl)}
-        <img
-          src={getAccountLogoUrl(selectedGroup.institutionUrl)}
-          alt={selectedGroup.institutionName}
-          class="w-8 h-8 rounded-lg object-contain"
-        />
-      {:else}
-        <div
-          class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center"
-        >
-          <span class="text-gray-500 font-medium text-sm">
-            {selectedGroup.institutionName.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      {/if}
+      <InstitutionLogo
+        institutionUrl={selectedGroup.institutionUrl}
+        institutionName={selectedGroup.institutionName}
+        size="md"
+      />
       <h3 class="text-sm font-semibold text-gray-900">
         {selectedGroup.institutionName}
       </h3>
@@ -257,21 +248,11 @@
           class="w-full flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
           onclick={() => (selectedGroup = group)}
         >
-          {#if getAccountLogoUrl(group.institutionUrl)}
-            <img
-              src={getAccountLogoUrl(group.institutionUrl)}
-              alt={group.institutionName}
-              class="w-9 h-9 rounded-lg object-contain flex-shrink-0"
-            />
-          {:else}
-            <div
-              class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0"
-            >
-              <span class="text-gray-500 font-medium text-sm">
-                {group.institutionName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          {/if}
+          <InstitutionLogo
+            institutionUrl={group.institutionUrl}
+            institutionName={group.institutionName}
+            size="lg"
+          />
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-900 truncate">
               {group.institutionName}

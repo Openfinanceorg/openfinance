@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
   import { fetchAccounts } from "$lib/accounts/api";
-  import { getAccountLogoUrl } from "$lib/accounts/utils";
+  import InstitutionLogo from "$lib/accounts/InstitutionLogo.svelte";
   import TransactionsList from "$lib/transactions/TransactionsList.svelte";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -56,27 +56,10 @@
               {...props}
             >
               {#if selectedAccount}
-                <span
-                  class="w-5 h-5 rounded flex-shrink-0 overflow-hidden bg-gray-100 flex items-center justify-center"
-                >
-                  {#if getAccountLogoUrl(selectedAccount.institutionUrl, 32)}
-                    <img
-                      src={getAccountLogoUrl(
-                        selectedAccount.institutionUrl,
-                        32,
-                      )!}
-                      alt=""
-                      class="w-full h-full object-contain"
-                    />
-                  {:else}
-                    <span
-                      class="text-gray-500 font-medium text-xs"
-                      aria-hidden="true"
-                    >
-                      {selectedAccount.institutionName.charAt(0).toUpperCase()}
-                    </span>
-                  {/if}
-                </span>
+                <InstitutionLogo
+                  institutionUrl={selectedAccount.institutionUrl}
+                  institutionName={selectedAccount.institutionName}
+                />
               {/if}
               <span>{selectedAccountLabel}</span>
               <ChevronDown class="ml-0.5 h-3.5 w-3.5 text-gray-400" />
@@ -94,24 +77,10 @@
                 onclick={() => (selectedAccountId = account.id)}
                 class="flex items-center gap-2"
               >
-                <span
-                  class="w-5 h-5 rounded flex-shrink-0 overflow-hidden bg-gray-100 flex items-center justify-center"
-                >
-                  {#if getAccountLogoUrl(account.institutionUrl, 32)}
-                    <img
-                      src={getAccountLogoUrl(account.institutionUrl, 32)!}
-                      alt=""
-                      class="w-full h-full object-contain"
-                    />
-                  {:else}
-                    <span
-                      class="text-gray-500 font-medium text-xs"
-                      aria-hidden="true"
-                    >
-                      {account.institutionName.charAt(0).toUpperCase()}
-                    </span>
-                  {/if}
-                </span>
+                <InstitutionLogo
+                  institutionUrl={account.institutionUrl}
+                  institutionName={account.institutionName}
+                />
                 <span>{account.name}</span>
                 {#if account.mask}
                   <span class="text-gray-400 ml-1">...{account.mask}</span>

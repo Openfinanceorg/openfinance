@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ConnectedAccount } from "@openfinance/shared";
-  import { getAccountLogoUrl } from "./utils";
+  import InstitutionLogo from "./InstitutionLogo.svelte";
   import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 
   interface Props {
@@ -9,8 +9,6 @@
   }
 
   let { account, onReauth = undefined }: Props = $props();
-
-  const logoUrl = $derived(getAccountLogoUrl(account.institutionUrl));
 
   function formatBalance(
     balance: string | null,
@@ -42,21 +40,12 @@
     : 'bg-gray-100'}"
 >
   <div class="flex items-center gap-2.5">
-    <div
-      class="w-8 h-8 rounded-full overflow-hidden bg-white flex items-center justify-center flex-shrink-0"
-    >
-      {#if logoUrl}
-        <img
-          src={logoUrl}
-          alt={account.institutionName}
-          class="w-full h-full object-contain"
-        />
-      {:else}
-        <span class="text-gray-500 font-medium text-sm" aria-hidden="true">
-          {account.institutionName.charAt(0).toUpperCase()}
-        </span>
-      {/if}
-    </div>
+    <InstitutionLogo
+      institutionUrl={account.institutionUrl}
+      institutionName={account.institutionName}
+      size="md"
+      class="rounded-full bg-white"
+    />
     <p class="text-sm font-medium text-gray-900 truncate">{account.name}</p>
   </div>
   <div>

@@ -4,7 +4,8 @@
     ConnectedAccount,
     TransactionFilter,
   } from "@openfinance/shared";
-  import { getAccountLogoUrl } from "$lib/accounts/utils";
+  import InstitutionLogo from "$lib/accounts/InstitutionLogo.svelte";
+  import EmptyAccountsState from "$lib/accounts/EmptyAccountsState.svelte";
   import { fetchTransactions } from "./api";
   import { Spinner } from "$lib/components/ui/spinner";
   import { cn } from "$lib/utils";
@@ -152,6 +153,8 @@
   <div class="flex justify-center py-12">
     <Spinner class="size-6 text-gray-400" />
   </div>
+{:else if transactions.length === 0 && accounts.length === 0 && !debouncedSearch && accountId === undefined}
+  <EmptyAccountsState />
 {:else if transactions.length === 0}
   <p class="text-gray-400 text-sm py-8 text-center">No transactions found.</p>
 {:else}
@@ -194,24 +197,10 @@
                       }
                     }}
                   >
-                    <span
-                      class="w-5 h-5 rounded flex-shrink-0 overflow-hidden bg-gray-100 flex items-center justify-center"
-                    >
-                      {#if getAccountLogoUrl(account.institutionUrl, 24)}
-                        <img
-                          src={getAccountLogoUrl(account.institutionUrl, 24)!}
-                          alt=""
-                          class="w-full h-full object-contain"
-                        />
-                      {:else}
-                        <span
-                          class="text-gray-500 font-medium text-xs"
-                          aria-hidden="true"
-                        >
-                          {account.institutionName.charAt(0).toUpperCase()}
-                        </span>
-                      {/if}
-                    </span>
+                    <InstitutionLogo
+                      institutionUrl={account.institutionUrl}
+                      institutionName={account.institutionName}
+                    />
                     <span class="text-xs text-gray-600 truncate">
                       {account.name}
                     </span>
