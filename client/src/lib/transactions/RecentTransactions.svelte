@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ApiTransaction } from "@openfinance/shared";
   import { fetchTransactions } from "./api";
+  import { syncStatus } from "$lib/sync/sync-status";
 
   let transactions = $state<ApiTransaction[]>([]);
   let loading = $state(true);
@@ -16,8 +17,16 @@
     }
   }
 
+  // Initial load
   $effect(() => {
     load();
+  });
+
+  // Re-fetch when sync completes
+  $effect(() => {
+    if ($syncStatus.completed) {
+      load();
+    }
   });
 
   function formatAmount(amount: number, currency: string | null) {

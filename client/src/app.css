@@ -4,3 +4,7 @@
 @theme {
   --color-outline-red: #B85C5C;
 }
+
+html {
+  color-scheme: light;
+}
