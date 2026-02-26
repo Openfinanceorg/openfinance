@@ -134,7 +134,7 @@
   {:else}
     <div class="space-y-0.5">
       {#each notifications as n}
-        <div class="flex items-start gap-3 py-3 px-1">
+        <div class="flex items-center gap-3 py-3 px-1">
           <InstitutionLogo
             institutionUrl={getInstitutionUrl(n)}
             institutionName={getInstitutionName(n)}
