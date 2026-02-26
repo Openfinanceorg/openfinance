@@ -2,9 +2,13 @@
   import type { ApiTransaction } from "@openfinance/shared";
   import { fetchTransactions } from "./api";
   import { syncStatus } from "$lib/sync/sync-status";
+  import InstitutionLogo from "$lib/components/InstitutionLogo.svelte";
+  import { accountsState } from "$lib/accounts/state";
+  import { cn } from "$lib/utils";
 
   let transactions = $state<ApiTransaction[]>([]);
   let loading = $state(true);
+  let accounts = $derived($accountsState?.accounts ?? []);
 
   async function load() {
     try {
@@ -59,15 +63,32 @@
   {:else}
     <div class="space-y-1">
       {#each transactions as tx}
-        <div class="flex items-center justify-between py-2.5 px-1">
-          <div class="min-w-0">
-            <p class="text-sm text-gray-900 truncate">
-              {tx.merchantName || tx.name}
-            </p>
-            <p class="text-xs text-gray-400">{formatDate(tx.date)}</p>
+        {@const account = accounts.find((a) => a.id === tx.accountId)}
+        <div class="flex items-center justify-between py-2.5 px-1 gap-2">
+          <div class="min-w-0 flex items-center gap-2 flex-1">
+            <div class="min-w-0">
+              <p class="text-sm text-gray-900 truncate">
+                {tx.merchantName || tx.name}
+              </p>
+              <p class="text-xs text-gray-400">{formatDate(tx.date)}</p>
+            </div>
+            {#if account}
+              <div class="flex items-center gap-1.5 min-w-0 ml-2">
+                <InstitutionLogo
+                  institutionUrl={account.institutionUrl}
+                  institutionName={account.institutionName}
+                />
+                <span class="text-xs text-gray-600 truncate">
+                  {account.name}
+                </span>
+              </div>
+            {/if}
           </div>
           <span
-            class="text-sm font-medium text-gray-900 ml-4 whitespace-nowrap"
+            class={cn(
+              "text-sm font-medium ml-4 whitespace-nowrap flex-shrink-0",
+              tx.amount < 0 ? "text-green-600" : "text-gray-900",
+            )}
           >
             {formatAmount(tx.amount, tx.isoCurrencyCode)}
           </span>

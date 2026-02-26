@@ -29,7 +29,7 @@
           <span class="text-gray-500 ml-1">{group.accounts.length}</span>
         </h3>
       </div>
-      <div class="divide-y divide-gray-100">
+      <div class="space-y-1">
         {#each group.accounts as account (account.id)}
           <AccountRow
             {account}
