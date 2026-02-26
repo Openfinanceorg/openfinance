@@ -16,6 +16,7 @@ keyRoutes.get("/", async (c) => {
   const [key] = await db
     .select({
       id: apiKeys.id,
+      key: apiKeys.key,
       prefix: apiKeys.prefix,
       name: apiKeys.name,
       createdAt: apiKeys.createdAt,
@@ -29,6 +30,7 @@ keyRoutes.get("/", async (c) => {
     key: key
       ? {
           ...key,
+          key: key.key,
           createdAt: key.createdAt.toISOString(),
           lastUsedAt: key.lastUsedAt?.toISOString() ?? null,
         }

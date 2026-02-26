@@ -18,6 +18,7 @@ export async function createApiKeyForUser(userId: string) {
     .values({
       userId,
       keyHash,
+      key: plaintext,
       prefix,
     })
     .returning();
