@@ -3,7 +3,7 @@ import { requireAuth, type AuthEnv } from "../lib/middleware";
 import { financialAccountService } from "../lib/financial-account.service";
 import { db } from "../db";
 import { apiKeys, user as userTable } from "../schema";
-import { eq, and, isNull, isNotNull } from "drizzle-orm";
+import { eq, isNotNull } from "drizzle-orm";
 
 const accountRoutes = new Hono<AuthEnv>();
 
@@ -27,11 +27,7 @@ accountRoutes.get("/", async (c) => {
       .select({ lastUsedAt: apiKeys.lastUsedAt })
       .from(apiKeys)
       .where(
-        and(
-          eq(apiKeys.userId, user.id),
-          isNull(apiKeys.revokedAt),
-          isNotNull(apiKeys.lastUsedAt),
-        ),
+        eq(apiKeys.userId, user.id),
       )
       .limit(1),
     db

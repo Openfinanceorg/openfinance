@@ -45,15 +45,12 @@ export function exchangePlaidPublicToken(
   });
 }
 
-export function listApiKeys() {
-  return apiFetch<{ keys: ApiKey[] }>("/api/keys");
+export function getApiKey() {
+  return apiFetch<{ key: ApiKey | null }>("/api/keys");
 }
 
-export function createApiKey(name?: string) {
-  return apiFetch<CreatedApiKey>("/api/keys", {
-    method: "POST",
-    body: JSON.stringify({ name }),
-  });
+export function resetApiKey() {
+  return apiFetch<CreatedApiKey>("/api/keys/reset", { method: "POST" });
 }
 
 // MX API functions

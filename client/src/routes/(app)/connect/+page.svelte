@@ -1,14 +1,24 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { createApiKey } from "$lib/sync/api";
+  import { getApiKey, resetApiKey, type ApiKey } from "$lib/sync/api";
   import * as Tabs from "$lib/components/ui/tabs";
-  import { Download, Copy, Terminal } from "lucide-svelte";
+  import {
+    Download,
+    Copy,
+    Terminal,
+    Eye,
+    EyeOff,
+    RefreshCw,
+  } from "lucide-svelte";
 
-  let generatingKey = $state(false);
-  let revealedKey = $state<string | null>(null);
+  let existingKey = $state<ApiKey | null>(null);
+  let fullKey = $state<string | null>(null);
+  let keyRevealed = $state(false);
+  let resetting = $state(false);
   let keyError = $state<string | null>(null);
   let keyCopied = $state(false);
   let codexCopied = $state(false);
+  let keyLoaded = $state(false);
 
   const MCP_PACKAGE_NAME = "@openfinance/mcp-server";
   const DEFAULT_OPENFINANCE_URL = "http://localhost:3000";
@@ -21,7 +31,7 @@
             command: "npx",
             args: ["-y", MCP_PACKAGE_NAME],
             env: {
-              OPENFINANCE_API_KEY: revealedKey ?? "sk-...",
+              OPENFINANCE_API_KEY: fullKey ?? "sk-...",
               OPENFINANCE_URL: DEFAULT_OPENFINANCE_URL,
             },
           },
@@ -32,27 +42,63 @@
     ),
   );
 
-  async function handleCreateKey() {
-    generatingKey = true;
+  const codexCommand = `codex mcp add openfinance -e OPENFINANCE_API_KEY=sk-... -e OPENFINANCE_URL=${DEFAULT_OPENFINANCE_URL} -- npx -y ${MCP_PACKAGE_NAME}`;
+
+  // Load existing key on mount
+  $effect(() => {
+    loadKey();
+  });
+
+  async function loadKey() {
+    try {
+      const { key } = await getApiKey();
+      existingKey = key;
+    } catch {
+      // ignore
+    } finally {
+      keyLoaded = true;
+    }
+  }
+
+  const displayKey = $derived.by(() => {
+    if (fullKey) {
+      if (keyRevealed) return fullKey;
+      return fullKey.slice(0, 5) + "..." + fullKey.slice(-6);
+    }
+    if (existingKey) {
+      return existingKey.prefix + "...";
+    }
+    return null;
+  });
+
+  async function handleReset() {
+    resetting = true;
     keyError = null;
     keyCopied = false;
     try {
-      const created = await createApiKey("Claude Desktop");
-      revealedKey = created.key;
+      const created = await resetApiKey();
+      fullKey = created.key;
+      existingKey = {
+        id: created.id,
+        prefix: created.prefix,
+        name: created.name,
+        createdAt: created.createdAt,
+        lastUsedAt: null,
+      };
+      keyRevealed = true;
     } catch {
-      keyError = "Failed to generate key. Please try again.";
+      keyError = "Failed to reset key. Please try again.";
     } finally {
-      generatingKey = false;
+      resetting = false;
     }
   }
 
   async function handleCopyKey() {
-    if (!revealedKey) return;
-    await navigator.clipboard.writeText(revealedKey);
+    if (!fullKey) return;
+    await navigator.clipboard.writeText(fullKey);
     keyCopied = true;
+    setTimeout(() => (keyCopied = false), 2000);
   }
-
-  const codexCommand = `codex mcp add openfinance -e OPENFINANCE_API_KEY=sk-... -e OPENFINANCE_URL=${DEFAULT_OPENFINANCE_URL} -- npx -y ${MCP_PACKAGE_NAME}`;
 
   async function handleCopyCodex() {
     await navigator.clipboard.writeText(codexCommand);
@@ -63,43 +109,15 @@
 
 <div class="max-w-4xl mx-auto px-8 pt-8">
   <section class="p-2">
-    <div class="flex items-start justify-between gap-4 mb-4">
-      <div>
-        <h2 class="text-base font-semibold text-gray-700">
-          Connect accounts to your AI
-        </h2>
-        <p class="text-sm text-gray-600 mt-1">
-          Generate a key, then install the MCP server in Claude or Codex.
-        </p>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={handleCreateKey}
-        disabled={generatingKey}
-      >
-        {generatingKey ? "Generating..." : "New key"}
-      </Button>
+    <div class="mb-4">
+      <h2 class="text-base font-semibold text-gray-700">
+        Connect accounts to your AI
+      </h2>
+      <p class="text-sm text-gray-600 mt-1">
+        Install the MCP server in Claude or Codex, then use your API key to
+        connect.
+      </p>
     </div>
-
-    {#if revealedKey}
-      <div class="mb-4 bg-amber-50 rounded-lg p-4">
-        <p class="text-xs text-amber-900">Save this key now.</p>
-        <div class="mt-2 flex items-center gap-2">
-          <code
-            class="text-xs text-amber-950 bg-white rounded px-2 py-1 break-all"
-            >{revealedKey}</code
-          >
-          <Button variant="secondary" size="sm" onclick={handleCopyKey}
-            >{keyCopied ? "Copied" : "Copy"}</Button
-          >
-        </div>
-      </div>
-    {/if}
-
-    {#if keyError}
-      <p class="mb-4 text-sm text-red-600">{keyError}</p>
-    {/if}
 
     <Tabs.Root value="claude">
       <Tabs.List class="flex gap-1 border-b border-gray-200 mb-4">
@@ -184,5 +202,80 @@
           ></pre>
       </Tabs.Content>
     </Tabs.Root>
+
+    <!-- API Key Section -->
+    <div class="mt-6">
+      <h3 class="text-sm font-semibold text-gray-700">API Key</h3>
+      <p class="text-xs text-gray-500 mt-1">
+        Your API key for OpenFinance. Use this key to connect your AI tools.
+      </p>
+
+      {#if keyError}
+        <p class="mt-3 text-sm text-red-600">{keyError}</p>
+      {/if}
+
+      {#if displayKey}
+        <div class="mt-3 flex items-center gap-2">
+          <div
+            class="flex flex-1 items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
+          >
+            <code class="flex-1 text-sm text-gray-800 break-all"
+              >{displayKey}</code
+            >
+            {#if fullKey}
+              <button
+                type="button"
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+                onclick={() => (keyRevealed = !keyRevealed)}
+              >
+                {#if keyRevealed}
+                  <EyeOff class="h-4 w-4" />
+                {:else}
+                  <Eye class="h-4 w-4" />
+                {/if}
+              </button>
+            {/if}
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={!fullKey}
+            onclick={handleCopyKey}
+          >
+            <Copy class="h-3.5 w-3.5 mr-1" />
+            {keyCopied ? "Copied" : "Copy"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={resetting}
+            onclick={handleReset}
+          >
+            <RefreshCw
+              class="h-3.5 w-3.5 mr-1 {resetting ? 'animate-spin' : ''}"
+            />
+            Reset
+          </Button>
+        </div>
+      {:else if keyLoaded}
+        <div class="mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={resetting}
+            onclick={handleReset}
+          >
+            <RefreshCw
+              class="h-3.5 w-3.5 mr-1 {resetting ? 'animate-spin' : ''}"
+            />
+            Generate Key
+          </Button>
+        </div>
+      {:else}
+        <div class="mt-3">
+          <p class="text-xs text-gray-400">Loading...</p>
+        </div>
+      {/if}
+    </div>
   </section>
 </div>

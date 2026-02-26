@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import { auth } from "../auth.js";
 import { db } from "../db.js";
 import { apiKeys, user as userTable } from "../schema.js";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export type AuthEnv = {
   Variables: {
@@ -28,7 +28,7 @@ async function authenticateApiKey(authHeader: string): Promise<{
       userId: apiKeys.userId,
     })
     .from(apiKeys)
-    .where(and(eq(apiKeys.keyHash, keyHash), isNull(apiKeys.revokedAt)))
+    .where(eq(apiKeys.keyHash, keyHash))
     .limit(1);
 
   if (!row) return null;
