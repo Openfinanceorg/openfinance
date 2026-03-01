@@ -8,8 +8,8 @@
 import { DBOS, SchedulerMode } from "@dbos-inc/dbos-sdk";
 import { db } from "../db";
 import { accountConnections, syncJobs } from "../schema";
-import { eq } from "drizzle-orm";
-import { TransactionSyncWorkflow } from "./plaid-transaction-sync.workflow";
+import { desc, eq, inArray } from "drizzle-orm";
+import { PlaidTransactionSyncWorkflow } from "./plaid-transaction-sync.workflow";
 import { MxTransactionSyncWorkflow } from "./mx-transaction-sync.workflow";
 
 interface PollResult {
@@ -63,7 +63,9 @@ export class TransactionPollWorkflow {
         const syncJob = await TransactionPollWorkflow.createSyncJob(connection);
 
         if (connection.provider === "plaid") {
-          const handle = await DBOS.startWorkflow(TransactionSyncWorkflow).run({
+          const handle = await DBOS.startWorkflow(
+            PlaidTransactionSyncWorkflow,
+          ).run({
             connectionId: connection.id,
             userId: connection.userId,
             syncJobId: syncJob.id,
@@ -120,10 +122,49 @@ export class TransactionPollWorkflow {
 
   @DBOS.step()
   static async fetchActiveConnections() {
-    return db
+    const active = await db
       .select()
       .from(accountConnections)
       .where(eq(accountConnections.status, "active"));
+
+    if (active.length === 0) return active;
+
+    const connectionIds = active.map((c) => c.id);
+    const DISCONNECT_CODES = ["CONNECTION_EXPIRED", "ITEM_LOGIN_REQUIRED"];
+
+    const latestJobs = await db
+      .selectDistinctOn([syncJobs.accountConnectionId], {
+        accountConnectionId: syncJobs.accountConnectionId,
+        status: syncJobs.status,
+        errorCode: syncJobs.errorCode,
+      })
+      .from(syncJobs)
+      .where(inArray(syncJobs.accountConnectionId, connectionIds))
+      .orderBy(
+        syncJobs.accountConnectionId,
+        desc(syncJobs.createdAt),
+        desc(syncJobs.id),
+      );
+
+    const skipIds = new Set(
+      latestJobs
+        .filter(
+          (j) =>
+            j.status === "pending" ||
+            (j.status === "error" &&
+              j.errorCode &&
+              DISCONNECT_CODES.includes(j.errorCode)),
+        )
+        .map((j) => j.accountConnectionId),
+    );
+
+    if (skipIds.size > 0) {
+      DBOS.logger.info(
+        `Skipping ${skipIds.size} connection(s) (pending or disconnected): ${[...skipIds].join(", ")}`,
+      );
+    }
+
+    return active.filter((c) => !skipIds.has(c.id));
   }
 
   @DBOS.step()

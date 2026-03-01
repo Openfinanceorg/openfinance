@@ -1,7 +1,7 @@
 import { plaidClient, PLAID_COUNTRY_CODES } from "./plaid.client";
 import { db } from "../../db";
 import { DBOS } from "@dbos-inc/dbos-sdk";
-import { TransactionSyncWorkflow } from "../../workflows/plaid-transaction-sync.workflow";
+import { PlaidTransactionSyncWorkflow } from "../../workflows/plaid-transaction-sync.workflow";
 import { sleep } from "../utils";
 import {
   financialAccounts,
@@ -126,7 +126,7 @@ class PlaidService {
       .returning();
 
     // Dispatch background workflow for transaction sync
-    await DBOS.startWorkflow(TransactionSyncWorkflow).run({
+    await DBOS.startWorkflow(PlaidTransactionSyncWorkflow).run({
       connectionId,
       userId,
       syncJobId: syncJob.id,

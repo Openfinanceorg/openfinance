@@ -5,6 +5,17 @@ import { eq } from "drizzle-orm";
 import { mxService } from "../lib/sync/mx.service";
 import { notificationService } from "../lib/notification.service";
 
+const BAD_MEMBER_STATUSES = [
+  "EXPIRED",
+  "DENIED",
+  "DISABLED",
+  "IMPEDED",
+  "DISCONNECTED",
+  "REJECTED",
+  "CHALLENGED",
+  "CLOSED",
+];
+
 export class MxTransactionSyncWorkflow {
   @DBOS.step()
   static async fetchConnection(connectionId: number) {
@@ -48,13 +59,18 @@ export class MxTransactionSyncWorkflow {
   }
 
   @DBOS.step()
-  static async markError(syncJobId: number, errorMessage: string) {
+  static async markError(
+    syncJobId: number,
+    errorMessage: string,
+    errorCode?: string,
+  ) {
     await db
       .update(syncJobs)
       .set({
         status: "error",
         completedAt: new Date(),
         errorMessage,
+        errorCode: errorCode ?? null,
         updatedAt: new Date(),
       })
       .where(eq(syncJobs.id, syncJobId));
@@ -77,6 +93,23 @@ export class MxTransactionSyncWorkflow {
         `Failed to send disconnect notification for connection ${connectionId}: ${e}`,
       );
     }
+  }
+
+  /**
+   * Checks MX member connection status. Returns the bad status string
+   * (e.g. "EXPIRED") if the member is in a non-syncable state, or null
+   * if the member is healthy.
+   */
+  @DBOS.step()
+  static async checkMemberStatus(
+    userGuid: string,
+    memberGuid: string,
+  ): Promise<string | null> {
+    const member = await mxService.getMemberStatus(userGuid, memberGuid);
+    if (BAD_MEMBER_STATUSES.includes(member.connection_status)) {
+      return member.connection_status;
+    }
+    return null;
   }
 
   @DBOS.step()
@@ -141,6 +174,37 @@ export class MxTransactionSyncWorkflow {
         "User does not have an MX user GUID",
       );
       return null;
+    }
+
+    // Check MX member status before attempting sync
+    try {
+      const badStatus = await MxTransactionSyncWorkflow.checkMemberStatus(
+        userGuid,
+        connection.mxMemberGuid,
+      );
+
+      if (badStatus) {
+        const message = `MX member ${badStatus}`;
+        const errorCode =
+          badStatus === "CHALLENGED"
+            ? "ITEM_LOGIN_REQUIRED"
+            : "CONNECTION_EXPIRED";
+        await MxTransactionSyncWorkflow.markError(
+          syncJobId,
+          message,
+          errorCode,
+        );
+        await MxTransactionSyncWorkflow.notifyDisconnect(
+          userId,
+          connectionId,
+          message,
+        );
+        return null;
+      }
+    } catch (err) {
+      DBOS.logger.warn(
+        `Failed to check MX member status for connection ${connectionId}, proceeding with sync: ${err}`,
+      );
     }
 
     try {

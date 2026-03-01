@@ -5,7 +5,19 @@ import { eq } from "drizzle-orm";
 import { plaidService } from "../lib/sync/plaid.service";
 import { notificationService } from "../lib/notification.service";
 
-export class TransactionSyncWorkflow {
+const PLAID_DISCONNECT_ERRORS = [
+  "ITEM_LOGIN_REQUIRED",
+  "ITEM_LOCKED",
+  "INVALID_CREDENTIALS",
+  "ACCESS_NOT_GRANTED",
+  "PASSWORD_RESET_REQUIRED",
+];
+
+function isDisconnectError(message: string): boolean {
+  return PLAID_DISCONNECT_ERRORS.some((p) => message.includes(p));
+}
+
+export class PlaidTransactionSyncWorkflow {
   @DBOS.step()
   static async fetchConnection(connectionId: number) {
     const rows = await db
@@ -47,13 +59,18 @@ export class TransactionSyncWorkflow {
   }
 
   @DBOS.step()
-  static async markError(syncJobId: number, errorMessage: string) {
+  static async markError(
+    syncJobId: number,
+    errorMessage: string,
+    errorCode?: string,
+  ) {
     await db
       .update(syncJobs)
       .set({
         status: "error",
         completedAt: new Date(),
         errorMessage,
+        errorCode: errorCode ?? null,
         updatedAt: new Date(),
       })
       .where(eq(syncJobs.id, syncJobId));
@@ -109,13 +126,13 @@ export class TransactionSyncWorkflow {
   }): Promise<{ added: number; modified: number; removed: number } | null> {
     const { connectionId, syncJobId } = input;
 
-    await TransactionSyncWorkflow.markStarted(syncJobId);
+    await PlaidTransactionSyncWorkflow.markStarted(syncJobId);
 
     const connection =
-      await TransactionSyncWorkflow.fetchConnection(connectionId);
+      await PlaidTransactionSyncWorkflow.fetchConnection(connectionId);
 
     if (!connection || !connection.plaidAccessToken) {
-      await TransactionSyncWorkflow.markError(
+      await PlaidTransactionSyncWorkflow.markError(
         syncJobId,
         "Connection not found or missing access token",
       );
@@ -123,16 +140,16 @@ export class TransactionSyncWorkflow {
     }
 
     try {
-      const result = await TransactionSyncWorkflow.runSync({
+      const result = await PlaidTransactionSyncWorkflow.runSync({
         connectionId,
         accessToken: connection.plaidAccessToken,
         cursor: connection.transactionCursor,
       });
 
       const total = result.added + result.modified + result.removed;
-      await TransactionSyncWorkflow.markComplete(syncJobId, total);
+      await PlaidTransactionSyncWorkflow.markComplete(syncJobId, total);
       if (total > 0) {
-        await TransactionSyncWorkflow.notifySync(
+        await PlaidTransactionSyncWorkflow.notifySync(
           input.userId,
           connectionId,
           result.added,
@@ -143,16 +160,25 @@ export class TransactionSyncWorkflow {
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown sync error";
-      await TransactionSyncWorkflow.markError(syncJobId, message);
+      const errorCode = isDisconnectError(message)
+        ? "ITEM_LOGIN_REQUIRED"
+        : undefined;
+      await PlaidTransactionSyncWorkflow.markError(
+        syncJobId,
+        message,
+        errorCode,
+      );
       DBOS.logger.error(
         `Transaction sync failed for connection ${connectionId}: ${message}`,
       );
 
-      await TransactionSyncWorkflow.notifyDisconnect(
-        input.userId,
-        connectionId,
-        message,
-      );
+      if (errorCode) {
+        await PlaidTransactionSyncWorkflow.notifyDisconnect(
+          input.userId,
+          connectionId,
+          message,
+        );
+      }
 
       return null;
     }
