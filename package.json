@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "docker compose up -d && concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\" \"pnpm --filter client storybook\"",
     "dev:server": "docker compose up -d && pnpm --filter server dev",
-    "build": "docker build --target production -t openfinance .",
+    "build": "docker build -t openfinance-api .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },

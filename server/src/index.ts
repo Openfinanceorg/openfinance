@@ -4,7 +4,6 @@ import "./workflows/index.js";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
 import authRoutes from "./routes/auth.js";
 import institutionRoutes from "./routes/institutions.js";
 import plaidRoutes from "./routes/plaid.js";
@@ -40,13 +39,7 @@ app.route("/api/notifications", notificationRoutes);
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 
-app.get("/", (c) => c.text("ImATeapot2", 418));
-
-// Serve static client files
-app.use("/*", serveStatic({ root: "../client-dist" }));
-
-// SPA fallback
-app.get("/*", serveStatic({ root: "../client-dist", path: "index.html" }));
+app.get("/", (c) => c.text("ImATeapot", 418));
 
 const port = parseInt(process.env.PORT || "3000");
 
