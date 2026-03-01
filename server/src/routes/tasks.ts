@@ -37,9 +37,6 @@ taskRoutes.get("/", async (c) => {
       institutionName: a.institutionName,
     });
   }
-  // Only show one reconnect task at a time
-  tasks.splice(1);
-
   return c.json({ tasks });
 });
 

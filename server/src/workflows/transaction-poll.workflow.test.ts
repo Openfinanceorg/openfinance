@@ -14,8 +14,8 @@ import { TransactionPollWorkflow } from "./transaction-poll.workflow";
 
 describe("TransactionPollWorkflow.fetchActiveConnections", () => {
   const testUserId = `test-poll-${randomUUID().slice(0, 8)}`;
-  let connectionId1: number;
-  let connectionId2: number;
+  let disconnectedConnId: number;
+  let transientErrorConnId: number;
   let registryId: number;
 
   beforeAll(async () => {
@@ -47,6 +47,7 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
       .returning();
     registryId = registry.id;
 
+    // Connection 1: will have a disconnect error (should be skipped)
     const [conn1] = await db
       .insert(accountConnections)
       .values({
@@ -58,8 +59,9 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
         status: "active",
       })
       .returning();
-    connectionId1 = conn1.id;
+    disconnectedConnId = conn1.id;
 
+    // Connection 2: will have a transient error (should be retried)
     const [conn2] = await db
       .insert(accountConnections)
       .values({
@@ -71,13 +73,12 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
         status: "active",
       })
       .returning();
-    connectionId2 = conn2.id;
+    transientErrorConnId = conn2.id;
 
-    // Both connections have financial accounts
     await db.insert(financialAccounts).values([
       {
         userId: testUserId,
-        accountConnectionId: connectionId1,
+        accountConnectionId: disconnectedConnId,
         providerAccountId: `acct_${randomUUID().slice(0, 8)}`,
         name: "Checking 1",
         type: "depository",
@@ -88,7 +89,7 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
       },
       {
         userId: testUserId,
-        accountConnectionId: connectionId2,
+        accountConnectionId: transientErrorConnId,
         providerAccountId: `acct_${randomUUID().slice(0, 8)}`,
         name: "Checking 2",
         type: "depository",
@@ -99,10 +100,10 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
       },
     ]);
 
-    // Connection 1 has a disconnect error sync job
+    // Connection 1: disconnect error → should be skipped
     await db.insert(syncJobs).values({
       userId: testUserId,
-      accountConnectionId: connectionId1,
+      accountConnectionId: disconnectedConnId,
       provider: "plaid",
       jobType: "transactions",
       status: "error",
@@ -110,13 +111,15 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
       errorCode: "ITEM_LOGIN_REQUIRED",
     });
 
-    // Connection 2 has a pending sync job
+    // Connection 2: transient error (null errorCode) → should be retried
     await db.insert(syncJobs).values({
       userId: testUserId,
-      accountConnectionId: connectionId2,
+      accountConnectionId: transientErrorConnId,
       provider: "plaid",
       jobType: "transactions",
-      status: "pending",
+      status: "error",
+      errorMessage: "Network timeout",
+      errorCode: null,
     });
   });
 
@@ -135,14 +138,13 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
     await DBOS.shutdown();
   });
 
-  it("skips disconnected and pending connections", async () => {
+  it("skips disconnect errors but retries transient errors", async () => {
     const connections = await TransactionPollWorkflow.fetchActiveConnections();
-
     const ids = connections.map((c) => c.id);
 
-    // Connection 1 has ITEM_LOGIN_REQUIRED error → skipped
-    expect(ids).not.toContain(connectionId1);
-    // Connection 2 has pending sync job → skipped
-    expect(ids).not.toContain(connectionId2);
+    // Disconnect error (ITEM_LOGIN_REQUIRED) → skipped
+    expect(ids).not.toContain(disconnectedConnId);
+    // Transient error (null errorCode) → retried
+    expect(ids).toContain(transientErrorConnId);
   });
 });
