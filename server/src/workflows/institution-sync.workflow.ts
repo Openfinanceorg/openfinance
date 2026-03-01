@@ -1,6 +1,7 @@
 import { DBOS, SchedulerMode } from "@dbos-inc/dbos-sdk";
 import { PlaidInstitutionSyncer } from "$lib/sync/plaid-institution-syncer.js";
 import { MXInstitutionSyncer } from "$lib/sync/mx-institution-syncer.js";
+import { isMxConfigured } from "$lib/sync/mx.client.js";
 
 interface InstitutionSyncResult {
   success: boolean;
@@ -51,14 +52,18 @@ export class InstitutionSyncWorkflow {
       errors.push(errorMessage);
     }
 
-    // Step 2: Refresh institutions from MX
-    try {
-      await InstitutionSyncWorkflow.refreshMxInstitutions();
-      providersRefreshed.push("mx");
-    } catch (error: any) {
-      const errorMessage = `Failed to refresh MX institutions: ${error.message}`;
-      DBOS.logger.error(errorMessage);
-      errors.push(errorMessage);
+    // Step 2: Refresh institutions from MX (skip if not configured)
+    if (isMxConfigured()) {
+      try {
+        await InstitutionSyncWorkflow.refreshMxInstitutions();
+        providersRefreshed.push("mx");
+      } catch (error: any) {
+        const errorMessage = `Failed to refresh MX institutions: ${error.message}`;
+        DBOS.logger.error(errorMessage);
+        errors.push(errorMessage);
+      }
+    } else {
+      DBOS.logger.info("Skipping MX institution sync: MX is not configured");
     }
 
     // Step 3: Update connection health status

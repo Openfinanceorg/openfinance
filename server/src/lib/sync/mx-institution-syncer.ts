@@ -6,7 +6,10 @@ import {
   buildConflictUpdateColumns,
   getInstitutionRegistryUpdateColumns,
 } from "./batch-upsert.helpers.js";
-import { streamAllMxInstitutions } from "$lib/sync/mx.client.js";
+import {
+  streamAllMxInstitutions,
+  isMxConfigured,
+} from "$lib/sync/mx.client.js";
 import {
   ALL_ACCOUNT_TYPES,
   type AccountType,
@@ -49,6 +52,11 @@ export class MXInstitutionSyncer implements InstitutionSyncer {
    * Refresh institutions from MX and sync to database using streaming approach
    */
   async refreshInstitutions(limit?: number): Promise<void> {
+    if (!isMxConfigured()) {
+      console.log("Skipping MX institutions sync: MX is not configured");
+      return;
+    }
+
     console.log(
       `Starting MX institutions sync with streaming upsert approach${
         limit ? ` (limited to ${limit} institutions)` : ""

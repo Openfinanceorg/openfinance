@@ -21,6 +21,14 @@ interface MXInstitutionsResponse {
   };
 }
 
+export function isMxConfigured(): boolean {
+  return !!(
+    process.env.MX_CLIENT_ID &&
+    process.env.MX_API_KEY &&
+    process.env.MX_API_URL
+  );
+}
+
 function getMxConfig() {
   const clientId = process.env.MX_CLIENT_ID;
   const apiKey = process.env.MX_API_KEY;

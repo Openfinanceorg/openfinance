@@ -3,6 +3,7 @@ import { institutionRegistry } from "../schema";
 import { ilike, eq, asc, and, sql, inArray } from "drizzle-orm";
 import type { InstitutionType } from "@openfinance/shared";
 import { InstitutionMatcher } from "./institution-matcher";
+import { isMxConfigured } from "./sync/mx.client";
 
 /**
  * Top institutions by country - includes both Plaid and MX composite keys
@@ -128,6 +129,11 @@ class InstitutionRegistryService {
       conditions.push(sql`${institutionRegistry.mxData} is not null`);
     }
 
+    // Exclude MX-only institutions when MX is not configured
+    if (!isMxConfigured()) {
+      conditions.push(sql`${institutionRegistry.plaidData} is not null`);
+    }
+
     if (accountType !== "all") {
       conditions.push(
         sql`${institutionRegistry.supportedAccountTypes}::jsonb @> ${JSON.stringify([accountType])}::jsonb`,
@@ -154,7 +160,14 @@ class InstitutionRegistryService {
     const topGroups = TOP_INSTITUTIONS_BY_COUNTRY[country];
 
     if (topGroups) {
-      const allIds = topGroups.flatMap((group) => group.ids);
+      const mxConfigured = isMxConfigured();
+      // When MX is not configured, only include groups that have at least one Plaid ID
+      const filteredGroups = mxConfigured
+        ? topGroups
+        : topGroups.filter((group) =>
+            group.ids.some((id) => id.startsWith("plaid_")),
+          );
+      const allIds = filteredGroups.flatMap((group) => group.ids);
 
       let whereCondition = inArray(
         institutionRegistry.providerCompositeKey,
@@ -175,7 +188,7 @@ class InstitutionRegistryService {
 
       // Group rows per top institution group and merge
       const result: InstitutionType[] = [];
-      for (const group of topGroups.slice(0, limit)) {
+      for (const group of filteredGroups.slice(0, limit)) {
         const matchingRows = rows.filter(
           (row) =>
             row.providerCompositeKey &&
