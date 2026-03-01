@@ -27,6 +27,7 @@
   let widgetState = $state<MXWidgetState>("idle");
   let mxWidget = $state<any>(null);
   let currentInstitutionCode = $state<string | undefined>();
+  let successHandled = $state(false);
 
   let isDialogOpen = $derived(widgetState !== "idle");
   let isMXWidgetLoading = $derived(widgetState === "loading_widget");
@@ -81,6 +82,9 @@
   }
 
   async function handleMXSuccess(memberGuid: string, userGuid: string) {
+    if (successHandled) return;
+    successHandled = true;
+
     try {
       await connectMxMember(memberGuid, userGuid, currentInstitutionCode);
 
@@ -141,6 +145,7 @@
       mxWidget = null;
     }
     currentInstitutionCode = undefined;
+    successHandled = false;
     widgetState = "idle";
   }
 
@@ -168,11 +173,21 @@
       mxWidget = new widgetSdk.ConnectWidget({
         container: "#mx-widget-container",
         url: widgetUrl,
-        onLoaded: () => {
+        onLoaded: (payload: any) => {
           widgetState = "widget_active";
+          if (payload.initial_step === "connected") {
+            setTimeout(() => {
+              handleMXSuccess(memberGuid || payload.user_guid, userGuid);
+            }, 500);
+          }
         },
         onMemberConnected: (payload: any) => {
           handleMXSuccess(memberGuid || payload.member_guid, userGuid);
+        },
+        onMemberStatusUpdate: (payload: any) => {
+          if (payload.status === "connected" || payload.status === "updated") {
+            handleMXSuccess(memberGuid || payload.member_guid, userGuid);
+          }
         },
         onBackToSearch: () => {
           cleanupMXWidget();

@@ -366,7 +366,7 @@ class MXService {
       ? await this.findRegistryId(institutionCode)
       : null;
 
-    // Create account connection
+    // Create or reactivate account connection
     const [connection] = await db
       .insert(accountConnections)
       .values({
@@ -376,6 +376,15 @@ class MXService {
         mxMemberGuid: memberGuid,
         mxInstitutionCode: institutionCode ?? null,
         status: "active",
+      })
+      .onConflictDoUpdate({
+        target: [accountConnections.mxMemberGuid],
+        set: {
+          status: "active",
+          institutionRegistryId: registryId,
+          mxInstitutionCode: institutionCode ?? null,
+          updatedAt: new Date(),
+        },
       })
       .returning();
 

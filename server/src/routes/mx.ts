@@ -70,13 +70,25 @@ mxRoutes.post(
     const authUser = c.get("user");
     const { member_guid, user_guid, institution_code } = c.req.valid("json");
 
-    // Check billing limits before connecting
-    const connectCheck = await billingService.checkCanConnect(authUser.id);
-    if (!connectCheck.allowed) {
-      return c.json(
-        { error: "upgrade_required", requiredPlan: connectCheck.requiredPlan },
-        402,
-      );
+    // Check if this is a reconnection (existing connection with same member_guid)
+    const [existingConn] = await db
+      .select({ id: accountConnections.id })
+      .from(accountConnections)
+      .where(eq(accountConnections.mxMemberGuid, member_guid))
+      .limit(1);
+
+    if (!existingConn) {
+      // Only check billing for NEW connections
+      const connectCheck = await billingService.checkCanConnect(authUser.id);
+      if (!connectCheck.allowed) {
+        return c.json(
+          {
+            error: "upgrade_required",
+            requiredPlan: connectCheck.requiredPlan,
+          },
+          402,
+        );
+      }
     }
 
     await mxService.connectAndPerformInitialSync({
