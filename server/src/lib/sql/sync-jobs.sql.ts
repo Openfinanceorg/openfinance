@@ -42,6 +42,7 @@ export const syncJobs = pgTable(
     startedAt: timestamp("started_at"),
     completedAt: timestamp("completed_at"),
     errorMessage: text("error_message"),
+    errorCode: text("error_code"),
     recordsProcessed: integer("records_processed").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
