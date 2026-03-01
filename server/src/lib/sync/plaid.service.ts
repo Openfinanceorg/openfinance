@@ -1,5 +1,4 @@
-import { CountryCode } from "plaid";
-import { plaidClient } from "./plaid.client";
+import { plaidClient, PLAID_COUNTRY_CODES } from "./plaid.client";
 import { db } from "../../db";
 import { DBOS } from "@dbos-inc/dbos-sdk";
 import { TransactionSyncWorkflow } from "../../workflows/plaid-transaction-sync.workflow";
@@ -28,7 +27,7 @@ class PlaidService {
   async getInstitutionInfo(institutionId: string) {
     const response = await plaidClient.institutionsGetById({
       institution_id: institutionId,
-      country_codes: [CountryCode.Us, CountryCode.Ca],
+      country_codes: PLAID_COUNTRY_CODES,
       options: { include_optional_metadata: true },
     });
     return {

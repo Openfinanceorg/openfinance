@@ -30,6 +30,18 @@ const configuration = new Configuration({
 
 export const plaidClient = new PlaidApi(configuration);
 
+export const PLAID_COUNTRY_CODES = [
+  CountryCode.Us,
+  CountryCode.Ca,
+  CountryCode.Gb,
+  CountryCode.De,
+  CountryCode.Fr,
+  CountryCode.Ie,
+  CountryCode.Nl,
+  CountryCode.Es,
+  CountryCode.It,
+];
+
 /**
  * Stream all institutions from Plaid API in batches for memory-efficient processing
  * Yields each batch as it's fetched from the API
@@ -40,8 +52,6 @@ export async function* streamAllPlaidInstitutions(options?: {
   onProgress?: (current: number, total: number, institutions: number) => void;
 }): AsyncGenerator<PlaidInstitution[], void, unknown> {
   const { batchSize = 500, limit, onProgress } = options || {};
-  const countryCodes = [CountryCode.Us, CountryCode.Ca];
-
   let offset = 0;
   let totalInstitutions = 0;
   let hasMore = true;
@@ -53,7 +63,7 @@ export async function* streamAllPlaidInstitutions(options?: {
     const response = await plaidClient.institutionsGet({
       count: perPage,
       offset,
-      country_codes: countryCodes,
+      country_codes: PLAID_COUNTRY_CODES,
       options: {
         include_optional_metadata: true,
       },

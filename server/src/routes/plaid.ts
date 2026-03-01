@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { Products, CountryCode } from "plaid";
-import { plaidClient } from "$lib/sync/plaid.client";
+import { Products } from "plaid";
+import { plaidClient, PLAID_COUNTRY_CODES } from "$lib/sync/plaid.client";
 import { plaidService } from "$lib/sync/plaid.service";
 import { requireAuth, type AuthEnv } from "$lib/middleware";
 import { billingService } from "$lib/billing";
@@ -28,7 +28,7 @@ plaidRoutes.post("/create_link_token", async (c) => {
     client_name: "Open Finance",
     products: [Products.Transactions],
     transactions: { days_requested: 730 },
-    country_codes: [CountryCode.Us, CountryCode.Ca],
+    country_codes: PLAID_COUNTRY_CODES,
     language: "en",
   });
 
@@ -70,7 +70,7 @@ plaidRoutes.post(
       user: { client_user_id: user.id },
       client_name: "Open Finance",
       access_token: result.plaidAccessToken,
-      country_codes: [CountryCode.Us, CountryCode.Ca],
+      country_codes: PLAID_COUNTRY_CODES,
       language: "en",
     });
 
