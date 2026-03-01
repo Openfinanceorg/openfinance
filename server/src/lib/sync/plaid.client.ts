@@ -30,17 +30,7 @@ const configuration = new Configuration({
 
 export const plaidClient = new PlaidApi(configuration);
 
-export const PLAID_COUNTRY_CODES = [
-  CountryCode.Us,
-  CountryCode.Ca,
-  CountryCode.Gb,
-  CountryCode.De,
-  CountryCode.Fr,
-  CountryCode.Ie,
-  CountryCode.Nl,
-  CountryCode.Es,
-  CountryCode.It,
-];
+export const PLAID_COUNTRY_CODES = [CountryCode.Us, CountryCode.Ca];
 
 /**
  * Stream all institutions from Plaid API in batches for memory-efficient processing
