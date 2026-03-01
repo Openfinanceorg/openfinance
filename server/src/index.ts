@@ -27,7 +27,7 @@ app.use(
   cors({
     origin: process.env.APP_URL || "http://localhost:6100",
     credentials: true,
-  })
+  }),
 );
 
 // API routes

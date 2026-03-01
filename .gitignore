@@ -4,6 +4,7 @@ dist
 client/build
 client-dist
 .env
+.env.prod
 *.local
 .DS_Store
 tmp
