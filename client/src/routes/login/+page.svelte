@@ -20,7 +20,7 @@
       isSigningIn = true;
       authClient.signIn.social({
         provider: "google",
-        callbackURL: "http://localhost:6100/",
+        callbackURL: new URL("/", window.location.href).toString(),
       });
     }}
   >

@@ -3,6 +3,7 @@ import { DBOS } from "@dbos-inc/dbos-sdk";
 import "./workflows/index.js";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
+import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
 import authRoutes from "./routes/auth.js";
 import institutionRoutes from "./routes/institutions.js";
@@ -21,6 +22,13 @@ import notificationRoutes from "./routes/notifications.js";
 const app = new Hono();
 
 app.use("*", logger());
+app.use(
+  "*",
+  cors({
+    origin: process.env.APP_URL || "http://localhost:6100",
+    credentials: true,
+  })
+);
 
 // API routes
 app.route("/api/auth", authRoutes);

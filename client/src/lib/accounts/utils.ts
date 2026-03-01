@@ -86,6 +86,7 @@ export function getAccountLogoUrl(
   const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY as
     | string
     | undefined;
+
   if (!logoDevKey || !institutionUrl) return null;
   try {
     const url = institutionUrl.startsWith("http")
