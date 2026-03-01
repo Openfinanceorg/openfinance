@@ -7,6 +7,7 @@
 
   import RecentTransactions from "$lib/transactions/RecentTransactions.svelte";
   import { getLinkContext } from "$lib/sync/link-context";
+  import { syncStatus } from "$lib/sync/sync-status";
   import GettingStarted from "$lib/components/GettingStarted.svelte";
   import Tasks from "$lib/tasks/Tasks.svelte";
   import { fetchTasks, type Task } from "$lib/tasks/api";
@@ -26,6 +27,14 @@
         .then((data) => (tasks = data))
         .catch(() => (tasks = []))
         .finally(() => (tasksLoading = false));
+    }
+  });
+
+  $effect(() => {
+    if ($syncStatus.completed) {
+      fetchTasks()
+        .then((data) => (tasks = data))
+        .catch(() => (tasks = []));
     }
   });
 
