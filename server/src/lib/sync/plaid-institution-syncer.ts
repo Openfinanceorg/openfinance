@@ -85,64 +85,66 @@ export class PlaidInstitutionSyncer implements InstitutionSyncer {
     const currentPlaidInstitutionIds = new Set<string>();
 
     try {
-      await db.transaction(async (tx) => {
-        for await (const plaidInstitutionBatch of streamAllPlaidInstitutions({
-          batchSize: 500,
-          limit,
-          onProgress: (current, total, institutions) => {
-            console.log(
-              `Fetching Plaid institutions... Page ${current}/${total} (${institutions} institutions so far)${
-                limit ? ` [limited to ${limit}]` : ""
-              }`,
-            );
-          },
-        })) {
-          const registryRecords = this.convertPlaidInstitutionsToRegistryFormat(
-            plaidInstitutionBatch,
+      // Upsert each batch outside a transaction to avoid long-lived connections
+      for await (const plaidInstitutionBatch of streamAllPlaidInstitutions({
+        batchSize: 500,
+        limit,
+        onProgress: (current, total, institutions) => {
+          console.log(
+            `Fetching Plaid institutions... Page ${current}/${total} (${institutions} institutions so far)${
+              limit ? ` [limited to ${limit}]` : ""
+            }`,
           );
+        },
+      })) {
+        const registryRecords = this.convertPlaidInstitutionsToRegistryFormat(
+          plaidInstitutionBatch,
+        );
 
-          const validInstitutions = registryRecords
-            .filter((institution) => institution.plaidData?.institutionId)
-            .map((institution) => {
-              const compositeKey = `plaid_${institution.plaidData!.institutionId}`;
-              currentPlaidInstitutionIds.add(
-                institution.plaidData!.institutionId,
-              );
+        const validInstitutions = registryRecords
+          .filter((institution) => institution.plaidData?.institutionId)
+          .map((institution) => {
+            const compositeKey = `plaid_${institution.plaidData!.institutionId}`;
+            currentPlaidInstitutionIds.add(
+              institution.plaidData!.institutionId,
+            );
 
-              return {
-                ...institution,
-                providerCompositeKey: compositeKey,
-                lastSynced: new Date(),
-                updatedAt: new Date(),
-              };
+            return {
+              ...institution,
+              providerCompositeKey: compositeKey,
+              lastSynced: new Date(),
+              updatedAt: new Date(),
+            };
+          });
+
+        if (validInstitutions.length > 0) {
+          await db
+            .insert(institutionRegistry)
+            .values(validInstitutions)
+            .onConflictDoUpdate({
+              target: institutionRegistry.providerCompositeKey,
+              set: buildConflictUpdateColumns(
+                institutionRegistry,
+                getInstitutionRegistryUpdateColumns() as any,
+              ),
             });
 
-          if (validInstitutions.length > 0) {
-            await tx
-              .insert(institutionRegistry)
-              .values(validInstitutions)
-              .onConflictDoUpdate({
-                target: institutionRegistry.providerCompositeKey,
-                set: buildConflictUpdateColumns(
-                  institutionRegistry,
-                  getInstitutionRegistryUpdateColumns() as any,
-                ),
-              });
-
-            totalInstitutions += validInstitutions.length;
-            console.log(
-              `Batch ${totalBatches + 1}: Upserted ${validInstitutions.length} Plaid institutions`,
-            );
-          }
-
-          totalBatches++;
+          totalInstitutions += validInstitutions.length;
+          console.log(
+            `Batch ${totalBatches + 1}: Upserted ${validInstitutions.length} Plaid institutions`,
+          );
         }
 
-        if (limit) {
-          console.log(
-            `Skipping stale institution deletion because limit=${limit} was set (partial sync)`,
-          );
-        } else if (currentPlaidInstitutionIds.size > 0) {
+        totalBatches++;
+      }
+
+      // Delete stale institutions in a short transaction
+      if (limit) {
+        console.log(
+          `Skipping stale institution deletion because limit=${limit} was set (partial sync)`,
+        );
+      } else if (currentPlaidInstitutionIds.size > 0) {
+        await db.transaction(async (tx) => {
           const staleInstitutions = await tx
             .select({
               id: institutionRegistry.id,
@@ -166,8 +168,8 @@ export class PlaidInstitutionSyncer implements InstitutionSyncer {
               .where(inArray(institutionRegistry.id, staleIds));
             console.log(`Removed ${staleIds.length} stale Plaid institutions`);
           }
-        }
-      });
+        });
+      }
 
       if (totalInstitutions === 0) {
         throw new Error(
