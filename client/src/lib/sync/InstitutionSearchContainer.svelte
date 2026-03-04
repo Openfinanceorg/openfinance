@@ -1,10 +1,7 @@
 <script lang="ts">
   import InstitutionSearch from "./InstitutionSearch.svelte";
-  import type {
-    InstitutionType,
-    SyncProvider,
-    SearchInstitutionsResponse,
-  } from "@openfinance/shared";
+  import type { InstitutionType, SyncProvider } from "@openfinance/shared";
+  import { searchInstitutions, getTopInstitutions } from "./api";
 
   // === PROPS ===
   interface Props {
@@ -40,10 +37,6 @@
 
   // === API FUNCTIONS ===
 
-  function getApiBaseUrl(): string {
-    return "/api";
-  }
-
   async function getCurrentCountry(): Promise<string> {
     if (countryCache) return countryCache;
     // Default to US; container can be enhanced with geolocation later
@@ -51,45 +44,11 @@
     return countryCache;
   }
 
-  async function searchInstitutionsAPI(
-    query: string,
-    limit: number = 20,
-    provider: string = "all",
-    accountType: string = "all",
-  ): Promise<SearchInstitutionsResponse> {
-    const params = new URLSearchParams({
-      query,
-      limit: String(limit),
-      provider,
-      accountType,
-    });
-    const response = await fetch(
-      `${getApiBaseUrl()}/institutions/search?${params}`,
-    );
-    return response.json();
-  }
-
-  async function getTopInstitutionsAPI(
-    country: string,
-    limit: number = 20,
-    accountType: string = "all",
-  ): Promise<SearchInstitutionsResponse> {
-    const params = new URLSearchParams({
-      country,
-      limit: String(limit),
-      accountType,
-    });
-    const response = await fetch(
-      `${getApiBaseUrl()}/institutions/top?${params}`,
-    );
-    return response.json();
-  }
-
   async function loadTopInstitutions() {
     try {
       isSearching = true;
       const country = await getCurrentCountry();
-      const response = await getTopInstitutionsAPI(country, 20, "all");
+      const response = await getTopInstitutions(country, 20, "all");
       institutions = response.institutions;
     } catch {
       institutions = [];
@@ -113,7 +72,7 @@
     searchTimeout = setTimeout(async () => {
       try {
         isSearching = true;
-        const response = await searchInstitutionsAPI(
+        const response = await searchInstitutions(
           query.trim(),
           20,
           "all",

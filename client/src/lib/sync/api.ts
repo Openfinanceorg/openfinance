@@ -1,4 +1,5 @@
 import { apiFetch } from "$lib/api-client";
+import type { SearchInstitutionsResponse } from "@openfinance/shared";
 
 export interface ApiKey {
   id: number;
@@ -92,6 +93,40 @@ export function createMxWidgetUrlForUpdate(accountId: number) {
     method: "POST",
     body: JSON.stringify({ account_id: accountId }),
   });
+}
+
+// Institution search functions
+
+export function searchInstitutions(
+  query: string,
+  limit: number = 20,
+  provider: string = "all",
+  accountType: string = "all",
+) {
+  const params = new URLSearchParams({
+    query,
+    limit: String(limit),
+    provider,
+    accountType,
+  });
+  return apiFetch<SearchInstitutionsResponse>(
+    `/api/institutions/search?${params}`,
+  );
+}
+
+export function getTopInstitutions(
+  country: string,
+  limit: number = 20,
+  accountType: string = "all",
+) {
+  const params = new URLSearchParams({
+    country,
+    limit: String(limit),
+    accountType,
+  });
+  return apiFetch<SearchInstitutionsResponse>(
+    `/api/institutions/top?${params}`,
+  );
 }
 
 export function getMxMemberStatus(memberGuid: string) {
