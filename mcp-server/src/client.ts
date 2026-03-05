@@ -4,7 +4,7 @@ import type {
   QueryTransactionsResponse,
   QueryTransactionsErrorResponse,
   TransactionFilter,
-} from "@openfinance/shared";
+} from "./types.js";
 
 export interface ClientConfig {
   baseUrl: string;

@@ -1,6 +1,6 @@
 {
   "name": "@openfinance-sh/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "bin": {
     "openfinance-mcp": "./build/index.js"
@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
-    "@openfinance/shared": "workspace:*",
     "zod": "^3.24.0"
   },
   "files": [
