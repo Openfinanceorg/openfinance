@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsup src/index.ts --format esm --dts --clean --outDir build",
+    "build": "tsup",
     "start": "node build/index.js",
     "bundle": "pnpm build && mcpb pack . openfinance.mcpb",
     "prepack": "pnpm run bundle"
