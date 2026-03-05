@@ -4,13 +4,15 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "node:http";
-import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { OpenFinanceClient } from "./client.js";
 import { registerAccountTools } from "./tools/accounts.js";
 import { registerTransactionTools } from "./tools/transactions.js";
 
-const require = createRequire(import.meta.url);
-const pkg = require("../../package.json");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
 
 function parseArgs() {
   const args = process.argv.slice(2);
