@@ -4,15 +4,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "node:http";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { OpenFinanceClient } from "./client.js";
 import { registerAccountTools } from "./tools/accounts.js";
 import { registerTransactionTools } from "./tools/transactions.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
+const VERSION = "0.1.4";
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -49,7 +45,7 @@ async function main() {
 
   const server = new McpServer({
     name: "openfinance",
-    version: pkg.version,
+    version: VERSION,
   });
 
   registerAccountTools(server, client);
