@@ -105,9 +105,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.26.0(zod@3.25.76)
-      '@openfinance/shared':
-        specifier: workspace:*
-        version: link:../shared
       zod:
         specifier: ^3.24.0
         version: 3.25.76
