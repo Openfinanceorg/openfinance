@@ -6,7 +6,7 @@ import { OpenFinanceClient } from "./client.js";
 import { registerAccountTools } from "./tools/accounts.js";
 import { registerTransactionTools } from "./tools/transactions.js";
 
-const VERSION = "0.1.4";
+const VERSION = "0.1.5";
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -54,7 +54,8 @@ async function main() {
     await server.connect(stdioTransport);
     console.error("OpenFinance MCP server running on stdio");
   } else {
-    const { StreamableHTTPServerTransport } = await import("@modelcontextprotocol/sdk/server/streamableHttp.js");
+    const { StreamableHTTPServerTransport } =
+      await import("@modelcontextprotocol/sdk/server/streamableHttp.js");
     const { createServer } = await import("node:http");
 
     const httpTransport = new StreamableHTTPServerTransport({
