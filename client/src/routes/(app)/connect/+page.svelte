@@ -51,7 +51,7 @@
   const displayMcpConfigSnippet = $derived(buildMcpConfig(maskedKey));
 
   function buildCodexCommand(key: string) {
-    return `codex mcp add openfinance -e OPENFINANCE_API_KEY=${key} -e OPENFINANCE_URL=${DEFAULT_OPENFINANCE_URL} -- npx -y ${MCP_PACKAGE_NAME}`;
+    return `codex mcp add openfinance --env OPENFINANCE_API_KEY=${key} --env OPENFINANCE_URL=${DEFAULT_OPENFINANCE_URL} -- npx -y ${MCP_PACKAGE_NAME}`;
   }
 
   const codexCommand = $derived(buildCodexCommand(fullKey ?? "sk-..."));
