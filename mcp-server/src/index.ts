@@ -4,9 +4,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "node:http";
+import { createRequire } from "node:module";
 import { OpenFinanceClient } from "./client.js";
 import { registerAccountTools } from "./tools/accounts.js";
 import { registerTransactionTools } from "./tools/transactions.js";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../../package.json");
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -28,7 +32,7 @@ function parseArgs() {
 
 async function main() {
   const apiKey = process.env.OPENFINANCE_API_KEY;
-  const baseUrl = process.env.OPENFINANCE_URL || "http://localhost:3000";
+  const baseUrl = process.env.OPENFINANCE_URL || "https://api.openfinance.sh";
 
   if (!apiKey) {
     console.error(
@@ -43,7 +47,7 @@ async function main() {
 
   const server = new McpServer({
     name: "openfinance",
-    version: "0.1.0",
+    version: pkg.version,
   });
 
   registerAccountTools(server, client);
