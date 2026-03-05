@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const BUNDLE_PATH = resolve(__dirname, "../../../mcp-server/openfinance.mcpb");
 
 const DEFAULT_CDN_URL =
-  "https://cdn.jsdelivr.net/npm/@openfinance-sh/mcp@latest/openfinance.mcpb";
+  "https://unpkg.com/@openfinance-sh/mcp@latest/openfinance.mcpb";
 
 const mcpBundleRoutes = new Hono();
 
