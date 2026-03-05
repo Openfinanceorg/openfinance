@@ -16,46 +16,43 @@ const DOWNLOAD_HEADERS = {
   "Content-Disposition": 'attachment; filename="openfinance.mcpb"',
 } as const;
 
-async function fetchRemoteBundle(url: string): Promise<ArrayBuffer> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(
-      `Remote bundle fetch failed with status ${response.status}`,
-    );
-  }
-  return response.arrayBuffer();
-}
-
 function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
-  const bytes = new Uint8Array(buffer.length);
-  bytes.set(buffer);
-  return bytes.buffer;
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  ) as ArrayBuffer;
 }
 
 mcpBundleRoutes.get("/", async (c) => {
   const remoteUrl = process.env.MCP_BUNDLE_URL || DEFAULT_CDN_URL;
+  const useRemote =
+    process.env.NODE_ENV === "production" || !!process.env.MCP_BUNDLE_URL;
 
-  // Prefer remote source for consistency across environments.
-  try {
-    const remoteData = await fetchRemoteBundle(remoteUrl);
-    return c.newResponse(remoteData, 200, DOWNLOAD_HEADERS);
-  } catch (error) {
-    console.warn(
-      "[mcp-bundle] Remote fetch failed, falling back to local file",
-      {
+  if (useRemote) {
+    try {
+      const response = await fetch(remoteUrl);
+      if (!response.ok || !response.body) {
+        console.error("[mcp-bundle] Remote bundle fetch failed", {
+          remoteUrl,
+          status: response.status,
+        });
+        return c.json({ error: "Failed to fetch MCP bundle." }, 502);
+      }
+      return c.newResponse(response.body, 200, DOWNLOAD_HEADERS);
+    } catch (error) {
+      console.error("[mcp-bundle] Remote bundle fetch failed", {
         remoteUrl,
         error: error instanceof Error ? error.message : String(error),
-      },
-    );
+      });
+      return c.json({ error: "Failed to fetch MCP bundle." }, 502);
+    }
   }
 
-  // Fallback to local file if remote fetch fails.
   try {
     const data = await readFile(BUNDLE_PATH);
     return c.newResponse(bufferToArrayBuffer(data), 200, DOWNLOAD_HEADERS);
   } catch (error) {
-    console.error("[mcp-bundle] Failed to load both remote and local bundle", {
-      remoteUrl,
+    console.error("[mcp-bundle] Local bundle not found", {
       localPath: BUNDLE_PATH,
       error: error instanceof Error ? error.message : String(error),
     });
