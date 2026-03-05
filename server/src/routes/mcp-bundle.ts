@@ -11,21 +11,54 @@ const DEFAULT_CDN_URL =
 
 const mcpBundleRoutes = new Hono();
 
-mcpBundleRoutes.get("/", async (c) => {
-  const cdnUrl = process.env.MCP_BUNDLE_URL;
+const DOWNLOAD_HEADERS = {
+  "Content-Type": "application/octet-stream",
+  "Content-Disposition": 'attachment; filename="openfinance.mcpb"',
+} as const;
 
-  // In production (or when CDN URL is set), redirect to CDN
-  if (cdnUrl || process.env.NODE_ENV === "production") {
-    return c.redirect(cdnUrl || DEFAULT_CDN_URL, 302);
+async function fetchRemoteBundle(url: string): Promise<ArrayBuffer> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Remote bundle fetch failed with status ${response.status}`,
+    );
+  }
+  return response.arrayBuffer();
+}
+
+function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
+  const bytes = new Uint8Array(buffer.length);
+  bytes.set(buffer);
+  return bytes.buffer;
+}
+
+mcpBundleRoutes.get("/", async (c) => {
+  const remoteUrl = process.env.MCP_BUNDLE_URL || DEFAULT_CDN_URL;
+
+  // Prefer remote source for consistency across environments.
+  try {
+    const remoteData = await fetchRemoteBundle(remoteUrl);
+    return c.newResponse(remoteData, 200, DOWNLOAD_HEADERS);
+  } catch (error) {
+    console.warn(
+      "[mcp-bundle] Remote fetch failed, falling back to local file",
+      {
+        remoteUrl,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    );
   }
 
-  // In development, serve from local file
+  // Fallback to local file if remote fetch fails.
   try {
     const data = await readFile(BUNDLE_PATH);
-    c.header("Content-Type", "application/octet-stream");
-    c.header("Content-Disposition", 'attachment; filename="openfinance.mcpb"');
-    return c.body(data);
-  } catch {
+    return c.newResponse(bufferToArrayBuffer(data), 200, DOWNLOAD_HEADERS);
+  } catch (error) {
+    console.error("[mcp-bundle] Failed to load both remote and local bundle", {
+      remoteUrl,
+      localPath: BUNDLE_PATH,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return c.json(
       { error: "Bundle not found. Run `pnpm bundle` in mcp-server/ first." },
       404,

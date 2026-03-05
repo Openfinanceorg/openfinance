@@ -20,6 +20,8 @@
   let codexCopied = $state(false);
   let configCopied = $state(false);
   let keyLoaded = $state(false);
+  let claudeDownloading = $state(false);
+  let claudeDownloadError = $state<string | null>(null);
 
   const MCP_PACKAGE_NAME = "@openfinance-sh/mcp";
   const DEFAULT_OPENFINANCE_URL = "https://api.openfinance.sh";
@@ -128,6 +130,36 @@
     configCopied = true;
     setTimeout(() => (configCopied = false), 2000);
   }
+
+  async function handleDownloadClaude() {
+    if (claudeDownloading) return;
+
+    claudeDownloading = true;
+    claudeDownloadError = null;
+
+    try {
+      const response = await fetch("/api/mcp-bundle");
+      if (!response.ok) {
+        throw new Error(`Download failed with status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = "openfinance.mcpb";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      claudeDownloadError = "Download failed. Please try again.";
+    } finally {
+      claudeDownloading = false;
+    }
+  }
 </script>
 
 <div class="max-w-4xl mx-auto px-8 pt-8">
@@ -181,15 +213,24 @@
       >
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-sm font-medium text-gray-700">Claude Desktop</h3>
-          <a
-            href="/api/mcp-bundle"
-            download="openfinance.mcpb"
+          <button
+            type="button"
+            onclick={handleDownloadClaude}
+            disabled={claudeDownloading}
             class="inline-flex items-center gap-1.5 rounded-md bg-[#E87B35] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#D16A2A] transition-colors"
           >
-            <Download class="h-3.5 w-3.5" />
-            Add to Claude
-          </a>
+            {#if claudeDownloading}
+              <RefreshCw class="h-3.5 w-3.5 animate-spin" />
+              Downloading...
+            {:else}
+              <Download class="h-3.5 w-3.5" />
+              Add to Claude
+            {/if}
+          </button>
         </div>
+        {#if claudeDownloadError}
+          <p class="text-xs text-red-600 mb-2">{claudeDownloadError}</p>
+        {/if}
         <p class="text-xs text-gray-500">
           Downloads an <code>.mcpb</code> bundle. Double-click to install. You'll
           be prompted for your API key during setup.
