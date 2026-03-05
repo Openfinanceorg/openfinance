@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "openfinance",
   "display_name": "OpenFinance",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Connect your financial accounts to view balances, search transactions, and get spending insights.",
   "author": {
     "name": "OpenFinance"
