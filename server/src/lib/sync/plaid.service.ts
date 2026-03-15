@@ -56,7 +56,7 @@ class PlaidService {
     const { userId, institutionRegistryId, plaidItemId, plaidAccessToken } =
       params;
 
-    // Create account connection
+    // Upsert account connection (handles both new connections and reauth)
     const [connection] = await db
       .insert(accountConnections)
       .values({
@@ -66,6 +66,14 @@ class PlaidService {
         plaidItemId,
         plaidAccessToken,
         status: "active",
+      })
+      .onConflictDoUpdate({
+        target: accountConnections.plaidItemId,
+        set: {
+          plaidAccessToken,
+          status: "active",
+          updatedAt: new Date(),
+        },
       })
       .returning();
 
