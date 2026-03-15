@@ -3,7 +3,7 @@ export type PlanType = (typeof PLAN_TYPES)[number];
 
 export const PLAN_LIMITS: Record<PlanType, number> = {
   free: 1,
-  plus: 5,
+  plus: 8,
   pro: 25,
 };
 
