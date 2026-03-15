@@ -26,7 +26,7 @@ function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
 mcpBundleRoutes.get("/", async (c) => {
   const remoteUrl = process.env.MCP_BUNDLE_URL || DEFAULT_CDN_URL;
   const useRemote =
-    process.env.NODE_ENV === "production" || !!process.env.MCP_BUNDLE_URL;
+    process.env.APP_ENV === "prod" || !!process.env.MCP_BUNDLE_URL;
 
   if (useRemote) {
     try {
