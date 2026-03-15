@@ -1,7 +1,15 @@
 {
   "name": "@openfinance-sh/mcp",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "type": "module",
+  "mcpName": "io.github.Openfinanceorg/openfinance",
+  "description": "Connect your financial accounts to view balances, search transactions, and get spending insights.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Openfinanceorg/openfinance-app",
+    "directory": "mcp-server"
+  },
+  "license": "MIT",
   "bin": {
     "openfinance-mcp": "./build/index.js"
   },
@@ -19,7 +27,8 @@
   "files": [
     "build",
     "manifest.json",
-    "openfinance.mcpb"
+    "openfinance.mcpb",
+    "server.json"
   ],
   "devDependencies": {
     "@types/node": "^22.0.0",

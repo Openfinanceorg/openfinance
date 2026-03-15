@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Openfinanceorg/openfinance",
+  "description": "Connect your financial accounts to view balances, search transactions, and get spending insights.",
+  "repository": {
+    "url": "https://github.com/Openfinanceorg/openfinance-app",
+    "source": "github",
+    "subfolder": "mcp-server"
+  },
+  "version": "0.1.8",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@openfinance-sh/mcp",
+      "version": "0.1.8",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Your OpenFinance API key (starts with sk-)",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "OPENFINANCE_API_KEY"
+        },
+        {
+          "description": "URL of your OpenFinance server",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OPENFINANCE_URL"
+        }
+      ]
+    }
+  ]
+}
