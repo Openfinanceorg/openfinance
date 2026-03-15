@@ -77,6 +77,11 @@ export class PlaidTransactionSyncWorkflow {
   }
 
   @DBOS.step()
+  static async refreshBalances(connectionId: number, accessToken: string) {
+    return plaidService.refreshBalances(connectionId, accessToken);
+  }
+
+  @DBOS.step()
   static async notifyDisconnect(
     userId: string,
     connectionId: number,
@@ -145,6 +150,11 @@ export class PlaidTransactionSyncWorkflow {
         accessToken: connection.plaidAccessToken,
         cursor: connection.transactionCursor,
       });
+
+      await PlaidTransactionSyncWorkflow.refreshBalances(
+        connectionId,
+        connection.plaidAccessToken,
+      );
 
       const total = result.added + result.modified + result.removed;
       await PlaidTransactionSyncWorkflow.markComplete(syncJobId, total);

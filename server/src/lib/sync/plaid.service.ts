@@ -325,6 +325,33 @@ class PlaidService {
 
     return { nextCursor, added, modified, removed };
   }
+
+  async refreshBalances(
+    connectionId: number,
+    accessToken: string,
+  ): Promise<void> {
+    const accountsResponse = await plaidClient.accountsGet({
+      access_token: accessToken,
+    });
+
+    for (const account of accountsResponse.data.accounts) {
+      await db
+        .update(financialAccounts)
+        .set({
+          currentBalance: account.balances.current?.toString() ?? null,
+          availableBalance: account.balances.available?.toString() ?? null,
+          isoCurrencyCode: account.balances.iso_currency_code ?? null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(financialAccounts.accountConnectionId, connectionId),
+            eq(financialAccounts.providerAccountId, account.account_id),
+          ),
+        );
+    }
+  }
+
   async itemRemove(accessToken: string): Promise<boolean> {
     try {
       await plaidClient.itemRemove({ access_token: accessToken });
