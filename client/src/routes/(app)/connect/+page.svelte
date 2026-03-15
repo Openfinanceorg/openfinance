@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { getApiKey, resetApiKey, type ApiKey } from "$lib/sync/api";
+  import { API_BASE } from "$lib/api-client";
   import * as Tabs from "$lib/components/ui/tabs";
   import {
     Download,
@@ -138,7 +139,7 @@
     claudeDownloadError = null;
 
     try {
-      const response = await fetch("/api/mcp-bundle");
+      const response = await fetch(`${API_BASE}/api/mcp-bundle`);
       if (!response.ok) {
         throw new Error(`Download failed with status ${response.status}`);
       }
