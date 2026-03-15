@@ -86,18 +86,30 @@ plaidRoutes.post(
     const user = c.get("user");
     const { public_token, institution_id } = c.req.valid("json");
 
-    // Check billing limits before connecting
-    const connectCheck = await billingService.checkCanConnect(user.id);
-    if (!connectCheck.allowed) {
-      return c.json(
-        { error: "upgrade_required", requiredPlan: connectCheck.requiredPlan },
-        402,
-      );
-    }
-
     // Exchange public token for access token
     const { accessToken, itemId } =
       await plaidService.exchangePublicToken(public_token);
+
+    // If this item already exists, it's a reauth — skip billing check
+    const [existing] = await db
+      .select({ id: accountConnections.id })
+      .from(accountConnections)
+      .where(eq(accountConnections.plaidItemId, itemId))
+      .limit(1);
+
+    if (!existing) {
+      // New connection: check billing limits
+      const connectCheck = await billingService.checkCanConnect(user.id);
+      if (!connectCheck.allowed) {
+        return c.json(
+          {
+            error: "upgrade_required",
+            requiredPlan: connectCheck.requiredPlan,
+          },
+          402,
+        );
+      }
+    }
 
     // Get institution info and registry ID
     let registryId: number | null = null;
