@@ -7,6 +7,14 @@ tags:
   - finance
   - banking
   - ai
+requires:
+  env:
+    - name: OPENFINANCE_API_KEY
+      description: API key from openfinance.sh (Connect tab)
+      required: true
+    - name: OPENFINANCE_URL
+      description: Custom API base URL (defaults to https://api.openfinance.sh)
+      required: false
 ---
 
 # OpenFinance Skill
