@@ -1,10 +1,27 @@
+---
+name: openfinance
+slug: openfinance
+version: 0.0.1
+description: Connect bank accounts to AI models using openfinance.sh
+tags:
+  - finance
+  - banking
+  - ai
+---
+
 # OpenFinance Skill
 
 Query your financial accounts and transactions via the OpenFinance API.
 
 ## Setup
 
-Set the `OPENFINANCE_API_KEY` environment variable. Optionally set `OPENFINANCE_URL` (defaults to `https://api.openfinance.sh`).
+1. Go to [openfinance.sh](https://openfinance.sh) and create an account
+2. Link a bank account through the dashboard
+3. Copy your API key from the **Connect** tab
+4. Set the environment variable:
+   ```bash
+   export OPENFINANCE_API_KEY="your_api_key_here"
+   ```
 
 All commands below use these variables:
 
