@@ -1,0 +1,140 @@
+# OpenFinance Skill
+
+Query your financial accounts and transactions via the OpenFinance API.
+
+## Setup
+
+Set the `OPENFINANCE_API_KEY` environment variable. Optionally set `OPENFINANCE_URL` (defaults to `https://api.openfinance.sh`).
+
+All commands below use these variables:
+
+```
+BASE_URL="${OPENFINANCE_URL:-https://api.openfinance.sh}"
+AUTH_HEADER="Authorization: Bearer $OPENFINANCE_API_KEY"
+```
+
+---
+
+## 1. Get Accounts
+
+Fetch all connected financial accounts with balances and institution info.
+
+```bash
+curl -s "$BASE_URL/api/accounts" -H "$AUTH_HEADER" | cat
+```
+
+Response shape per account:
+- `id` (number) — account ID (use for filtering transactions)
+- `name`, `officialName` — account names
+- `type` (e.g. "depository", "credit"), `subtype` (e.g. "checking", "credit card")
+- `mask` — last 4 digits
+- `currentBalance`, `availableBalance`, `isoCurrencyCode`
+- `institutionName`, `institutionUrl`
+- `status` — "active" or "hidden"
+- `isSyncing` (boolean), `syncError` (object or null)
+
+---
+
+## 2. Get Transactions
+
+Search and filter transactions. Returns newest first by default.
+
+```bash
+curl -s -G "$BASE_URL/api/transactions" \
+  -H "$AUTH_HEADER" \
+  --data-urlencode "startDate=YYYY-MM-DD" \
+  --data-urlencode "endDate=YYYY-MM-DD" \
+  --data-urlencode "search=coffee" \
+  --data-urlencode "merchants=Starbucks,Walmart" \
+  --data-urlencode "accountId=123" \
+  --data-urlencode "limit=100" \
+  --data-urlencode "cursor=CURSOR_VALUE" \
+  --data-urlencode "pending=false" \
+  --data-urlencode "status=active,hidden" \
+  --data-urlencode "fields=name,amount,date,merchantName" \
+  --data-urlencode 'amountFilters=[{"operator":">","amount":100}]' \
+  | cat
+```
+
+All query parameters are **optional**. Only include the ones you need.
+
+### Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `startDate` | `YYYY-MM-DD` | Start date filter |
+| `endDate` | `YYYY-MM-DD` | End date filter |
+| `search` | string | Search by transaction name or merchant |
+| `merchants` | comma-separated | Filter by exact merchant names |
+| `accountId` | number | Filter by account ID |
+| `limit` | number | Max results (default 100, max 500) |
+| `cursor` | string | Cursor for pagination (from previous response) |
+| `pending` | boolean | Filter pending transactions |
+| `status` | comma-separated | Filter by status: `active`, `hidden`, `deleted` |
+| `fields` | comma-separated | Return only these fields per transaction (reduces payload) |
+| `amountFilters` | JSON array | Filter by amount, e.g. `[{"operator":">","amount":50}]` |
+
+### Transaction fields
+
+`id`, `name`, `amount`, `date`, `authorizedDate`, `pending`, `merchantName`, `isoCurrencyCode`, `accountId`, `status`, `createdAt`, `updatedAt`
+
+---
+
+## 3. Query Transactions (SQL)
+
+Run a SQL SELECT against the `txns` CTE for aggregations, grouping, and analysis. The query runs read-only with a 5-second timeout and 1000-row limit.
+
+```bash
+curl -s -X POST "$BASE_URL/api/transactions/query" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d '{"sql": "SELECT SUM(amount), COUNT(*) FROM txns WHERE merchant_name ILIKE '\''%starbucks%'\''"}' \
+  | cat
+```
+
+### `txns` CTE columns
+
+`id`, `name`, `amount` (numeric), `date`, `authorized_date`, `merchant_name`, `pending`, `iso_currency_code`, `account_id`, `status`, `created_at`, `updated_at`
+
+Note: SQL column names use `snake_case` (e.g. `merchant_name`), while the REST API returns `camelCase` (e.g. `merchantName`).
+
+### Example queries
+
+Monthly spend breakdown:
+```sql
+SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount) as total, COUNT(*) as count
+FROM txns GROUP BY 1 ORDER BY 1
+```
+
+Top merchants by total spend:
+```sql
+SELECT COALESCE(merchant_name, name) as merchant, SUM(amount) as total
+FROM txns GROUP BY 1 ORDER BY total DESC LIMIT 10
+```
+
+Spending in a date range:
+```sql
+SELECT SUM(amount) as total FROM txns
+WHERE date >= '2026-01-01' AND date < '2026-02-01'
+```
+
+Large transactions:
+```sql
+SELECT name, merchant_name, amount, date FROM txns
+WHERE amount > 500 ORDER BY amount DESC
+```
+
+### Response shape
+
+Success: `{ "rows": [...], "rowCount": N }`
+Error: `{ "error": "error message" }` — fix the SQL and retry.
+
+---
+
+## Tips
+
+- **Use SQL for aggregations** — monthly totals, top merchants, category breakdowns. It's faster and returns less data than fetching all transactions.
+- **Use `fields` parameter** on GET /api/transactions to reduce payload size when you only need a few columns.
+- **Pagination**: if there are more results, the response includes a cursor. Pass it as `cursor` in the next request.
+- **Amount values** are positive for debits (money spent) and negative for credits (money received).
+- When constructing SQL, always reference the `txns` CTE directly — do not define your own CTE or use transaction control statements.
