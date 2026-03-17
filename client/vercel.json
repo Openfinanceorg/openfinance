@@ -2,5 +2,16 @@
   "outputDirectory": "build",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "encrypted-media=(self \"https://cdn.plaid.com\")"
+        }
+      ]
+    }
   ]
 }
