@@ -93,6 +93,8 @@
       onProviderSelect(institution, "plaid");
     } else if (institution.mxData) {
       onProviderSelect(institution, "mx");
+    } else if (institution.mastercardData) {
+      onProviderSelect(institution, "quiltt");
     }
   }
 

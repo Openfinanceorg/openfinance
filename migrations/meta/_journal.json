@@ -106,6 +106,13 @@
       "when": 1774893552362,
       "tag": "0014_purple_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1774895891523,
+      "tag": "0015_natural_exodus",
+      "breakpoints": true
     }
   ]
 }

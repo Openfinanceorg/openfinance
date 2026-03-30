@@ -36,6 +36,7 @@ export const getInstitutionRegistryUpdateColumns = () => {
     "countryCode",
     "plaidData",
     "mxData",
+    "mastercardData",
     "supportedAccountTypes",
     "lastSynced",
     "updatedAt",

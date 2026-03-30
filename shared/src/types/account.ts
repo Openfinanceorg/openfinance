@@ -14,5 +14,6 @@ export interface ConnectedAccount {
   isSyncing: boolean;
   connectionId: number;
   provider: "plaid" | "mx" | "quiltt";
+  quilttConnectionId: string | null;
   status: "active" | "hidden";
 }

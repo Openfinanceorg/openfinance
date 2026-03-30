@@ -1,0 +1,1 @@
+ALTER TABLE "institution_registry" ADD COLUMN "mastercard_data" json;

@@ -47,6 +47,19 @@ export interface InstitutionType {
     supportsAccountStatement?: boolean;
     supportsAccountVerification?: boolean;
   } | null;
+  mastercardData?: {
+    institutionId: string;
+    name: string;
+    oauthEnabled: boolean;
+    status: string;
+    urlHomeApp?: string | null;
+    accountTypeDescription?: string | null;
+    branding?: {
+      logo?: string | null;
+      icon?: string | null;
+      primaryColor?: string | null;
+    } | null;
+  } | null;
   providers?: SyncProvider[];
   matchConfidence?: number;
   rank?: number;

@@ -4,6 +4,7 @@
   import { authClient } from "$lib/auth-client";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
   import MXLink from "$lib/sync/MXLink.svelte";
+  import QuilttLink from "$lib/sync/QuilttLink.svelte";
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import UpgradeModal from "$lib/billing/UpgradeModal.svelte";
@@ -36,6 +37,7 @@
   let searchOpen = $state(false);
   let plaidLink: PlaidLink;
   let mxLink: MXLink;
+  let quilttLink: QuilttLink;
 
   let accountLinkedCallback: (() => void) | undefined;
 
@@ -87,6 +89,11 @@
       plaidLink.initiatePlaidLink(institution.plaidData?.institutionId);
     } else if (provider === "mx") {
       mxLink.initiateMXLink(institution.mxData?.institutionCode);
+    } else if (provider === "quiltt") {
+      quilttLink.initiateQuilttLink(
+        institution.name,
+        institution.id ? parseInt(institution.id) : undefined,
+      );
     }
   }
 
@@ -104,6 +111,8 @@
       mxLink.initiateReauthentication(account.id);
     } else if (account.provider === "plaid") {
       plaidLink.initiateReauthentication(account.id);
+    } else if (account.provider === "quiltt" && account.quilttConnectionId) {
+      quilttLink.initiateReauthentication(account.quilttConnectionId);
     }
   }
 
@@ -141,6 +150,12 @@
 
   <MXLink
     bind:this={mxLink}
+    onAccountLinked={handleAccountLinked}
+    onSyncStarted={handleSyncStarted}
+  />
+
+  <QuilttLink
+    bind:this={quilttLink}
     onAccountLinked={handleAccountLinked}
     onSyncStarted={handleSyncStarted}
   />
