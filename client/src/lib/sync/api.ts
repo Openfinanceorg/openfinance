@@ -136,3 +136,29 @@ export function getMxMemberStatus(memberGuid: string) {
     successfully_aggregated_at: string | null;
   }>(`/api/mx/member_status?member_guid=${encodeURIComponent(memberGuid)}`);
 }
+
+// Quiltt API functions
+
+export function createQuilttSession() {
+  return apiFetch<{
+    token: string;
+    profileId: string;
+    connectorId: string;
+    expiresAt: string;
+  }>("/api/quiltt/session", { method: "POST" });
+}
+
+export function quilttCallback(
+  connectionId: string,
+  profileId: string,
+  institutionRegistryId?: number,
+) {
+  return apiFetch<{ message: string }>("/api/quiltt/callback", {
+    method: "POST",
+    body: JSON.stringify({
+      connectionId,
+      profileId,
+      institutionRegistryId,
+    }),
+  });
+}

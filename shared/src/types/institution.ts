@@ -1,4 +1,4 @@
-export type SyncProvider = "plaid" | "mx";
+export type SyncProvider = "plaid" | "mx" | "quiltt";
 
 export interface InstitutionType {
   id: string;
