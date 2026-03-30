@@ -145,7 +145,7 @@ const QUILTT_TO_ACCOUNT_TYPE: Record<string, AccountType> = {
   IRA: "investment",
 };
 
-function mapQuilttTypeToAccountType(
+export function mapQuilttTypeToAccountType(
   quilttType: string,
   accountName?: string,
 ): AccountType {
