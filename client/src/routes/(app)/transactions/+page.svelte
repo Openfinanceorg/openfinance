@@ -77,7 +77,7 @@
             <Button
               variant="outline"
               size="sm"
-              class="h-8 text-sm gap-1.5"
+              class="h-8 text-sm gap-1.5 whitespace-nowrap"
               {...props}
             >
               {#if selectedAccount}

@@ -19,7 +19,7 @@ import { proxyFetch } from "../api-proxy";
 interface QuilttAccount {
   id: string;
   name: string;
-  type: string;
+  kind: string;
   mask: string;
   balance: {
     current: number | null;
@@ -80,7 +80,7 @@ const CONNECTION_QUERY = `
       accounts {
         id
         name
-        type
+        kind
         mask
         balance {
           current
@@ -128,6 +128,9 @@ const CONNECTION_DISCONNECT_MUTATION = `
 // Account type mapping from Quiltt to standardized system
 
 const QUILTT_TO_ACCOUNT_TYPE: Record<string, AccountType> = {
+  DEPOSITORY: "depository",
+  CREDIT: "credit",
+  INSURANCE: "depository",
   CHECKING: "depository",
   SAVINGS: "depository",
   MONEY_MARKET: "depository",
@@ -478,8 +481,8 @@ class QuilttService {
           providerAccountId: account.id,
           name: account.name,
           officialName: null,
-          type: mapQuilttTypeToAccountType(account.type, account.name),
-          subtype: account.type.toLowerCase(),
+          type: mapQuilttTypeToAccountType(account.kind, account.name),
+          subtype: account.kind.toLowerCase(),
           mask: account.mask || null,
           currentBalance: account.balance?.current?.toString() ?? null,
           availableBalance: account.balance?.available?.toString() ?? null,
@@ -492,8 +495,8 @@ class QuilttService {
           ],
           set: {
             name: account.name,
-            type: mapQuilttTypeToAccountType(account.type, account.name),
-            subtype: account.type.toLowerCase(),
+            type: mapQuilttTypeToAccountType(account.kind, account.name),
+            subtype: account.kind.toLowerCase(),
             mask: account.mask || null,
             currentBalance: account.balance?.current?.toString() ?? null,
             availableBalance: account.balance?.available?.toString() ?? null,

@@ -89,11 +89,10 @@
     </p>
     <p class="text-xs text-gray-500 truncate">{account.institutionName}</p>
   </div>
+  <div class="flex-shrink-0 text-sm font-medium text-gray-900">
+    {displayBalance}
+  </div>
   {#if account.syncError}
     {@render syncErrorReconnect()}
-  {:else}
-    <div class="flex-shrink-0 text-sm font-medium text-gray-900">
-      {displayBalance}
-    </div>
   {/if}
 </div>
