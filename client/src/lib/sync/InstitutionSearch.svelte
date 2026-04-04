@@ -27,6 +27,7 @@
   const PROVIDER_LOGO_DOMAINS: Record<SyncProvider, string> = {
     plaid: "plaid.com",
     mx: "mx.com",
+    quiltt: "mastercard.com",
   };
 
   function getProviderLogoUrl(provider: SyncProvider): string | null {
@@ -39,6 +40,7 @@
   const PROVIDER_DISPLAY_NAMES: Record<SyncProvider, string> = {
     plaid: "Plaid",
     mx: "MX",
+    quiltt: "Quiltt",
   };
 
   // Connection health thresholds
@@ -86,6 +88,11 @@
     if (institution.mxData?.institutionCode) {
       return connectedInstitutionIds.has(institution.mxData.institutionCode);
     }
+    if (institution.mastercardData?.institutionId) {
+      return connectedInstitutionIds.has(
+        institution.mastercardData.institutionId,
+      );
+    }
     return false;
   }
 
@@ -100,6 +107,8 @@
       providerNames = [PROVIDER_DISPLAY_NAMES.plaid];
     } else if (institution.mxData) {
       providerNames = [PROVIDER_DISPLAY_NAMES.mx];
+    } else if (institution.mastercardData) {
+      providerNames = [PROVIDER_DISPLAY_NAMES.quiltt];
     }
 
     let tooltipText = "";
@@ -160,6 +169,17 @@
           plaidHasWarning,
         ),
       },
+      quiltt: {
+        available: !!institution.mastercardData,
+        hasIssues: false,
+        hasWarning: false,
+        recommended: isProviderRecommended(
+          "quiltt",
+          institution,
+          plaidDisabled,
+          plaidHasWarning,
+        ),
+      },
     };
   }
 
@@ -179,6 +199,12 @@
         return (
           (!!institution.mxData && (plaidDisabled || plaidHasWarning)) ||
           (!!institution.mxData && !institution.plaidData)
+        );
+      case "quiltt":
+        return (
+          !!institution.mastercardData &&
+          !institution.plaidData &&
+          !institution.mxData
         );
     }
   }
@@ -204,6 +230,13 @@
         description: status.mx.recommended
           ? "Most stable connection available"
           : "Requires 2FA twice but very reliable",
+      },
+      {
+        type: "quiltt" as const,
+        ...status.quiltt,
+        name: "Mastercard",
+        disabled: false,
+        description: "Powered by Quiltt",
       },
     ]
       .filter((p) => p.available)

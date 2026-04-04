@@ -13,6 +13,7 @@ export interface ConnectedAccount {
   syncError: { message: string; lastFailedAt: string } | null;
   isSyncing: boolean;
   connectionId: number;
-  provider: "plaid" | "mx";
+  provider: "plaid" | "mx" | "quiltt";
+  quilttConnectionId: string | null;
   status: "active" | "hidden";
 }

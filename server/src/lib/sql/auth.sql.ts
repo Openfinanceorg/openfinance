@@ -7,6 +7,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   mxUserGuid: text("mx_user_guid"),
+  quilttProfileId: text("quiltt_profile_id"),
   firstAccountConnectedAt: timestamp("first_account_connected_at"),
   onboardingDismissedAt: timestamp("onboarding_dismissed_at"),
   firstMcpLinkedAt: timestamp("first_mcp_linked_at"),

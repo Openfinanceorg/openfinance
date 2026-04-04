@@ -10,7 +10,11 @@ import {
 import { user } from "./auth.sql";
 import { accountConnections } from "./account-connections.sql";
 
-export const syncJobProviderEnum = pgEnum("sync_job_provider", ["plaid", "mx"]);
+export const syncJobProviderEnum = pgEnum("sync_job_provider", [
+  "plaid",
+  "mx",
+  "quiltt",
+]);
 
 export const syncJobTypeEnum = pgEnum("sync_job_type", [
   "accounts",

@@ -13,5 +13,6 @@
 import "./example.workflow";
 import "./plaid-transaction-sync.workflow";
 import "./mx-transaction-sync.workflow";
+import "./quiltt-transaction-sync.workflow";
 import "./institution-sync.workflow";
 import "./transaction-poll.workflow";

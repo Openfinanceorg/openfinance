@@ -27,6 +27,7 @@ const baseAccount: ConnectedAccount = {
   isSyncing: false,
   connectionId: 1,
   provider: "plaid",
+  quilttConnectionId: null,
   status: "active",
 };
 

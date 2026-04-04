@@ -11,6 +11,8 @@ import { eq, inArray, and, desc, sql } from "drizzle-orm";
 import type { ConnectedAccount } from "@openfinance/shared";
 import { plaidService } from "./sync/plaid.service";
 import { mxService } from "./sync/mx.service";
+import { quilttService } from "./sync/quiltt.service";
+import { user as userTable } from "../schema";
 
 interface SyncError {
   message: string;
@@ -27,6 +29,7 @@ class FinancialAccountService {
         account: financialAccounts,
         connectionId: accountConnections.id,
         provider: accountConnections.provider,
+        quilttConnectionId: accountConnections.quilttConnectionId,
         institutionName: institutionRegistry.name,
         institutionUrl: institutionRegistry.url,
       })
@@ -66,6 +69,7 @@ class FinancialAccountService {
       isSyncing: syncingConnections.has(row.connectionId),
       connectionId: row.connectionId,
       provider: row.provider,
+      quilttConnectionId: row.quilttConnectionId ?? null,
       status: row.account.status as "active" | "hidden",
     }));
   }
@@ -79,6 +83,7 @@ class FinancialAccountService {
         account: financialAccounts,
         connectionId: accountConnections.id,
         provider: accountConnections.provider,
+        quilttConnectionId: accountConnections.quilttConnectionId,
         institutionName: institutionRegistry.name,
         institutionUrl: institutionRegistry.url,
       })
@@ -118,6 +123,7 @@ class FinancialAccountService {
       isSyncing: syncingConnections.has(row.connectionId),
       connectionId: row.connectionId,
       provider: row.provider,
+      quilttConnectionId: row.quilttConnectionId ?? null,
       status: row.account.status as "active" | "hidden",
     };
   }
@@ -217,6 +223,21 @@ class FinancialAccountService {
               connection.userId,
               connection.mxMemberGuid,
             );
+          } else if (
+            connection.provider === "quiltt" &&
+            connection.quilttConnectionId
+          ) {
+            const [dbUser] = await db
+              .select({ quilttProfileId: userTable.quilttProfileId })
+              .from(userTable)
+              .where(eq(userTable.id, connection.userId))
+              .limit(1);
+            if (dbUser?.quilttProfileId) {
+              await quilttService.disconnectConnection(
+                dbUser.quilttProfileId,
+                connection.quilttConnectionId,
+              );
+            }
           }
         } catch (err) {
           console.error(

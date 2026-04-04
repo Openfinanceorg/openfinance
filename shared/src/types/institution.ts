@@ -1,4 +1,4 @@
-export type SyncProvider = "plaid" | "mx";
+export type SyncProvider = "plaid" | "mx" | "quiltt";
 
 export interface InstitutionType {
   id: string;
@@ -46,6 +46,19 @@ export interface InstitutionType {
     supportsTransactionHistory?: boolean;
     supportsAccountStatement?: boolean;
     supportsAccountVerification?: boolean;
+  } | null;
+  mastercardData?: {
+    institutionId: string;
+    name: string;
+    oauthEnabled: boolean;
+    status: string;
+    urlHomeApp?: string | null;
+    accountTypeDescription?: string | null;
+    branding?: {
+      logo?: string | null;
+      icon?: string | null;
+      primaryColor?: string | null;
+    } | null;
   } | null;
   providers?: SyncProvider[];
   matchConfidence?: number;

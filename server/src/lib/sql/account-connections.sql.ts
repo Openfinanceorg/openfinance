@@ -13,6 +13,7 @@ import { institutionRegistry } from "./institution-registry.sql";
 export const financialProviderEnum = pgEnum("financial_provider", [
   "plaid",
   "mx",
+  "quiltt",
 ]);
 
 export const accountConnectionStatusEnum = pgEnum("account_connection_status", [
@@ -42,6 +43,9 @@ export const accountConnections = pgTable(
     // MX member identifiers (nullable for Plaid)
     mxMemberGuid: text("mx_member_guid").unique(),
     mxInstitutionCode: text("mx_institution_code"),
+
+    // Quiltt connection identifiers (nullable for Plaid/MX)
+    quilttConnectionId: text("quiltt_connection_id").unique(),
 
     status: accountConnectionStatusEnum("status").notNull().default("active"),
     lastSyncedAt: timestamp("last_synced_at"),

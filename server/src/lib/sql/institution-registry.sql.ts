@@ -74,6 +74,31 @@ export const institutionRegistry = pgTable(
       logo?: string | null;
     } | null>(),
 
+    mastercardData: json("mastercard_data").$type<{
+      institutionId: string;
+      name: string;
+      voa: boolean;
+      voi: boolean;
+      stateAgg: boolean;
+      ach: boolean;
+      transAgg: boolean;
+      aha: boolean;
+      availBalance: boolean;
+      oauthEnabled: boolean;
+      status: string;
+      urlHomeApp: string | null;
+      urlLogonApp: string | null;
+      accountTypeDescription: string | null;
+      currency: string;
+      branding: {
+        logo: string | null;
+        alternateLogo: string | null;
+        icon: string | null;
+        primaryColor: string | null;
+        title: string | null;
+      } | null;
+    } | null>(),
+
     // Supported account types - standardized to Plaid's three-type system
     supportedAccountTypes: json("supported_account_types").$type<
       AccountType[] | null
