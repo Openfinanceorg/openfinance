@@ -52,6 +52,20 @@ fly deploy
 
 Migrations run automatically before each deploy via the `release_command` in `fly.toml`.
 
+## Database access
+
+```bash
+# List managed Postgres clusters
+fly mpg list
+
+# Connect directly via psql
+fly mpg connect <cluster-id>
+
+# Proxy to localhost for local tools
+fly mpg proxy <cluster-id>
+# Then connect: psql postgres://user:password@localhost:5432/openfinance
+```
+
 ## Verify
 
 ```bash

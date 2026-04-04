@@ -11,6 +11,7 @@ import { accountConnections, syncJobs } from "../schema";
 import { desc, eq, inArray } from "drizzle-orm";
 import { PlaidTransactionSyncWorkflow } from "./plaid-transaction-sync.workflow";
 import { MxTransactionSyncWorkflow } from "./mx-transaction-sync.workflow";
+import { QuilttTransactionSyncWorkflow } from "./quiltt-transaction-sync.workflow";
 
 interface PollResult {
   connectionsProcessed: number;
@@ -75,6 +76,16 @@ export class TransactionPollWorkflow {
         } else if (connection.provider === "mx") {
           const handle = await DBOS.startWorkflow(
             MxTransactionSyncWorkflow,
+          ).run({
+            connectionId: connection.id,
+            userId: connection.userId,
+            syncJobId: syncJob.id,
+          });
+          const result = await handle.getResult();
+          if (result) deltas.push(result);
+        } else if (connection.provider === "quiltt") {
+          const handle = await DBOS.startWorkflow(
+            QuilttTransactionSyncWorkflow,
           ).run({
             connectionId: connection.id,
             userId: connection.userId,
