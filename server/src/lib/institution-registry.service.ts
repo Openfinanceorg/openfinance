@@ -190,7 +190,10 @@ class InstitutionRegistryService {
 
     // Exclude MX-only institutions when MX is not configured
     if (!isMxConfigured()) {
-      conditions.push(sql`${institutionRegistry.plaidData} is not null`);
+      conditions.push(
+        sql`(${institutionRegistry.plaidData} is not null
+          or ${institutionRegistry.mastercardData} is not null)`,
+      );
     }
 
     if (accountType !== "all") {
