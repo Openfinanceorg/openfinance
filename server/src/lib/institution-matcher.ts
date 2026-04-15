@@ -44,7 +44,7 @@ export class InstitutionMatcher {
     normalized = normalized.replace(/@\s*work/g, "@work");
     normalized = normalized.replace(/\s*-\s+personal\b/i, "");
     normalized = normalized.replace(/\bu\.s\.?\b/g, "us");
-    normalized = normalized.replace(/\s*\((us|ca|uk|au|nz)\)\s*/gi, " $1 ");
+    normalized = normalized.replace(/\s*\(([^)]*)\)\s*/g, " $1 ");
     normalized = normalized.replace(/[.,\-_]+/g, " ");
     normalized = normalized.replace(
       /\b(bank|banking|credit union|cu|online|digital|inc|corp|ltd|llc)\b/g,

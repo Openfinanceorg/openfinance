@@ -12,11 +12,19 @@ const mockMxSyncer = {
 };
 
 vi.mock("$lib/sync/plaid-institution-syncer.js", () => ({
-  PlaidInstitutionSyncer: vi.fn(() => mockPlaidSyncer),
+  PlaidInstitutionSyncer: vi.fn(function () {
+    return mockPlaidSyncer;
+  }),
 }));
 
 vi.mock("$lib/sync/mx-institution-syncer.js", () => ({
-  MXInstitutionSyncer: vi.fn(() => mockMxSyncer),
+  MXInstitutionSyncer: vi.fn(function () {
+    return mockMxSyncer;
+  }),
+}));
+
+vi.mock("$lib/sync/mx.client.js", () => ({
+  isMxConfigured: () => true,
 }));
 
 describe("InstitutionSyncWorkflow", () => {

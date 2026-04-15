@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "node --import tsx src/index.ts"
+    "start": "node --import tsx src/index.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@dbos-inc/dbos-sdk": "^4.8.8",
