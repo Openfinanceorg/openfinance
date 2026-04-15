@@ -7,7 +7,9 @@
     DialogHeader,
   } from "$lib/components/ui/dialog";
   import { createCheckoutSession, changePlan } from "./api";
+  import { refreshBillingState } from "./state";
   import { PLAN_LIMITS, PLAN_PRICES, type PlanType } from "@openfinance/shared";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     isOpen?: boolean;
@@ -40,10 +42,10 @@
     try {
       if (hasExistingSubscription) {
         await changePlan(requiredPlan);
+        await refreshBillingState();
+        toast.success(`Plan upgraded to ${requiredPlan}`);
         isOpen = false;
         onClose();
-        // Plan change is immediate via Stripe
-        window.location.reload();
       } else {
         const { url } = await createCheckoutSession(requiredPlan);
         window.location.href = url;
