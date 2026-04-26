@@ -471,40 +471,11 @@ class QuilttService {
 
     this.markFirstAccountConnected(userId);
 
-    // Fetch and upsert accounts (available even during INITIALIZING)
-    for (const account of connection.accounts) {
-      await db
-        .insert(financialAccounts)
-        .values({
-          userId,
-          accountConnectionId: connectionId,
-          providerAccountId: account.id,
-          name: account.name,
-          officialName: null,
-          type: mapQuilttTypeToAccountType(account.kind, account.name),
-          subtype: account.kind.toLowerCase(),
-          mask: account.mask || null,
-          currentBalance: account.balance?.current?.toString() ?? null,
-          availableBalance: account.balance?.available?.toString() ?? null,
-          isoCurrencyCode: "USD",
-        })
-        .onConflictDoUpdate({
-          target: [
-            financialAccounts.accountConnectionId,
-            financialAccounts.providerAccountId,
-          ],
-          set: {
-            name: account.name,
-            type: mapQuilttTypeToAccountType(account.kind, account.name),
-            subtype: account.kind.toLowerCase(),
-            mask: account.mask || null,
-            currentBalance: account.balance?.current?.toString() ?? null,
-            availableBalance: account.balance?.available?.toString() ?? null,
-            isoCurrencyCode: "USD",
-            updatedAt: new Date(),
-          },
-        });
-    }
+    await this.upsertAccountsFromConnection(
+      userId,
+      connectionId,
+      connection.accounts,
+    );
 
     // Create sync job for transactions
     const [syncJob] = await db
@@ -535,7 +506,29 @@ class QuilttService {
   }) {
     const { connectionId, quilttConnectionId, quilttProfileId } = params;
 
-    // Get accounts for this connection
+    const [conn] = await db
+      .select({ userId: accountConnections.userId })
+      .from(accountConnections)
+      .where(eq(accountConnections.id, connectionId))
+      .limit(1);
+
+    if (!conn) {
+      throw new Error(`Connection ${connectionId} not found`);
+    }
+    const userId = conn.userId;
+
+    // Upsert accounts — the initial sync may have run before Quiltt populated
+    // them (INITIALIZING state can return empty accounts).
+    const connection = await this.getConnection(
+      quilttProfileId,
+      quilttConnectionId,
+    );
+    await this.upsertAccountsFromConnection(
+      userId,
+      connectionId,
+      connection.accounts,
+    );
+
     const accounts = await db
       .select({
         id: financialAccounts.id,
@@ -546,27 +539,6 @@ class QuilttService {
       .where(eq(financialAccounts.accountConnectionId, connectionId));
 
     const accountMap = new Map(accounts.map((a) => [a.providerAccountId, a]));
-
-    // Refresh account balances (may have been null during initial sync)
-    const connection = await this.getConnection(
-      quilttProfileId,
-      quilttConnectionId,
-    );
-    for (const acct of connection.accounts) {
-      await db
-        .update(financialAccounts)
-        .set({
-          currentBalance: acct.balance?.current?.toString() ?? null,
-          availableBalance: acct.balance?.available?.toString() ?? null,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(financialAccounts.accountConnectionId, connectionId),
-            eq(financialAccounts.providerAccountId, acct.id),
-          ),
-        );
-    }
 
     // Fetch transactions only for this connection's accounts
     const connectionAccountIds = connection.accounts.map((a) => a.id);
@@ -628,6 +600,41 @@ class QuilttService {
       .where(eq(accountConnections.id, connectionId));
 
     return { added };
+  }
+
+  private async upsertAccountsFromConnection(
+    userId: string,
+    connectionId: number,
+    quilttAccounts: QuilttAccount[],
+  ): Promise<void> {
+    for (const account of quilttAccounts) {
+      const fields = {
+        name: account.name,
+        type: mapQuilttTypeToAccountType(account.kind, account.name),
+        subtype: account.kind.toLowerCase(),
+        mask: account.mask || null,
+        currentBalance: account.balance?.current?.toString() ?? null,
+        availableBalance: account.balance?.available?.toString() ?? null,
+        isoCurrencyCode: "USD",
+      };
+
+      await db
+        .insert(financialAccounts)
+        .values({
+          userId,
+          accountConnectionId: connectionId,
+          providerAccountId: account.id,
+          officialName: null,
+          ...fields,
+        })
+        .onConflictDoUpdate({
+          target: [
+            financialAccounts.accountConnectionId,
+            financialAccounts.providerAccountId,
+          ],
+          set: { ...fields, updatedAt: new Date() },
+        });
+    }
   }
 
   private markFirstAccountConnected(userId: string): void {
