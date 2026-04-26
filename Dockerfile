@@ -15,6 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/server/node_modules ./server/node_modules
 COPY server/ server/
 COPY shared/ shared/
+COPY skill/ skill/
 COPY migrations/ migrations/
 COPY drizzle.config.ts ./
 EXPOSE 3000

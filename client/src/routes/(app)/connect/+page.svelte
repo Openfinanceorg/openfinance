@@ -10,6 +10,7 @@
     Eye,
     EyeOff,
     RefreshCw,
+    Sparkles,
   } from "lucide-svelte";
 
   let existingKey = $state<ApiKey | null>(null);
@@ -25,6 +26,9 @@
   let keyLoaded = $state(false);
   let claudeDownloading = $state(false);
   let claudeDownloadError = $state<string | null>(null);
+  let skillContent = $state<string | null>(null);
+  let skillError = $state<string | null>(null);
+  let skillCopied = $state(false);
 
   const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY;
 
@@ -64,10 +68,34 @@
   const codexCommand = $derived(buildCodexCommand(fullKey ?? "sk-..."));
   const displayCodexCommand = $derived(buildCodexCommand(maskedKey));
 
+  const displaySkillExportCommand = $derived(
+    `export OPENFINANCE_API_KEY=${maskedKey}`,
+  );
+
   // Load existing key on mount
   $effect(() => {
     loadKey();
+    loadSkill();
   });
+
+  async function loadSkill() {
+    try {
+      const response = await fetch(`${API_BASE}/api/skill`);
+      if (!response.ok) {
+        throw new Error(`Load failed with status ${response.status}`);
+      }
+      skillContent = await response.text();
+    } catch {
+      skillError = "Failed to load SKILL.md. Please try again.";
+    }
+  }
+
+  async function handleCopySkill() {
+    if (!skillContent) return;
+    await navigator.clipboard.writeText(skillContent);
+    skillCopied = true;
+    setTimeout(() => (skillCopied = false), 2000);
+  }
 
   async function loadKey() {
     try {
@@ -189,8 +217,7 @@
         Connect accounts to your AI
       </h2>
       <p class="text-sm text-[var(--text-muted)] mt-1">
-        Install the MCP server in Claude or Codex, then use your API key to
-        connect.
+        Install the Skill or MCP server, then use your API key to connect.
       </p>
     </div>
 
@@ -230,13 +257,81 @@
           OpenClaw
         </Tabs.Trigger>
         <Tabs.Trigger
-          value="other"
+          value="skill"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
+        >
+          <Sparkles class="h-4 w-4" />
+          Skill
+        </Tabs.Trigger>
+        <Tabs.Trigger
+          value="mcp"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
         >
           <Terminal class="h-4 w-4" />
-          Other
+          MCP server
         </Tabs.Trigger>
       </Tabs.List>
+
+      <Tabs.Content
+        value="skill"
+        class="rounded-lg border border-[var(--border)] p-4"
+      >
+        <div class="mb-4">
+          <h3 class="text-sm font-medium text-[var(--text)]">
+            Install as a Skill
+          </h3>
+          <p class="text-xs text-[var(--text-muted)] mt-1">
+            Skills are a markdown file your agent loads. Save
+            <code class="text-[var(--text)]">SKILL.md</code> where your agent
+            reads skills, and set
+            <code class="text-[var(--text)]">OPENFINANCE_API_KEY</code> in its environment.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-xs font-medium text-[var(--text)]">
+            Step 1. Copy SKILL.md
+          </h4>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={!skillContent}
+            onclick={handleCopySkill}
+          >
+            <Copy class="h-3.5 w-3.5 mr-1" />
+            {skillCopied ? "Copied" : "Copy SKILL.md"}
+          </Button>
+        </div>
+        {#if skillError}
+          <p class="text-xs text-red-600 mb-2">{skillError}</p>
+        {:else if skillContent}
+          <pre
+            class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-3 overflow-auto max-h-96 whitespace-pre-wrap break-words"><code
+              >{skillContent}</code
+            ></pre>
+        {:else}
+          <p class="text-xs text-[var(--text-muted)]">Loading...</p>
+        {/if}
+
+        <div class="mt-5 flex items-center justify-between mb-2">
+          <h4 class="text-xs font-medium text-[var(--text)]">
+            Step 2. Set this environment variable
+          </h4>
+          <Button variant="secondary" size="sm" onclick={handleCopyExport}>
+            <Copy class="h-3.5 w-3.5 mr-1" />
+            {exportCopied ? "Copied" : "Copy"}
+          </Button>
+        </div>
+        <pre
+          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+            >{displaySkillExportCommand}</code
+          ></pre>
+        {#if !fullKey}
+          <p class="text-xs text-[var(--text-muted)] mt-2">
+            Replace <code>sk-...</code> with your API key.
+          </p>
+        {/if}
+      </Tabs.Content>
 
       <Tabs.Content
         value="claude"
@@ -332,11 +427,13 @@
       </Tabs.Content>
 
       <Tabs.Content
-        value="other"
+        value="mcp"
         class="rounded-lg border border-[var(--border)] p-4"
       >
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium text-[var(--text)]">Manual config</h3>
+          <h3 class="text-sm font-medium text-[var(--text)]">
+            MCP server config
+          </h3>
           <Button variant="secondary" size="sm" onclick={handleCopyConfig}>
             <Copy class="h-3.5 w-3.5 mr-1" />
             {configCopied ? "Copied" : "Copy config"}

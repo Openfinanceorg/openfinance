@@ -8,3 +8,4 @@ client-dist
 *.local
 .DS_Store
 tmp
+.mcp.json

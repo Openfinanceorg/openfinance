@@ -1,5 +1,23 @@
-import { describe, it, expect } from "vitest";
-import { mapQuilttTypeToAccountType } from "./quiltt.service.js";
+import { randomUUID } from "crypto";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  afterEach,
+  vi,
+} from "vitest";
+import { eq } from "drizzle-orm";
+import { db } from "../../db";
+import {
+  user,
+  accountConnections,
+  financialAccounts,
+  syncJobs,
+  transactions,
+} from "../../schema";
+import { mapQuilttTypeToAccountType, quilttService } from "./quiltt.service.js";
 
 describe("mapQuilttTypeToAccountType", () => {
   it("should map depository account types correctly", () => {
@@ -116,10 +134,107 @@ describe("mapQuilttTypeToAccountType", () => {
     });
 
     it("should not use name-based detection for non-OTHER types", () => {
-      expect(
-        mapQuilttTypeToAccountType("CHECKING", "Investment Account"),
-      ).toBe("depository");
+      expect(mapQuilttTypeToAccountType("CHECKING", "Investment Account")).toBe(
+        "depository",
+      );
       expect(mapQuilttTypeToAccountType("SAVINGS", "401K")).toBe("depository");
     });
+  });
+});
+
+describe("QuilttService.syncTransactions", () => {
+  const testUserId = `test-user-${randomUUID().slice(0, 8)}`;
+  const quilttConnectionId = `conn_${randomUUID().slice(0, 8)}`;
+  let connectionId: number;
+
+  beforeAll(async () => {
+    await db.insert(user).values({
+      id: testUserId,
+      name: "Test User",
+      email: `${testUserId}@test.com`,
+      emailVerified: false,
+    });
+
+    const [conn] = await db
+      .insert(accountConnections)
+      .values({
+        userId: testUserId,
+        provider: "quiltt",
+        quilttConnectionId,
+        status: "active",
+      })
+      .returning();
+    connectionId = conn.id;
+  });
+
+  afterAll(async () => {
+    await db.delete(transactions).where(eq(transactions.userId, testUserId));
+    await db
+      .delete(syncJobs)
+      .where(eq(syncJobs.accountConnectionId, connectionId));
+    await db
+      .delete(financialAccounts)
+      .where(eq(financialAccounts.userId, testUserId));
+    await db
+      .delete(accountConnections)
+      .where(eq(accountConnections.userId, testUserId));
+    await db.delete(user).where(eq(user.id, testUserId));
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("upserts accounts that the initial sync missed (INITIALIZING case)", async () => {
+    // Pre-condition: connection exists but no financial accounts (the bug scenario:
+    // initial sync ran while Quiltt was INITIALIZING and returned empty accounts).
+    const before = await db
+      .select()
+      .from(financialAccounts)
+      .where(eq(financialAccounts.accountConnectionId, connectionId));
+    expect(before).toHaveLength(0);
+
+    vi.spyOn(quilttService, "getConnection").mockResolvedValue({
+      id: quilttConnectionId,
+      provider: "plaid_aggregated",
+      status: "SYNCED",
+      institution: { name: "Test Bank" },
+      accounts: [
+        {
+          id: "quiltt_acct_checking",
+          name: "Checking",
+          kind: "CHECKING",
+          mask: "1111",
+          balance: { current: 100.5, available: 95.5 },
+        },
+        {
+          id: "quiltt_acct_savings",
+          name: "Savings",
+          kind: "SAVINGS",
+          mask: "2222",
+          balance: { current: 5000, available: 5000 },
+        },
+      ],
+    });
+    vi.spyOn(quilttService, "getAllTransactions").mockResolvedValue([]);
+
+    await quilttService.syncTransactions({
+      connectionId,
+      quilttConnectionId,
+      quilttProfileId: "profile_1",
+    });
+
+    const after = await db
+      .select()
+      .from(financialAccounts)
+      .where(eq(financialAccounts.accountConnectionId, connectionId));
+
+    expect(after).toHaveLength(2);
+    const checking = after.find(
+      (a) => a.providerAccountId === "quiltt_acct_checking",
+    );
+    expect(checking?.name).toBe("Checking");
+    expect(checking?.type).toBe("depository");
+    expect(checking?.mask).toBe("1111");
   });
 });
