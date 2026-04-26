@@ -29,9 +29,6 @@
   let skillContent = $state<string | null>(null);
   let skillError = $state<string | null>(null);
   let skillCopied = $state(false);
-  let skillClient = $state<"claude-code" | "claude-web" | "other">(
-    "claude-code",
-  );
 
   const logoDevKey = import.meta.env.VITE_LOGO_DEV_PUBLISHABLE_KEY;
 
@@ -70,6 +67,10 @@
 
   const codexCommand = $derived(buildCodexCommand(fullKey ?? "sk-..."));
   const displayCodexCommand = $derived(buildCodexCommand(maskedKey));
+
+  const displaySkillExportCommand = $derived(
+    `export OPENFINANCE_API_KEY=${maskedKey}`,
+  );
 
   // Load existing key on mount
   $effect(() => {
@@ -220,15 +221,8 @@
       </p>
     </div>
 
-    <Tabs.Root value="skill">
+    <Tabs.Root value="claude">
       <Tabs.List class="flex gap-1 border-b border-[var(--border)] mb-4">
-        <Tabs.Trigger
-          value="skill"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
-        >
-          <Sparkles class="h-4 w-4" />
-          Skill
-        </Tabs.Trigger>
         <Tabs.Trigger
           value="claude"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
@@ -263,11 +257,18 @@
           OpenClaw
         </Tabs.Trigger>
         <Tabs.Trigger
-          value="other"
+          value="skill"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
+        >
+          <Sparkles class="h-4 w-4" />
+          Skill
+        </Tabs.Trigger>
+        <Tabs.Trigger
+          value="mcp"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
         >
           <Terminal class="h-4 w-4" />
-          Other
+          MCP server
         </Tabs.Trigger>
       </Tabs.List>
 
@@ -275,97 +276,22 @@
         value="skill"
         class="rounded-lg border border-[var(--border)] p-4"
       >
-        <div class="mb-3">
+        <div class="mb-4">
           <h3 class="text-sm font-medium text-[var(--text)]">
             Install as a Skill
           </h3>
           <p class="text-xs text-[var(--text-muted)] mt-1">
-            Skills are a lightweight way to give your agent instructions for
-            using OpenFinance — no server process required. Pick your agent
-            below for install instructions, then copy the Skill.
+            Skills are a markdown file your agent loads. Save
+            <code class="text-[var(--text)]">SKILL.md</code> where your agent
+            reads skills, and set
+            <code class="text-[var(--text)]">OPENFINANCE_API_KEY</code> in its environment.
           </p>
         </div>
 
-        <div
-          class="inline-flex rounded-md border border-[var(--border)] bg-[var(--bg-muted)] p-0.5 mb-3"
-          role="radiogroup"
-        >
-          <button
-            type="button"
-            role="radio"
-            aria-checked={skillClient === "claude-code"}
-            onclick={() => (skillClient = "claude-code")}
-            class="rounded px-3 py-1 text-xs font-medium transition-colors {skillClient ===
-            'claude-code'
-              ? 'bg-[var(--bg)] text-[var(--text)] shadow-sm'
-              : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
-          >
-            Claude Code
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={skillClient === "claude-web"}
-            onclick={() => (skillClient = "claude-web")}
-            class="rounded px-3 py-1 text-xs font-medium transition-colors {skillClient ===
-            'claude-web'
-              ? 'bg-[var(--bg)] text-[var(--text)] shadow-sm'
-              : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
-          >
-            Claude.ai / Desktop
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={skillClient === "other"}
-            onclick={() => (skillClient = "other")}
-            class="rounded px-3 py-1 text-xs font-medium transition-colors {skillClient ===
-            'other'
-              ? 'bg-[var(--bg)] text-[var(--text)] shadow-sm'
-              : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
-          >
-            Other
-          </button>
-        </div>
-
-        <div class="text-xs text-[var(--text-muted)] leading-relaxed mb-3">
-          {#if skillClient === "claude-code"}
-            Save the file as
-            <code class="text-[var(--text)]"
-              >~/.claude/skills/openfinance/SKILL.md</code
-            >
-            (user-level) or
-            <code class="text-[var(--text)]"
-              >.claude/skills/openfinance/SKILL.md</code
-            > inside a project. Claude Code auto-discovers it on the next session.
-          {:else if skillClient === "claude-web"}
-            In Claude.ai or Claude Desktop, go to
-            <strong>Settings → Capabilities → Skills</strong> and upload
-            <code class="text-[var(--text)]">SKILL.md</code>. Requires Pro,
-            Team, or Enterprise with Skills enabled.
-          {:else}
-            Save the file wherever your agent reads skill definitions from, and
-            make sure <code class="text-[var(--text)]">OPENFINANCE_API_KEY</code
-            > is set in its environment. Check your agent's docs for the exact path.
-          {/if}
-        </div>
-
-        <p class="text-xs text-[var(--text-muted)] mb-1">
-          Your agent also needs this environment variable:
-        </p>
-        <pre
-          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
-            >export OPENFINANCE_API_KEY={fullKey ? fullKey : "sk-..."}</code
-          ></pre>
-        <div class="flex justify-end mt-1">
-          <Button variant="secondary" size="sm" onclick={handleCopyExport}>
-            <Copy class="h-3.5 w-3.5 mr-1" />
-            {exportCopied ? "Copied" : "Copy"}
-          </Button>
-        </div>
-
-        <div class="mt-4 flex items-center justify-between mb-2">
-          <h4 class="text-xs font-medium text-[var(--text)]">SKILL.md</h4>
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-xs font-medium text-[var(--text)]">
+            Step 1. Copy SKILL.md
+          </h4>
           <Button
             variant="secondary"
             size="sm"
@@ -385,6 +311,25 @@
             ></pre>
         {:else}
           <p class="text-xs text-[var(--text-muted)]">Loading...</p>
+        {/if}
+
+        <div class="mt-5 flex items-center justify-between mb-2">
+          <h4 class="text-xs font-medium text-[var(--text)]">
+            Step 2. Set this environment variable
+          </h4>
+          <Button variant="secondary" size="sm" onclick={handleCopyExport}>
+            <Copy class="h-3.5 w-3.5 mr-1" />
+            {exportCopied ? "Copied" : "Copy"}
+          </Button>
+        </div>
+        <pre
+          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+            >{displaySkillExportCommand}</code
+          ></pre>
+        {#if !fullKey}
+          <p class="text-xs text-[var(--text-muted)] mt-2">
+            Replace <code>sk-...</code> with your API key.
+          </p>
         {/if}
       </Tabs.Content>
 
@@ -482,11 +427,13 @@
       </Tabs.Content>
 
       <Tabs.Content
-        value="other"
+        value="mcp"
         class="rounded-lg border border-[var(--border)] p-4"
       >
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium text-[var(--text)]">Manual config</h3>
+          <h3 class="text-sm font-medium text-[var(--text)]">
+            MCP server config
+          </h3>
           <Button variant="secondary" size="sm" onclick={handleCopyConfig}>
             <Copy class="h-3.5 w-3.5 mr-1" />
             {configCopied ? "Copied" : "Copy config"}
