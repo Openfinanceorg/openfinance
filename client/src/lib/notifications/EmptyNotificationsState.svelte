@@ -21,7 +21,7 @@
     <circle cx="50" cy="14" r="4" fill="#9CA3AF" />
   </svg>
 
-  <p class="text-sm text-gray-500 max-w-xs text-center">
+  <p class="text-sm text-[var(--text-muted)] max-w-xs text-center">
     Notifications about your connected accounts and transactions will appear
     here.
   </p>

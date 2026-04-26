@@ -31,7 +31,7 @@
   </svg>
 
   <div class="max-w-xs">
-    <p class="text-sm text-gray-500 mb-6">
+    <p class="text-sm text-[var(--text-muted)] mb-6">
       Connect your bank accounts to start tracking your finances. Your balances
       and transactions will appear here once linked.
     </p>

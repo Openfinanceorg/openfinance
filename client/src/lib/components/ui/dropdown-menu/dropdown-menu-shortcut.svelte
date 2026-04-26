@@ -13,7 +13,7 @@
 <span
 	bind:this={ref}
 	data-slot="dropdown-menu-shortcut"
-	class={cn("text-muted-foreground ms-auto text-xs tracking-widest", className)}
+	class={cn("text-[var(--text-muted)] ms-auto text-xs tracking-widest", className)}
 	{...restProps}
 >
 	{@render children?.()}

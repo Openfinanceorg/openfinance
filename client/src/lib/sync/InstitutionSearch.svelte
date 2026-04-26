@@ -312,13 +312,13 @@
     <div class="space-y-3">
       {#if showProviderSelection && selectedInstitution}
         <!-- Provider Selection View -->
-        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-3 p-3 bg-[var(--bg-muted)] rounded-lg">
           <InstitutionLogo institution={selectedInstitution} size="lg" />
           <div>
-            <div class="font-medium text-gray-900">
+            <div class="font-medium text-[var(--text)]">
               {selectedInstitution.name}
             </div>
-            <div class="text-sm text-gray-500">Select how to connect</div>
+            <div class="text-sm text-[var(--text-muted)]">Select how to connect</div>
           </div>
         </div>
 
@@ -329,7 +329,7 @@
             {#if provider.disabled}
               {@const logoUrl = getProviderLogoUrl(provider.type)}
               <div
-                class="w-full flex items-center justify-between p-4 border rounded-lg border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+                class="w-full flex items-center justify-between p-4 border rounded-lg border-[var(--border)] bg-[var(--bg-muted)] opacity-60 cursor-not-allowed"
               >
                 <div class="flex items-center gap-3">
                   <ProviderLogo
@@ -339,12 +339,12 @@
                   />
                   <div class="text-left">
                     <div
-                      class="font-medium text-gray-500 flex items-center gap-2"
+                      class="font-medium text-[var(--text-muted)] flex items-center gap-2"
                     >
                       {provider.name}
                       <Badge variant="secondary">Unavailable</Badge>
                     </div>
-                    <div class="text-sm text-gray-400">
+                    <div class="text-sm text-[var(--text-muted)]">
                       {provider.description}
                     </div>
                   </div>
@@ -356,7 +356,7 @@
                 onclick={() => handleProviderSelection(provider.type)}
                 class="w-full flex items-center justify-between p-4 border rounded-lg transition-colors group {provider.hasIssues
                   ? 'border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}"
+                  : 'border-[var(--border)] hover:border-[var(--border)] hover:bg-[var(--bg-muted)]'}"
               >
                 <div class="flex items-center gap-3">
                   <ProviderLogo
@@ -366,7 +366,7 @@
                   />
                   <div class="text-left">
                     <div
-                      class="font-medium text-gray-900 flex items-center gap-2"
+                      class="font-medium text-[var(--text)] flex items-center gap-2"
                     >
                       {provider.name}
                       {#if provider.hasWarning}
@@ -377,13 +377,13 @@
                         </Badge>
                       {/if}
                     </div>
-                    <div class="text-sm text-gray-500">
+                    <div class="text-sm text-[var(--text-muted)]">
                       {provider.description}
                     </div>
                   </div>
                 </div>
                 {#if !provider.hasIssues}
-                  <div class="text-gray-400 group-hover:text-gray-600">
+                  <div class="text-[var(--text-muted)] group-hover:text-[var(--text-muted)]">
                     <svg
                       width="16"
                       height="16"
@@ -406,9 +406,9 @@
           {/each}
         </div>
 
-        <div class="border-t border-gray-300 pt-4 mt-4 px-4 sm:px-8">
+        <div class="border-t border-[var(--border)] pt-4 mt-4 px-4 sm:px-8">
           <p
-            class="text-xs text-gray-500 text-center flex items-center justify-center gap-1"
+            class="text-xs text-[var(--text-muted)] text-center flex items-center justify-center gap-1"
           >
             <Lock size={12} class="inline" />
             We never store your banking credentials. All connections are read-only.
@@ -420,7 +420,7 @@
         <div class="relative">
           <Search
             size={16}
-            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]"
           />
           <Input
             placeholder="Search for your bank or financial institution..."
@@ -431,7 +431,7 @@
           {#if searchQuery}
             <button
               onclick={clearSearch}
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-muted)] transition-colors"
               type="button"
             >
               <X size={16} />
@@ -443,7 +443,7 @@
         <div class="min-h-[280px] sm:min-h-[400px]">
           {#if isSearching && institutions.length === 0}
             <div class="flex items-center justify-center py-4">
-              <div class="text-sm text-gray-500">Searching...</div>
+              <div class="text-sm text-[var(--text-muted)]">Searching...</div>
             </div>
           {/if}
 
@@ -454,7 +454,7 @@
                   {@const isConnected = isInstitutionConnected(institution)}
                   {@const displayInfo = getProviderDisplayInfo(institution)}
                   <div
-                    class="flex items-start gap-2 p-2 rounded-lg transition-colors w-full hover:bg-gray-100 cursor-pointer"
+                    class="flex items-start gap-2 p-2 rounded-lg transition-colors w-full hover:bg-[var(--bg-muted)] cursor-pointer"
                     onclick={() => handleInstitutionClick(institution)}
                     role="button"
                     tabindex={0}
@@ -465,13 +465,13 @@
 
                     <div class="flex-1 min-w-0 overflow-hidden">
                       <div
-                        class="text-sm font-medium text-gray-900 break-words leading-tight"
+                        class="text-sm font-medium text-[var(--text)] break-words leading-tight"
                       >
                         {institution.name}
                       </div>
                       {#if institution.url}
                         <div
-                          class="text-xs text-gray-500 truncate mt-1 max-w-full"
+                          class="text-xs text-[var(--text-muted)] truncate mt-1 max-w-full"
                         >
                           {extractBaseDomain(institution.url)}
                         </div>
@@ -488,12 +488,12 @@
                       {:else if displayInfo.hasMultipleProviders}
                         <Tooltip>
                           <TooltipTrigger>
-                            <span class="text-xs text-gray-500">
+                            <span class="text-xs text-[var(--text-muted)]">
                               Multiple options
                             </span>
                           </TooltipTrigger>
                           <TooltipContent
-                            class="bg-white text-gray-700 border border-gray-200 shadow-md p-2"
+                            class="bg-[var(--bg)] text-[var(--text)] border border-[var(--border)] shadow-md p-2"
                           >
                             <p class="max-w-xs text-xs">
                               {displayInfo.tooltipText}
@@ -503,12 +503,12 @@
                       {:else if displayInfo.tooltipText}
                         <Tooltip>
                           <TooltipTrigger>
-                            <div class="text-gray-400 hover:text-gray-600">
+                            <div class="text-[var(--text-muted)] hover:text-[var(--text-muted)]">
                               <HelpCircle size={14} />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent
-                            class="bg-white text-gray-700 border border-gray-200 shadow-md p-2"
+                            class="bg-[var(--bg)] text-[var(--text)] border border-[var(--border)] shadow-md p-2"
                           >
                             <p class="max-w-xs text-xs">
                               {displayInfo.tooltipText}
@@ -522,11 +522,11 @@
               </TooltipProvider>
             </div>
           {:else if searchQuery.trim() && !isSearching}
-            <div class="text-center py-4 text-sm text-gray-500">
+            <div class="text-center py-4 text-sm text-[var(--text-muted)]">
               No available institutions found. Try a different search term.
             </div>
           {:else if !searchQuery.trim() && !isSearching && institutions.length === 0}
-            <div class="text-center py-4 text-sm text-gray-500">
+            <div class="text-center py-4 text-sm text-[var(--text-muted)]">
               Start typing to search for your bank or financial institution.
             </div>
           {/if}

@@ -80,7 +80,7 @@
 </script>
 
 <Dialog bind:open={isOpen} onOpenChange={handleOpenChange}>
-  <DialogContent class="sm:max-w-md bg-white">
+  <DialogContent class="sm:max-w-md bg-[var(--bg)]">
     <DialogHeader>
       <DialogTitle
         >Downgrade to {targetPlan.charAt(0).toUpperCase() +
@@ -110,19 +110,19 @@
           </div>
         </div>
       {:else}
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-[var(--text-muted)]">
           Your current connections fit within the {targetPlan} plan limit. No connections
           will be affected.
         </p>
       {/if}
 
       {#if currentPlan !== "free" && targetPlan !== "free"}
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-[var(--text-muted)]">
           The plan change takes effect immediately and your billing will be
           adjusted.
         </p>
       {:else if targetPlan === "free"}
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-[var(--text-muted)]">
           Your subscription will be cancelled at the end of your current billing
           period.
         </p>

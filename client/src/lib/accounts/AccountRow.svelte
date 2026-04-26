@@ -54,7 +54,7 @@
 
 <div
   class="group flex items-center gap-3 py-2.5 px-1 rounded-lg {account.syncError
-    ? 'bg-red-50'
+    ? 'bg-red-50 dark:bg-[#1a0c0c]'
     : ''} cursor-pointer"
   role="button"
   tabindex="0"
@@ -74,22 +74,22 @@
     />
     {#if account.isSyncing}
       <div
-        class="absolute inset-0 flex items-center justify-center bg-white/70 rounded-lg"
+        class="absolute inset-0 flex items-center justify-center bg-[var(--bg)]/70 rounded-lg"
       >
-        <Loader2Icon class="w-4 h-4 text-gray-500 animate-spin" />
+        <Loader2Icon class="w-4 h-4 text-[var(--text-muted)] animate-spin" />
       </div>
     {/if}
   </div>
   <div class="flex-1 min-w-0">
-    <p class="text-sm font-medium text-gray-900 truncate">
+    <p class="text-sm font-medium text-[var(--text)] truncate">
       {account.name}
       {#if account.mask}
-        <span class="text-gray-500 font-normal">····{account.mask}</span>
+        <span class="text-[var(--text-muted)] font-normal">····{account.mask}</span>
       {/if}
     </p>
-    <p class="text-xs text-gray-500 truncate">{account.institutionName}</p>
+    <p class="text-xs text-[var(--text-muted)] truncate">{account.institutionName}</p>
   </div>
-  <div class="flex-shrink-0 text-sm font-medium text-gray-900">
+  <div class="flex-shrink-0 text-sm font-medium text-[var(--text)]">
     {displayBalance}
   </div>
   {#if account.syncError}

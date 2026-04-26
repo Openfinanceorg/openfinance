@@ -5,16 +5,16 @@
 </script>
 
 <main
-  class="flex min-h-screen flex-col items-center justify-center bg-gray-100"
+  class="flex min-h-screen flex-col items-center justify-center bg-[var(--bg-muted)]"
 >
   <a href="/" class="mb-6">
     <img src="/favicon.svg" alt="OpenFinance" class="h-12 w-12" />
   </a>
-  <h1 class="text-2xl font-semibold text-gray-900">Sign in</h1>
-  <p class="mt-2 text-sm text-gray-500">to continue to OpenFinance</p>
+  <h1 class="text-2xl font-semibold text-[var(--text)]">Sign in</h1>
+  <p class="mt-2 text-sm text-[var(--text-muted)]">to continue to OpenFinance</p>
 
   <button
-    class="mt-8 flex items-center justify-center gap-3 rounded-full bg-gray-900 px-8 py-3 text-sm font-medium text-white cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+    class="mt-8 flex items-center justify-center gap-3 rounded-full bg-[var(--accent)] px-8 py-3 text-sm font-medium text-[var(--bg)] cursor-pointer hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
     disabled={isSigningIn}
     onclick={() => {
       isSigningIn = true;
@@ -26,7 +26,7 @@
   >
     {#if isSigningIn}
       <div
-        class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+        class="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current"
       ></div>
       Signing in…
     {:else}
@@ -52,7 +52,7 @@
     {/if}
   </button>
 
-  <p class="mt-8 text-xs text-gray-400">
+  <p class="mt-8 text-xs text-[var(--text-muted)]">
     No account? We'll create one for you.
   </p>
 </main>

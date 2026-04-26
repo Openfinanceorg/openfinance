@@ -64,7 +64,7 @@
 <span
   class={cn(
     "flex-shrink-0 overflow-hidden flex items-center justify-center",
-    imgSrc ? "" : "bg-gray-100",
+    imgSrc ? "" : "bg-[var(--bg-muted)]",
     config.container,
     className,
   )}
@@ -78,7 +78,7 @@
     <span
       class={cn(
         "font-medium",
-        primaryColor ? "text-white" : "text-gray-500",
+        primaryColor ? "text-white" : "text-[var(--text-muted)]",
         config.text,
       )}
       aria-hidden="true"

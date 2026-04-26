@@ -174,14 +174,14 @@
     onProviderSelect={handleProviderSelect}
   />
 
-  <div class="h-screen overflow-y-auto bg-white">
-    <div class="sticky top-0 z-10 bg-white">
+  <div class="h-screen overflow-y-auto bg-[var(--bg)]">
+    <div class="sticky top-0 z-10 bg-[var(--bg-translucent)] backdrop-blur">
       <div class="max-w-6xl mx-auto px-8">
         <header class="flex items-center py-6">
           <div
             class="w-48 shrink-0 text-center inline-flex items-center justify-center"
           >
-            <span class="text-base font-semibold tracking-tight text-gray-800"
+            <span class="text-base font-semibold tracking-tight text-[var(--text)]"
               >OpenFinance</span
             >{#if $billingState && $billingState.planType !== "free"}<Badge
                 variant="pill"
@@ -191,7 +191,7 @@
           <div class="flex-1 flex items-center justify-end gap-3">
             <a
               href="/notifications"
-              class="relative p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+              class="relative p-1.5 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
               aria-label="Notifications"
             >
               <Bell class="h-5 w-5" />

@@ -56,7 +56,7 @@
 
   {#if canScrollPrev}
     <button
-      class="absolute left-2 top-1/2 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-gray-700 rounded-full p-1.5 shadow-md hover:bg-gray-50 hover:text-gray-900"
+      class="absolute left-2 top-1/2 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--bg)] text-[var(--text)] rounded-full p-1.5 shadow-md hover:bg-[var(--bg-muted)] hover:text-[var(--text)]"
       onclick={() => emblaApi?.scrollPrev()}
       aria-label="Scroll left"
     >
@@ -66,7 +66,7 @@
 
   {#if canScrollNext}
     <button
-      class="absolute right-2 top-1/2 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-gray-700 rounded-full p-1.5 shadow-md hover:bg-gray-50 hover:text-gray-900"
+      class="absolute right-2 top-1/2 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--bg)] text-[var(--text)] rounded-full p-1.5 shadow-md hover:bg-[var(--bg-muted)] hover:text-[var(--text)]"
       onclick={() => emblaApi?.scrollNext()}
       aria-label="Scroll right"
     >

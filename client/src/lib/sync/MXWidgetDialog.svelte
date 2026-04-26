@@ -34,7 +34,7 @@
 
 <Dialog bind:open={isOpen} onOpenChange={handleOpenChange}>
   <DialogContent
-    class="sm:max-w-md max-w-[80vw] h-auto max-h-[90vh] p-0 bg-white overflow-hidden"
+    class="sm:max-w-md max-w-[80vw] h-auto max-h-[90vh] p-0 bg-[var(--bg)] overflow-hidden"
     showCloseButton={false}
     interactOutsideBehavior="ignore"
   >
@@ -51,18 +51,18 @@
 
     <div
       id="mx-widget-container"
-      class="w-full min-h-[500px] bg-white rounded-lg relative flex items-center justify-center pt-10 overflow-hidden"
+      class="w-full min-h-[500px] bg-[var(--bg)] rounded-lg relative flex items-center justify-center pt-10 overflow-hidden"
       style="width: 100%;"
     >
       {#if isLoading || isPollingConnection}
         <div
-          class="absolute inset-0 flex items-center justify-center bg-white z-10"
+          class="absolute inset-0 flex items-center justify-center bg-[var(--bg)] z-10"
         >
           <div class="flex flex-col items-center justify-center gap-3">
             <div
               class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
             ></div>
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-[var(--text-muted)]">
               {isPollingConnection
                 ? "Finishing connection..."
                 : "Connecting..."}

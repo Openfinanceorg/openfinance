@@ -24,8 +24,8 @@
     <a
       href={item.href}
       class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-full transition-colors {active
-        ? 'bg-slate-100 text-gray-900'
-        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}"
+        ? 'bg-[var(--bg-muted)] text-[var(--text)]'
+        : 'text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text)]'}"
     >
       <item.icon class="h-5 w-5" />
       {item.label}

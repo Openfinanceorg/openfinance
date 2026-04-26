@@ -185,20 +185,20 @@
 <div class="max-w-4xl mx-auto px-8 pt-8">
   <section class="p-2">
     <div class="mb-4">
-      <h2 class="text-base font-semibold text-gray-700">
+      <h2 class="text-base font-semibold text-[var(--text)]">
         Connect accounts to your AI
       </h2>
-      <p class="text-sm text-gray-600 mt-1">
+      <p class="text-sm text-[var(--text-muted)] mt-1">
         Install the MCP server in Claude or Codex, then use your API key to
         connect.
       </p>
     </div>
 
     <Tabs.Root value="claude">
-      <Tabs.List class="flex gap-1 border-b border-gray-200 mb-4">
+      <Tabs.List class="flex gap-1 border-b border-[var(--border)] mb-4">
         <Tabs.Trigger
           value="claude"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 transition-colors cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
         >
           <img
             src="https://img.logo.dev/anthropic.com?token={logoDevKey}&size=64&format=png"
@@ -209,7 +209,7 @@
         </Tabs.Trigger>
         <Tabs.Trigger
           value="codex"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 transition-colors cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
         >
           <img
             src="https://img.logo.dev/openai.com?token={logoDevKey}&size=64&format=png"
@@ -220,7 +220,7 @@
         </Tabs.Trigger>
         <Tabs.Trigger
           value="openclaw"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 transition-colors cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
         >
           <img
             src="https://img.logo.dev/openclaw.ai?token={logoDevKey}&size=64&format=png"
@@ -231,7 +231,7 @@
         </Tabs.Trigger>
         <Tabs.Trigger
           value="other"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 transition-colors cursor-pointer"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-muted)] border-b-2 border-transparent data-[state=active]:text-[var(--text)] data-[state=active]:border-[var(--text)] transition-colors cursor-pointer"
         >
           <Terminal class="h-4 w-4" />
           Other
@@ -240,10 +240,10 @@
 
       <Tabs.Content
         value="claude"
-        class="rounded-lg border border-gray-200 p-4"
+        class="rounded-lg border border-[var(--border)] p-4"
       >
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium text-gray-700">Claude Desktop</h3>
+          <h3 class="text-sm font-medium text-[var(--text)]">Claude Desktop</h3>
           <button
             type="button"
             onclick={handleDownloadClaude}
@@ -262,26 +262,29 @@
         {#if claudeDownloadError}
           <p class="text-xs text-red-600 mb-2">{claudeDownloadError}</p>
         {/if}
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-[var(--text-muted)]">
           Downloads an <code>.mcpb</code> bundle. Double-click to install. You'll
           be prompted for your API key during setup.
         </p>
       </Tabs.Content>
 
-      <Tabs.Content value="codex" class="rounded-lg border border-gray-200 p-4">
+      <Tabs.Content
+        value="codex"
+        class="rounded-lg border border-[var(--border)] p-4"
+      >
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium text-gray-700">Codex</h3>
+          <h3 class="text-sm font-medium text-[var(--text)]">Codex</h3>
           <Button variant="secondary" size="sm" onclick={handleCopyCodex}>
             <Copy class="h-3.5 w-3.5 mr-1" />
             {codexCopied ? "Copied" : "Copy command"}
           </Button>
         </div>
         <pre
-          class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
             >{displayCodexCommand}</code
           ></pre>
         {#if !fullKey}
-          <p class="text-xs text-gray-500 mt-2">
+          <p class="text-xs text-[var(--text-muted)] mt-2">
             Replace <code>sk-...</code> with your API key.
           </p>
         {/if}
@@ -289,14 +292,16 @@
 
       <Tabs.Content
         value="openclaw"
-        class="rounded-lg border border-gray-200 p-4"
+        class="rounded-lg border border-[var(--border)] p-4"
       >
         <div class="mb-2">
-          <h3 class="text-sm font-medium text-gray-700">OpenClaw</h3>
+          <h3 class="text-sm font-medium text-[var(--text)]">OpenClaw</h3>
         </div>
-        <p class="text-xs text-gray-500 mb-2">Install the openfinance skill:</p>
+        <p class="text-xs text-[var(--text-muted)] mb-2">
+          Install the openfinance skill:
+        </p>
         <pre
-          class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
             >{clawhubCommand}</code
           ></pre>
         <div class="flex justify-end mt-1">
@@ -305,12 +310,12 @@
             {clawhubCopied ? "Copied" : "Copy"}
           </Button>
         </div>
-        <p class="text-xs text-gray-500 mt-3">
+        <p class="text-xs text-[var(--text-muted)] mt-3">
           Then add your API key to your shell profile (<code>~/.zshrc</code>,
           <code>~/.bashrc</code>, or equivalent):
         </p>
         <pre
-          class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all mt-2"><code
+          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all mt-2"><code
             >export OPENFINANCE_API_KEY={fullKey ? fullKey : "sk-..."}</code
           ></pre>
         <div class="flex justify-end mt-1">
@@ -320,26 +325,29 @@
           </Button>
         </div>
         {#if !fullKey}
-          <p class="text-xs text-gray-500 mt-2">
+          <p class="text-xs text-[var(--text-muted)] mt-2">
             Replace <code>sk-...</code> with your API key.
           </p>
         {/if}
       </Tabs.Content>
 
-      <Tabs.Content value="other" class="rounded-lg border border-gray-200 p-4">
+      <Tabs.Content
+        value="other"
+        class="rounded-lg border border-[var(--border)] p-4"
+      >
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium text-gray-700">Manual config</h3>
+          <h3 class="text-sm font-medium text-[var(--text)]">Manual config</h3>
           <Button variant="secondary" size="sm" onclick={handleCopyConfig}>
             <Copy class="h-3.5 w-3.5 mr-1" />
             {configCopied ? "Copied" : "Copy config"}
           </Button>
         </div>
-        <p class="text-xs text-gray-500 mb-2">
+        <p class="text-xs text-[var(--text-muted)] mb-2">
           Use this MCP server configuration in your MCP client. Uses
           <code>{MCP_PACKAGE_NAME}</code>.
         </p>
         <pre
-          class="text-xs text-gray-800 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
+          class="text-xs text-[var(--text)] bg-[var(--bg-muted)] rounded p-2 overflow-x-auto whitespace-pre-wrap break-all"><code
             >{displayMcpConfigSnippet}</code
           ></pre>
       </Tabs.Content>
@@ -347,8 +355,8 @@
 
     <!-- API Key Section -->
     <div class="mt-6">
-      <h3 class="text-sm font-semibold text-gray-700">API Key</h3>
-      <p class="text-xs text-gray-500 mt-1">
+      <h3 class="text-sm font-semibold text-[var(--text)]">API Key</h3>
+      <p class="text-xs text-[var(--text-muted)] mt-1">
         Your API key for OpenFinance. Use this key to connect your AI tools.
       </p>
 
@@ -359,15 +367,15 @@
       {#if displayKey}
         <div class="mt-3 flex items-center gap-2">
           <div
-            class="flex flex-1 items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
+            class="flex flex-1 items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--bg-muted)] px-3 py-2"
           >
-            <code class="flex-1 text-sm text-gray-800 break-all"
+            <code class="flex-1 text-sm text-[var(--text)] break-all"
               >{displayKey}</code
             >
             {#if fullKey}
               <button
                 type="button"
-                class="text-gray-400 hover:text-gray-600 transition-colors"
+                class="text-[var(--text-muted)] hover:text-[var(--text-muted)] transition-colors"
                 onclick={() => (keyRevealed = !keyRevealed)}
               >
                 {#if keyRevealed}
@@ -415,7 +423,7 @@
         </div>
       {:else}
         <div class="mt-3">
-          <p class="text-xs text-gray-400">Loading...</p>
+          <p class="text-xs text-[var(--text-muted)]">Loading...</p>
         </div>
       {/if}
     </div>

@@ -51,17 +51,17 @@
     <div class="flex flex-row h-[70vh]">
       <!-- Left Sidebar -->
       <div
-        class="w-56 border-r border-gray-200 flex flex-col shrink-0 bg-gray-50/50"
+        class="w-56 border-r border-[var(--border)] flex flex-col shrink-0 bg-[var(--bg-muted)]/50"
       >
-        <div class="p-6 border-b border-gray-100">
-          <h2 class="text-lg font-semibold text-gray-900">Settings</h2>
+        <div class="p-6 border-b border-[var(--border)]">
+          <h2 class="text-lg font-semibold text-[var(--text)]">Settings</h2>
         </div>
 
         <div class="flex-1 p-4">
           {#each sections as section, i}
             <div class={i > 0 ? "mt-6" : ""}>
               <h3
-                class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2"
+                class="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider px-3 mb-2"
               >
                 {section.label}
               </h3>
@@ -70,8 +70,8 @@
                   <button
                     class="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg text-sm font-medium transition-colors {activeTab ===
                     item.id
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}"
+                      ? 'bg-[var(--bg-muted)] text-[var(--text)]'
+                      : 'text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text)]'}"
                     onclick={() => (activeTab = item.id)}
                   >
                     <item.icon size={16} />
@@ -91,7 +91,7 @@
             variant="ghost"
             size="sm"
             onclick={() => (isOpen = false)}
-            class="h-8 w-8 p-0 rounded-lg hover:bg-gray-100"
+            class="h-8 w-8 p-0 rounded-lg hover:bg-[var(--bg-muted)]"
           >
             <X size={18} />
           </Button>

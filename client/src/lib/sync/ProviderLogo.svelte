@@ -9,13 +9,13 @@
 
   const fallbackClasses = $derived(
     variant === "disabled"
-      ? "bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-500"
-      : "bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600",
+      ? "bg-[var(--card)] flex items-center justify-center text-xs font-medium text-[var(--text-muted)]"
+      : "bg-[var(--bg-muted)] flex items-center justify-center text-xs font-bold text-[var(--text-muted)]",
   );
   const hiddenFallbackClasses = $derived(
     variant === "disabled"
-      ? "bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-500"
-      : "bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600",
+      ? "bg-[var(--card)] flex items-center justify-center text-xs font-medium text-[var(--text-muted)]"
+      : "bg-[var(--bg-muted)] flex items-center justify-center text-xs font-bold text-[var(--text-muted)]",
   );
 </script>
 

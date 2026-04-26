@@ -56,12 +56,12 @@
 
 <div class="max-w-4xl mx-auto px-8 pt-2">
   <div class="flex items-center justify-between mb-6">
-    <h2 class="text-base font-semibold text-gray-700">Transactions</h2>
+    <h2 class="text-base font-semibold text-[var(--text)]">Transactions</h2>
 
     <div class="flex items-center gap-3">
       <div class="relative">
         <Search
-          class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"
+          class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none"
         />
         <Input
           type="text"
@@ -87,7 +87,7 @@
                 />
               {/if}
               <span>{selectedAccountLabel}</span>
-              <ChevronDown class="ml-0.5 h-3.5 w-3.5 text-gray-400" />
+              <ChevronDown class="ml-0.5 h-3.5 w-3.5 text-[var(--text-muted)]" />
             </Button>
           {/snippet}
         </DropdownMenu.Trigger>
@@ -108,7 +108,7 @@
                 />
                 <span>{account.name}</span>
                 {#if account.mask}
-                  <span class="text-gray-400 ml-1">...{account.mask}</span>
+                  <span class="text-[var(--text-muted)] ml-1">...{account.mask}</span>
                 {/if}
               </DropdownMenu.Item>
             {/each}

@@ -24,9 +24,9 @@
   {#each groups as group (group.key)}
     <section>
       <div class="flex items-center justify-between mb-1 px-1">
-        <h3 class="text-xs font-medium text-gray-500">
+        <h3 class="text-xs font-medium text-[var(--text-muted)]">
           {group.label}
-          <span class="text-gray-500 ml-1">{group.accounts.length}</span>
+          <span class="text-[var(--text-muted)] ml-1">{group.accounts.length}</span>
         </h3>
       </div>
       <div class="space-y-1">

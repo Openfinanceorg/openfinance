@@ -9,6 +9,7 @@
     DialogFooter,
   } from "$lib/components/ui/dialog";
   import { deleteUserAccount } from "$lib/accounts/api";
+  import ThemeToggle from "$lib/components/ThemeToggle.svelte";
 
   const session = authClient.useSession();
 
@@ -33,25 +34,29 @@
 
 <div class="space-y-6">
   <div>
-    <h3 class="text-sm font-medium text-gray-900">Profile</h3>
+    <h3 class="text-sm font-medium text-[var(--text)]">Profile</h3>
     <div class="mt-3 space-y-4">
       <div>
-        <p class="text-sm text-gray-500">Display name</p>
-        <p class="mt-1 text-sm text-gray-900">
+        <p class="text-sm text-[var(--text-muted)]">Display name</p>
+        <p class="mt-1 text-sm text-[var(--text)]">
           {$session.data?.user?.name ?? "—"}
         </p>
       </div>
       <div>
-        <p class="text-sm text-gray-500">Email</p>
-        <p class="mt-1 text-sm text-gray-900">
+        <p class="text-sm text-[var(--text-muted)]">Email</p>
+        <p class="mt-1 text-sm text-[var(--text)]">
           {$session.data?.user?.email ?? "—"}
         </p>
       </div>
     </div>
   </div>
 
-  <div class="border-t border-gray-200 pt-6">
-    <p class="mt-1 text-sm text-gray-500">
+  <div class="border-t border-[var(--border)] pt-6">
+    <ThemeToggle />
+  </div>
+
+  <div class="border-t border-[var(--border)] pt-6">
+    <p class="mt-1 text-sm text-[var(--text-muted)]">
       Permanently delete your account and all associated user data.
     </p>
     <Button
@@ -65,12 +70,12 @@
 </div>
 
 <Dialog bind:open={showDeleteDialog}>
-  <DialogContent class="sm:max-w-md bg-white">
+  <DialogContent class="sm:max-w-md">
     <DialogHeader>
       <DialogTitle>Delete account</DialogTitle>
     </DialogHeader>
 
-    <div class="py-4 text-sm text-gray-600 space-y-2">
+    <div class="py-4 text-sm text-[var(--text-muted)] space-y-2">
       <p>Deleting your account will permanently remove:</p>
       <ul class="list-disc pl-5 space-y-1">
         <li>All connected financial accounts and transaction history</li>

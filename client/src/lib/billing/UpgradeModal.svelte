@@ -73,13 +73,13 @@
     </DialogHeader>
 
     <div class="py-4">
-      <p class="text-sm text-gray-500">
+      <p class="text-sm text-[var(--text-muted)]">
         Up to {PLAN_LIMITS[requiredPlan]} connected institutions
       </p>
 
       <p class="mt-3">
         <span class="text-3xl font-bold">${PLAN_PRICES[requiredPlan]}</span>
-        <span class="text-sm text-gray-500">/ month</span>
+        <span class="text-sm text-[var(--text-muted)]">/ month</span>
       </p>
 
       {#if error}
@@ -88,7 +88,7 @@
 
       <button
         onclick={handleUpgrade}
-        class="mt-6 w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        class="mt-6 w-full rounded-full bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
         disabled={loading}
       >
         {#if loading}

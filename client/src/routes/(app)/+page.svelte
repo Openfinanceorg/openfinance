@@ -102,8 +102,8 @@
       <section>
         <div class="flex items-center justify-between mb-4">
           <div>
-            <p class="text-xs text-gray-500">Total balance</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-xs text-[var(--text-muted)]">Total balance</p>
+            <p class="text-2xl font-semibold text-[var(--text)]">
               {totalBalanceFormatted}
             </p>
           </div>

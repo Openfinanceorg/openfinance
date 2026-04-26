@@ -6,17 +6,18 @@
     variants: {
       variant: {
         default:
-          "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800",
+          "bg-[var(--accent)] text-[var(--bg)] hover:bg-[var(--accent-hover)]",
         secondary:
-          "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+          "bg-[var(--bg-muted)] text-[var(--text)] hover:bg-[var(--card)]",
         ghost:
-          "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100",
-        link: "text-gray-600 underline-offset-4 hover:underline dark:text-gray-400",
+          "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text)]",
+        link: "text-[var(--text-muted)] underline-offset-4 hover:underline hover:text-[var(--text)]",
         linkBlue:
           "cursor-pointer text-[#007AFF] hover:text-[#0051D5] h-auto min-h-0 font-normal dark:text-[#0A84FF] dark:hover:text-[#409CFF]",
-        outline: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+        outline:
+          "border border-[var(--border)] text-[var(--text)] hover:border-[var(--text)] hover:bg-[var(--text)] hover:text-[var(--bg)]",
         outlineRed:
-          "border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-neutral-700 text-outline-red shadow-[0_1px_2px_0_rgb(0_0_0_/_0.05)]",
+          "border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--bg-muted)] text-outline-red shadow-[0_1px_2px_0_rgb(0_0_0_/_0.05)]",
       },
       size: {
         default: "h-10 px-5 py-2.5",

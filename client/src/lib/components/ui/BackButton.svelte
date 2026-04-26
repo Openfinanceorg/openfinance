@@ -29,7 +29,7 @@
     >
       <ArrowLeft
         size={24}
-        class="text-gray-900 dark:text-gray-100 group-hover:translate-x-[-2px] transition-all duration-200"
+        class="text-[var(--text)] group-hover:translate-x-[-2px] transition-all duration-200"
       />
     </button>
   {:else}
@@ -39,7 +39,7 @@
     >
       <ArrowLeft
         size={24}
-        class="text-gray-900 dark:text-gray-100 group-hover:translate-x-[-2px] transition-all duration-200"
+        class="text-[var(--text)] group-hover:translate-x-[-2px] transition-all duration-200"
       />
     </a>
   {/if}

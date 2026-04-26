@@ -153,18 +153,18 @@
 
 {#if loading}
   <div class="flex justify-center py-12">
-    <Spinner class="size-6 text-gray-400" />
+    <Spinner class="size-6 text-[var(--text-muted)]" />
   </div>
 {:else if transactions.length === 0 && accounts.length === 0 && !debouncedSearch && accountId === undefined}
   <EmptyAccountsState {onAddAccount} />
 {:else if transactions.length === 0}
-  <p class="text-gray-400 text-sm py-8 text-center">No transactions found.</p>
+  <p class="text-[var(--text-muted)] text-sm py-8 text-center">No transactions found.</p>
 {:else}
   <div class="space-y-6">
     {#each grouped as group}
       <div>
         <h3
-          class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 px-1"
+          class="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2 px-1"
         >
           {group.label}
         </h3>
@@ -175,7 +175,7 @@
               <div class="min-w-0 flex items-center gap-2 flex-1">
                 <div class="min-w-0">
                   <p
-                    class="text-sm text-gray-900 truncate {tx.pending
+                    class="text-sm text-[var(--text)] truncate {tx.pending
                       ? 'italic'
                       : ''}"
                   >
@@ -184,7 +184,7 @@
                 </div>
                 {#if account && onAccountClick}
                   <div
-                    class="flex items-center gap-1.5 min-w-0 ml-2 cursor-pointer hover:bg-gray-100 rounded-md px-1.5 py-0.5"
+                    class="flex items-center gap-1.5 min-w-0 ml-2 cursor-pointer hover:bg-[var(--bg-muted)] rounded-md px-1.5 py-0.5"
                     role="button"
                     tabindex="0"
                     onclick={(e) => {
@@ -203,7 +203,7 @@
                       institutionUrl={account.institutionUrl}
                       institutionName={account.institutionName}
                     />
-                    <span class="text-xs text-gray-600 truncate">
+                    <span class="text-xs text-[var(--text-muted)] truncate">
                       {account.name}
                     </span>
                   </div>
@@ -212,7 +212,7 @@
               <span
                 class={cn(
                   "text-sm font-medium ml-4 whitespace-nowrap flex-shrink-0",
-                  tx.amount < 0 ? "text-green-600" : "text-gray-900",
+                  tx.amount < 0 ? "text-green-600" : "text-[var(--text)]",
                 )}
               >
                 {formatAmount(tx.amount, tx.isoCurrencyCode)}
@@ -226,7 +226,7 @@
 
   {#if loadingMore}
     <div class="flex justify-center py-6">
-      <Spinner class="size-5 text-gray-400" />
+      <Spinner class="size-5 text-[var(--text-muted)]" />
     </div>
   {/if}
 

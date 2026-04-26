@@ -6,17 +6,17 @@
     variants: {
       variant: {
         default:
-          "bg-gray-900 text-white border-transparent dark:bg-gray-900 dark:border-current",
+          "bg-[var(--accent)] text-[var(--bg)] border-transparent",
         secondary:
-          "bg-gray-100 text-gray-700 border-transparent dark:bg-gray-800 dark:text-gray-300",
+          "bg-[var(--bg-muted)] text-[var(--text)] border-transparent",
         destructive: "bg-red-500 border-transparent text-white",
-        outline: "text-gray-900 dark:text-gray-100",
-        blue: "bg-blue-100 text-blue-700 border-transparent dark:bg-gray-900 dark:text-blue-400 dark:border-blue-400",
+        outline: "border-[var(--border)] text-[var(--text)]",
+        blue: "bg-blue-100 text-blue-700 border-transparent dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-400",
         amber:
-          "bg-amber-100 text-amber-700 border-transparent dark:bg-gray-900 dark:text-amber-400 dark:border-amber-400",
+          "bg-amber-100 text-amber-700 border-transparent dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-400",
         green:
-          "bg-green-100 text-green-700 border-transparent dark:bg-gray-900 dark:text-green-400 dark:border-green-400",
-        pill: "text-[10px] font-medium uppercase tracking-wide rounded-full px-1.5 py-0.5 text-gray-400 border-gray-300 leading-none",
+          "bg-green-100 text-green-700 border-transparent dark:bg-green-950/40 dark:text-green-400 dark:border-green-400",
+        pill: "text-[10px] font-medium uppercase tracking-wide rounded-full px-1.5 py-0.5 text-[var(--text-muted)] border-[var(--border)] leading-none",
       },
     },
     defaultVariants: {

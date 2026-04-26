@@ -13,7 +13,7 @@
   bind:ref
   data-slot="dialog-title"
   class={cn(
-    "text-lg font-semibold leading-none text-gray-900 dark:text-gray-100",
+    "text-lg font-semibold leading-none text-[var(--text)]",
     className,
   )}
   {...restProps}

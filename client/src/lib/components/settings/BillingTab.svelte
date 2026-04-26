@@ -94,13 +94,13 @@
   <div class="flex items-center justify-between">
     <div>
       <div class="flex items-center gap-2">
-        <h3 class="text-sm font-medium text-gray-900">Current Plan</h3>
+        <h3 class="text-sm font-medium text-[var(--text)]">Current Plan</h3>
         <Badge variant="pill">
           {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
         </Badge>
       </div>
       {#if billing}
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="mt-1 text-sm text-[var(--text-muted)]">
           Using {billing.connectionCount} of {billing.maxConnections} connection{billing.maxConnections ===
           1
             ? ""
@@ -122,20 +122,20 @@
   </div>
 
   <!-- Plans table -->
-  <div class="border border-gray-200 rounded-lg overflow-hidden">
+  <div class="border border-[var(--border)] rounded-lg overflow-hidden">
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-gray-100">
+        <tr class="border-b border-[var(--border)]">
           <th
-            class="text-left px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-gray-400"
+            class="text-left px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]"
             >Plan</th
           >
           <th
-            class="text-left px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-gray-400"
+            class="text-left px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]"
             >Price</th
           >
           <th
-            class="text-left px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-gray-400"
+            class="text-left px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]"
             >Accounts</th
           >
           <th class="px-4 py-2.5"></th>
@@ -147,17 +147,17 @@
           {@const isHigher = planIndex(plan.type) > planIndex(currentPlan)}
           {@const isLower = planIndex(plan.type) < planIndex(currentPlan)}
 
-          <tr class={i < plans.length - 1 ? "border-b border-gray-100" : ""}>
+          <tr class={i < plans.length - 1 ? "border-b border-[var(--border)]" : ""}>
             <td class="px-4 py-3">
-              <span class="font-semibold text-gray-900">{plan.name}</span>
+              <span class="font-semibold text-[var(--text)]">{plan.name}</span>
               {#if isCurrent}
                 <Badge variant="pill" class="ml-2">Current</Badge>
               {/if}
             </td>
-            <td class="px-4 py-3 text-gray-700">
+            <td class="px-4 py-3 text-[var(--text)]">
               {plan.price}{plan.period}
             </td>
-            <td class="px-4 py-3 text-gray-500">
+            <td class="px-4 py-3 text-[var(--text-muted)]">
               {plan.accountLimit}
             </td>
             <td class="px-4 py-3 text-right">

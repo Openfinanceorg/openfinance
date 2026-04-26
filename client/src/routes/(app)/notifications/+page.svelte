@@ -123,11 +123,11 @@
 </script>
 
 <div class="max-w-4xl mx-auto px-8 pt-2">
-  <h2 class="text-base font-semibold text-gray-700 mb-6">Notifications</h2>
+  <h2 class="text-base font-semibold text-[var(--text)] mb-6">Notifications</h2>
 
   {#if loading}
     <div class="flex justify-center py-12">
-      <Spinner class="size-6 text-gray-400" />
+      <Spinner class="size-6 text-[var(--text-muted)]" />
     </div>
   {:else if notifications.length === 0}
     <EmptyNotificationsState />
@@ -141,11 +141,11 @@
             size="md"
           />
           <div class="min-w-0 flex-1">
-            <p class="text-sm text-gray-900">{n.title}</p>
-            <p class="text-sm text-gray-500 mt-0.5">{getDescription(n)}</p>
+            <p class="text-sm text-[var(--text)]">{n.title}</p>
+            <p class="text-sm text-[var(--text-muted)] mt-0.5">{getDescription(n)}</p>
           </div>
           <span
-            class="text-xs text-gray-400 whitespace-nowrap flex-shrink-0 pt-0.5"
+            class="text-xs text-[var(--text-muted)] whitespace-nowrap flex-shrink-0 pt-0.5"
           >
             {formatRelativeTime(n.sentAt)}
           </span>
@@ -155,7 +155,7 @@
 
     {#if loadingMore}
       <div class="flex justify-center py-6">
-        <Spinner class="size-5 text-gray-400" />
+        <Spinner class="size-5 text-[var(--text-muted)]" />
       </div>
     {/if}
 

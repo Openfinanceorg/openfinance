@@ -117,14 +117,14 @@
 {#if loading}
   <div class="flex items-center justify-center py-12">
     <div
-      class="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900"
+      class="h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-gray-900"
     ></div>
   </div>
 {:else if selectedGroup}
   <!-- Account Detail View -->
   <div class="space-y-4">
     <button
-      class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+      class="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
       onclick={() => (selectedGroup = null)}
     >
       <ArrowLeft size={14} />
@@ -137,7 +137,7 @@
         institutionName={selectedGroup.institutionName}
         size="md"
       />
-      <h3 class="text-sm font-semibold text-gray-900">
+      <h3 class="text-sm font-semibold text-[var(--text)]">
         {selectedGroup.institutionName}
       </h3>
     </div>
@@ -146,33 +146,33 @@
       {#each selectedGroup.accounts as account (account.id)}
         {@const isActive = account.status === "active"}
         <div
-          class="flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+          class="flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-[var(--bg-muted)] transition-colors"
         >
           <div class="flex-1 min-w-0">
             <p
               class="text-sm font-medium truncate {isActive
-                ? 'text-gray-900'
-                : 'text-gray-400'}"
+                ? 'text-[var(--text)]'
+                : 'text-[var(--text-muted)]'}"
             >
               {account.name}
               {#if account.mask}
-                <span class={isActive ? "text-gray-500" : "text-gray-300"}
+                <span class={isActive ? "text-[var(--text-muted)]" : "text-[var(--text-muted)]"}
                   >····{account.mask}</span
                 >
               {/if}
             </p>
             <p
               class="text-xs truncate {isActive
-                ? 'text-gray-500'
-                : 'text-gray-400'}"
+                ? 'text-[var(--text-muted)]'
+                : 'text-[var(--text-muted)]'}"
             >
               {formatAccountType(account.type, account.subtype)}
             </p>
           </div>
           <span
             class="text-sm font-medium {isActive
-              ? 'text-gray-900'
-              : 'text-gray-400'}"
+              ? 'text-[var(--text)]'
+              : 'text-[var(--text-muted)]'}"
           >
             {formatBalance(account.currentBalance, account.isoCurrencyCode)}
           </span>
@@ -185,7 +185,7 @@
       {/each}
     </div>
 
-    <div class="pt-4 border-t border-gray-200">
+    <div class="pt-4 border-t border-[var(--border)]">
       <Button
         variant="outlineRed"
         size="sm"
@@ -226,14 +226,14 @@
   </Dialog>
 {:else if groups.length === 0}
   <div class="text-center py-12">
-    <p class="text-sm text-gray-500">No connected institutions</p>
+    <p class="text-sm text-[var(--text-muted)]">No connected institutions</p>
   </div>
 {:else}
   <!-- Institution List View -->
   <div class="space-y-4">
     <div>
-      <h3 class="text-sm font-medium text-gray-900">Connected Institutions</h3>
-      <p class="mt-1 text-sm text-gray-500">
+      <h3 class="text-sm font-medium text-[var(--text)]">Connected Institutions</h3>
+      <p class="mt-1 text-sm text-[var(--text-muted)]">
         Manage your linked accounts. Hidden accounts continue syncing but are
         excluded from the dashboard and MCP.
       </p>
@@ -245,7 +245,7 @@
           (a) => a.status === "active",
         ).length}
         <button
-          class="w-full flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+          class="w-full flex items-center gap-3 py-3 px-3 rounded-lg hover:bg-[var(--bg-muted)] transition-colors text-left"
           onclick={() => (selectedGroup = group)}
         >
           <InstitutionLogo
@@ -254,14 +254,14 @@
             size="lg"
           />
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-900 truncate">
+            <p class="text-sm font-medium text-[var(--text)] truncate">
               {group.institutionName}
             </p>
-            <p class="text-xs text-gray-500">
+            <p class="text-xs text-[var(--text-muted)]">
               {activeCount}/{group.accounts.length} accounts visible
             </p>
           </div>
-          <ChevronRight size={16} class="text-gray-400 flex-shrink-0" />
+          <ChevronRight size={16} class="text-[var(--text-muted)] flex-shrink-0" />
         </button>
       {/each}
     </div>

@@ -22,11 +22,11 @@
 
 <section class="mb-8">
   <div class="flex items-center justify-between mb-4">
-    <h2 class="text-base font-semibold text-gray-700">Getting Started</h2>
+    <h2 class="text-base font-semibold text-[var(--text)]">Getting Started</h2>
     <Button
       variant="ghost"
       size="icon"
-      class="text-gray-400 hover:text-gray-600 -mr-1"
+      class="text-[var(--text-muted)] hover:text-[var(--text-muted)] -mr-1"
       onclick={onDismiss}
       aria-label="Dismiss getting started"
     >
@@ -35,23 +35,23 @@
   </div>
   <div class="space-y-1">
     <div
-      class="flex items-center justify-between rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      class="flex items-center justify-between rounded-lg p-4 hover:bg-[var(--bg-muted)] transition-colors"
     >
       <div class="flex items-center gap-3">
         {#if accountConnected}
           <CircleCheck class="h-4 w-4 text-green-500 shrink-0" />
         {:else}
-          <Circle class="h-4 w-4 text-gray-300 shrink-0" />
+          <Circle class="h-4 w-4 text-[var(--text-muted)] shrink-0" />
         {/if}
         <div>
           <p
-            class="text-sm font-medium text-gray-900"
+            class="text-sm font-medium text-[var(--text)]"
             class:line-through={accountConnected}
-            class:text-gray-400={accountConnected}
+            class:text-[var(--text-muted)]={accountConnected}
           >
             Connect an account
           </p>
-          <p class="text-xs text-gray-500 mt-0.5">
+          <p class="text-xs text-[var(--text-muted)] mt-0.5">
             Link a bank to start tracking your finances.
           </p>
         </div>
@@ -64,23 +64,23 @@
     </div>
 
     <div
-      class="flex items-center justify-between rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      class="flex items-center justify-between rounded-lg p-4 hover:bg-[var(--bg-muted)] transition-colors"
     >
       <div class="flex items-center gap-3">
         {#if mcpLinked}
           <CircleCheck class="h-4 w-4 text-green-500 shrink-0" />
         {:else}
-          <Circle class="h-4 w-4 text-gray-300 shrink-0" />
+          <Circle class="h-4 w-4 text-[var(--text-muted)] shrink-0" />
         {/if}
         <div>
           <p
-            class="text-sm font-medium text-gray-900"
+            class="text-sm font-medium text-[var(--text)]"
             class:line-through={mcpLinked}
-            class:text-gray-400={mcpLinked}
+            class:text-[var(--text-muted)]={mcpLinked}
           >
             Link to your MCP server
           </p>
-          <p class="text-xs text-gray-500 mt-0.5">
+          <p class="text-xs text-[var(--text-muted)] mt-0.5">
             Connect your accounts to AI via MCP.
           </p>
         </div>

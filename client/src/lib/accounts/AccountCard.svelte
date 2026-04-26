@@ -37,8 +37,8 @@
 
 <div
   class="rounded-2xl p-5 w-[200px] flex flex-col justify-between h-[140px] {account.syncError
-    ? 'bg-red-50'
-    : 'bg-gray-100'} cursor-pointer"
+    ? 'bg-red-50 dark:bg-[#1a0c0c]'
+    : 'bg-[var(--bg-muted)]'} cursor-pointer"
   role="button"
   tabindex="0"
   onclick={() => onClick?.(account.id)}
@@ -54,12 +54,12 @@
       institutionUrl={account.institutionUrl}
       institutionName={account.institutionName}
       size="md"
-      class="rounded-full bg-white"
+      class="rounded-full bg-[var(--bg)]"
     />
-    <p class="text-sm font-medium text-gray-900 truncate">{account.name}</p>
+    <p class="text-sm font-medium text-[var(--text)] truncate">{account.name}</p>
   </div>
   <div>
-    <p class="text-xs text-gray-400 mb-0.5">{shortName()}</p>
+    <p class="text-xs text-[var(--text-muted)] mb-0.5">{shortName()}</p>
     {#if account.syncError}
       <button
         class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
@@ -72,7 +72,7 @@
         Reconnect
       </button>
     {:else}
-      <p class="text-base font-semibold text-gray-900">
+      <p class="text-base font-semibold text-[var(--text)]">
         {formatBalance(
           account.currentBalance,
           account.isoCurrencyCode,

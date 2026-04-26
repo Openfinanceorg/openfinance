@@ -2,6 +2,7 @@
   import "../app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { ModeWatcher } from "mode-watcher";
   import { authClient } from "$lib/auth-client";
   import Toaster from "$lib/components/ui/sonner/sonner.svelte";
 
@@ -22,10 +23,12 @@
   });
 </script>
 
+<ModeWatcher modeStorageKey="openfinance-app-mode" />
+
 {#if $session.isPending}
   <div class="flex min-h-screen items-center justify-center">
     <div
-      class="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900"
+      class="h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--text)]"
     ></div>
   </div>
 {:else}
