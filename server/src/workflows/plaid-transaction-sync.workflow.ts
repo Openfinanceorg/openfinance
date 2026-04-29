@@ -21,9 +21,14 @@ function isDisconnectError(message: string): boolean {
 
 type FreshnessResult =
   | { kind: "fresh" }
-  | { kind: "stale"; message: string }
-  | { kind: "item_error"; message: string }
+  | { kind: "stale"; userMessage: string; technicalMessage: string }
+  | { kind: "item_error"; userMessage: string; technicalMessage: string }
   | { kind: "unknown" };
+
+const STALE_USER_MESSAGE =
+  "Your bank hasn't sent new transactions in a while. Please reconnect to resume syncing.";
+const ITEM_ERROR_USER_MESSAGE =
+  "Your bank connection needs to be reauthorized. Please reconnect.";
 
 export class PlaidTransactionSyncWorkflow {
   @DBOS.step()
@@ -106,9 +111,12 @@ export class PlaidTransactionSyncWorkflow {
     if (status.itemError) {
       const code =
         (status.itemError as { error_code?: string }).error_code ?? "ITEM_ERROR";
+      const technicalMessage = `Plaid item error: ${code}`;
+      DBOS.logger.info(technicalMessage);
       return {
         kind: "item_error",
-        message: `Plaid item error: ${code}`,
+        userMessage: ITEM_ERROR_USER_MESSAGE,
+        technicalMessage,
       };
     }
 
@@ -125,11 +133,14 @@ export class PlaidTransactionSyncWorkflow {
     if (ageMs <= STALE_THRESHOLD_MS) return { kind: "fresh" };
 
     const ageHours = Math.round(ageMs / (60 * 60 * 1000));
+    const technicalMessage =
+      `Plaid upstream pull stale: last_successful_update=${lastSuccessfulUpdate?.toISOString() ?? "never"} ` +
+      `(${ageHours}h ago), last_failed_update=${lastFailedUpdate?.toISOString() ?? "never"}`;
+    DBOS.logger.info(technicalMessage);
     return {
       kind: "stale",
-      message:
-        `Plaid upstream pull stale: last_successful_update=${lastSuccessfulUpdate?.toISOString() ?? "never"} ` +
-        `(${ageHours}h ago), last_failed_update=${lastFailedUpdate?.toISOString() ?? "never"}`,
+      userMessage: STALE_USER_MESSAGE,
+      technicalMessage,
     };
   }
 
@@ -218,13 +229,13 @@ export class PlaidTransactionSyncWorkflow {
             freshness.kind === "item_error" ? "ITEM_LOGIN_REQUIRED" : "STALE_DATA";
           await PlaidTransactionSyncWorkflow.markError(
             syncJobId,
-            freshness.message,
+            freshness.userMessage,
             errorCode,
           );
           await PlaidTransactionSyncWorkflow.notifyDisconnect(
             input.userId,
             connectionId,
-            freshness.message,
+            freshness.userMessage,
           );
           return null;
         }
