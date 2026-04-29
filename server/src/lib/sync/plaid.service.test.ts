@@ -11,9 +11,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockTransactionsSync = vi.fn();
+const mockItemGet = vi.fn();
 
 vi.mock("./plaid.client", () => ({
-  plaidClient: { transactionsSync: mockTransactionsSync },
+  plaidClient: {
+    transactionsSync: mockTransactionsSync,
+    itemGet: mockItemGet,
+  },
 }));
 
 const mockDbChain = () => {
@@ -318,5 +322,82 @@ describe("PlaidService.syncTransactions", () => {
     expect(mockTransactionsSync).toHaveBeenCalledTimes(1);
     expect(result.added).toBe(1);
     expect(result.nextCursor).toBe("cursor-2");
+  });
+});
+
+describe("PlaidService.getItemStatus", () => {
+  beforeEach(() => {
+    mockItemGet.mockReset();
+  });
+
+  it("parses transaction status timestamps and item fields", async () => {
+    mockItemGet.mockResolvedValueOnce({
+      data: {
+        item: {
+          error: null,
+          created_at: "2026-03-05T03:25:49Z",
+        },
+        status: {
+          transactions: {
+            last_successful_update: "2026-04-27T07:47:05.046Z",
+            last_failed_update: "2026-04-28T11:49:11.985Z",
+          },
+        },
+      },
+    });
+
+    const result = await plaidService.getItemStatus("access-token");
+
+    expect(result.lastSuccessfulUpdate?.toISOString()).toBe(
+      "2026-04-27T07:47:05.046Z",
+    );
+    expect(result.lastFailedUpdate?.toISOString()).toBe(
+      "2026-04-28T11:49:11.985Z",
+    );
+    expect(result.itemError).toBeNull();
+    expect(result.itemCreatedAt?.toISOString()).toBe(
+      "2026-03-05T03:25:49.000Z",
+    );
+  });
+
+  it("returns null fields when status.transactions is missing", async () => {
+    mockItemGet.mockResolvedValueOnce({
+      data: {
+        item: { error: null, created_at: null },
+        status: {},
+      },
+    });
+
+    const result = await plaidService.getItemStatus("access-token");
+
+    expect(result.lastSuccessfulUpdate).toBeNull();
+    expect(result.lastFailedUpdate).toBeNull();
+    expect(result.itemError).toBeNull();
+    expect(result.itemCreatedAt).toBeNull();
+  });
+
+  it("propagates a non-null item.error", async () => {
+    const itemError = {
+      error_code: "ITEM_LOGIN_REQUIRED",
+      error_type: "ITEM_ERROR",
+    };
+    mockItemGet.mockResolvedValueOnce({
+      data: {
+        item: { error: itemError, created_at: "2026-03-05T03:25:49Z" },
+        status: {
+          transactions: {
+            last_successful_update: null,
+            last_failed_update: "2026-04-28T11:49:11Z",
+          },
+        },
+      },
+    });
+
+    const result = await plaidService.getItemStatus("access-token");
+    expect(result.itemError).toEqual(itemError);
+    expect(result.lastSuccessfulUpdate).toBeNull();
+    expect(result.lastFailedUpdate?.toISOString()).toBe(
+      "2026-04-28T11:49:11.000Z",
+    );
   });
 });

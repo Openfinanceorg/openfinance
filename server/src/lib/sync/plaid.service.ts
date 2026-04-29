@@ -352,6 +352,23 @@ class PlaidService {
     }
   }
 
+  async getItemStatus(accessToken: string) {
+    const r = await plaidClient.itemGet({ access_token: accessToken });
+    const tx = r.data.status?.transactions;
+    return {
+      lastSuccessfulUpdate: tx?.last_successful_update
+        ? new Date(tx.last_successful_update)
+        : null,
+      lastFailedUpdate: tx?.last_failed_update
+        ? new Date(tx.last_failed_update)
+        : null,
+      itemError: r.data.item.error,
+      itemCreatedAt: r.data.item.created_at
+        ? new Date(r.data.item.created_at)
+        : null,
+    };
+  }
+
   async itemRemove(accessToken: string): Promise<boolean> {
     try {
       await plaidClient.itemRemove({ access_token: accessToken });
