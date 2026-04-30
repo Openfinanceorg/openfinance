@@ -13,9 +13,22 @@ const PLAID_DISCONNECT_ERRORS = [
   "PASSWORD_RESET_REQUIRED",
 ];
 
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+
 function isDisconnectError(message: string): boolean {
   return PLAID_DISCONNECT_ERRORS.some((p) => message.includes(p));
 }
+
+type FreshnessResult =
+  | { kind: "fresh" }
+  | { kind: "stale"; userMessage: string; technicalMessage: string }
+  | { kind: "item_error"; userMessage: string; technicalMessage: string }
+  | { kind: "unknown" };
+
+const STALE_USER_MESSAGE =
+  "Your bank hasn't sent new transactions in a while. Please reconnect to resume syncing.";
+const ITEM_ERROR_USER_MESSAGE =
+  "Your bank connection needs to be reauthorized. Please reconnect.";
 
 export class PlaidTransactionSyncWorkflow {
   @DBOS.step()
@@ -79,6 +92,56 @@ export class PlaidTransactionSyncWorkflow {
   @DBOS.step()
   static async refreshBalances(connectionId: number, accessToken: string) {
     return plaidService.refreshBalances(connectionId, accessToken);
+  }
+
+  @DBOS.step()
+  static async checkItemFreshness(
+    accessToken: string,
+  ): Promise<FreshnessResult> {
+    let status: Awaited<ReturnType<typeof plaidService.getItemStatus>>;
+    try {
+      status = await plaidService.getItemStatus(accessToken);
+    } catch (err) {
+      DBOS.logger.warn(
+        `Item status check failed: ${err instanceof Error ? err.message : err}`,
+      );
+      return { kind: "unknown" };
+    }
+
+    if (status.itemError) {
+      const code =
+        (status.itemError as { error_code?: string }).error_code ?? "ITEM_ERROR";
+      const technicalMessage = `Plaid item error: ${code}`;
+      DBOS.logger.info(technicalMessage);
+      return {
+        kind: "item_error",
+        userMessage: ITEM_ERROR_USER_MESSAGE,
+        technicalMessage,
+      };
+    }
+
+    const { lastSuccessfulUpdate, lastFailedUpdate, itemCreatedAt } = status;
+    const isFailing =
+      lastFailedUpdate !== null &&
+      (lastSuccessfulUpdate === null ||
+        lastFailedUpdate > lastSuccessfulUpdate);
+
+    if (!isFailing) return { kind: "fresh" };
+
+    const baseline = lastSuccessfulUpdate ?? itemCreatedAt;
+    const ageMs = baseline ? Date.now() - baseline.getTime() : Infinity;
+    if (ageMs <= STALE_THRESHOLD_MS) return { kind: "fresh" };
+
+    const ageHours = Math.round(ageMs / (60 * 60 * 1000));
+    const technicalMessage =
+      `Plaid upstream pull stale: last_successful_update=${lastSuccessfulUpdate?.toISOString() ?? "never"} ` +
+      `(${ageHours}h ago), last_failed_update=${lastFailedUpdate?.toISOString() ?? "never"}`;
+    DBOS.logger.info(technicalMessage);
+    return {
+      kind: "stale",
+      userMessage: STALE_USER_MESSAGE,
+      technicalMessage,
+    };
   }
 
   @DBOS.step()
@@ -150,6 +213,33 @@ export class PlaidTransactionSyncWorkflow {
         accessToken: connection.plaidAccessToken,
         cursor: connection.transactionCursor,
       });
+
+      // Skip the freshness check on initial sync — Plaid hasn't run a
+      // background pull yet, so last_successful_update may be unset.
+      if (connection.transactionCursor !== null) {
+        const freshness =
+          await PlaidTransactionSyncWorkflow.checkItemFreshness(
+            connection.plaidAccessToken,
+          );
+        if (
+          freshness.kind === "stale" ||
+          freshness.kind === "item_error"
+        ) {
+          const errorCode =
+            freshness.kind === "item_error" ? "ITEM_LOGIN_REQUIRED" : "STALE_DATA";
+          await PlaidTransactionSyncWorkflow.markError(
+            syncJobId,
+            freshness.userMessage,
+            errorCode,
+          );
+          await PlaidTransactionSyncWorkflow.notifyDisconnect(
+            input.userId,
+            connectionId,
+            freshness.userMessage,
+          );
+          return null;
+        }
+      }
 
       await PlaidTransactionSyncWorkflow.refreshBalances(
         connectionId,
