@@ -3,3 +3,6 @@ packages:
   - client
   - shared
   - mcp-server
+
+onlyBuiltDependencies:
+  - esbuild
