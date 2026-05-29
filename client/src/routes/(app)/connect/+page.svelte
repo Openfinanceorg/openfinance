@@ -210,7 +210,7 @@
   }
 </script>
 
-<div class="max-w-4xl mx-auto px-8 pt-8">
+<div class="max-w-4xl mx-auto px-4 sm:px-8 pt-8">
   <section class="p-2">
     <div class="mb-4">
       <h2 class="text-base font-semibold text-[var(--text)]">

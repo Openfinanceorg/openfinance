@@ -39,7 +39,7 @@
         >{getInitials($session.data?.user?.name)}</AvatarFallback
       >
     </Avatar>
-    <span class="text-sm font-medium text-[var(--text)]"
+    <span class="text-sm font-medium text-[var(--text)] hidden sm:inline"
       >{$session.data?.user?.name}</span
     >
     <ChevronsUpDown class="h-3.5 w-3.5 text-[var(--text-muted)]" />

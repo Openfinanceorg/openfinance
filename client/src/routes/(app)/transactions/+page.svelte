@@ -54,12 +54,14 @@
   );
 </script>
 
-<div class="max-w-4xl mx-auto px-8 pt-2">
-  <div class="flex items-center justify-between mb-6">
+<div class="max-w-4xl mx-auto px-4 sm:px-8 pt-2">
+  <div
+    class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6"
+  >
     <h2 class="text-base font-semibold text-[var(--text)]">Transactions</h2>
 
-    <div class="flex items-center gap-3">
-      <div class="relative">
+    <div class="flex items-center gap-3 w-full sm:w-auto">
+      <div class="relative flex-1 sm:flex-none">
         <Search
           class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none"
         />
@@ -67,7 +69,7 @@
           type="text"
           placeholder="Search transactions..."
           bind:value={searchText}
-          class="pl-9 w-56 h-8 text-sm"
+          class="pl-9 w-full sm:w-56 h-8 text-sm"
         />
       </div>
 

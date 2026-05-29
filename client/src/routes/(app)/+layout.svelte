@@ -1,5 +1,6 @@
 <script lang="ts">
   import Sidebar from "$lib/components/Sidebar.svelte";
+  import MobileNav from "$lib/components/MobileNav.svelte";
   import ProfileDropdown from "$lib/components/ProfileDropdown.svelte";
   import { authClient } from "$lib/auth-client";
   import PlaidLink from "$lib/sync/PlaidLink.svelte";
@@ -176,10 +177,10 @@
 
   <div class="h-screen overflow-y-auto bg-[var(--bg)]">
     <div class="sticky top-0 z-10 bg-[var(--bg-translucent)] backdrop-blur">
-      <div class="max-w-6xl mx-auto px-8">
+      <div class="max-w-6xl mx-auto px-4 sm:px-8">
         <header class="flex items-center py-6">
           <div
-            class="w-48 shrink-0 text-center inline-flex items-center justify-center"
+            class="w-auto md:w-48 shrink-0 text-center inline-flex items-center justify-center"
           >
             <span class="text-base font-semibold tracking-tight text-[var(--text)]"
               >OpenFinance</span
@@ -208,15 +209,17 @@
         </header>
       </div>
     </div>
-    <div class="max-w-6xl mx-auto px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-8">
       <div class="flex gap-12">
-        <div class="w-48 shrink-0 self-start sticky top-[84px]">
+        <div class="hidden md:block w-48 shrink-0 self-start sticky top-[84px]">
           <Sidebar />
         </div>
-        <main class="flex-1 min-w-0">
+        <main class="flex-1 min-w-0 pb-24 md:pb-0">
           {@render children()}
         </main>
       </div>
     </div>
   </div>
+
+  <MobileNav />
 {/if}
