@@ -4,7 +4,7 @@ import { accountConnections, syncJobs } from "../schema";
 import { eq } from "drizzle-orm";
 import { plaidService } from "../lib/sync/plaid.service";
 import { extractPlaidError } from "../lib/sync/plaid.client";
-import { PLAID_DISCONNECT_ERROR_CODES } from "../lib/sync/disconnect-codes";
+import { isReconnectErrorCode } from "../lib/sync/disconnect-codes";
 import { notificationService } from "../lib/notification.service";
 
 const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
@@ -18,14 +18,6 @@ const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 const UPSTREAM_PULL_RETRY_DELAYS_MS = [
   30_000, 60_000, 120_000, 300_000, 600_000,
 ];
-
-function isDisconnectError(message: string): boolean {
-  return PLAID_DISCONNECT_ERROR_CODES.some((p) => message.includes(p));
-}
-
-function isDisconnectCode(code: string | undefined): boolean {
-  return !!code && PLAID_DISCONNECT_ERROR_CODES.includes(code);
-}
 
 const UPSTREAM_NOT_READY_MESSAGE =
   "Your bank is still sending data. This usually finishes on its own shortly.";
@@ -397,13 +389,11 @@ export class PlaidTransactionSyncWorkflow {
       }
       return result;
     } catch (err) {
-      // Prefer Plaid's own error_code over the axios message, which is only
-      // ever "Request failed with status code 400".
-      const plaidError = extractPlaidError(err);
-      const message = plaidError.message;
-      const errorCode =
-        plaidError.errorCode ??
-        (isDisconnectError(message) ? "ITEM_LOGIN_REQUIRED" : undefined);
+      // Plaid's own error_code, not the axios message, which is only ever
+      // "Request failed with status code 400". Absent means the failure never
+      // reached Plaid (network, or a bug here), so it stays uncoded and the
+      // poller retries it rather than parking the connection.
+      const { errorCode, message } = extractPlaidError(err);
 
       await PlaidTransactionSyncWorkflow.markError(
         syncJobId,
@@ -415,7 +405,7 @@ export class PlaidTransactionSyncWorkflow {
           `${errorCode ?? "UNKNOWN"} — ${message}`,
       );
 
-      if (isDisconnectCode(errorCode)) {
+      if (isReconnectErrorCode(errorCode)) {
         await PlaidTransactionSyncWorkflow.notifyDisconnect(
           input.userId,
           connectionId,

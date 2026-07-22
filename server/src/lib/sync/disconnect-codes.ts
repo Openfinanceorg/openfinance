@@ -1,15 +1,18 @@
 /**
- * Provider error codes that mean a connection is genuinely broken and the user
- * has to re-authenticate through the provider's Link flow.
+ * Error codes that mean a connection is genuinely broken and the user has to
+ * re-authenticate through the provider's Link flow.
  *
- * Kept provider-neutral because the consumers are: the Plaid sync workflow, the
- * cross-provider transaction poller, and the accounts service that decides
- * whether to show a "Reconnect" prompt. Only codes in this list should ever
- * produce that prompt — a transient failure (INSTITUTION_DOWN, a rate limit, an
- * upstream pull still in progress) must not tell the user to re-link, because
- * re-linking will not help.
+ * The codes are per-provider vocabulary, but every consumer asks the same
+ * provider-neutral question — "must the user re-link?" — so the lists stay
+ * private and only the predicate is exported. Lives outside the provider
+ * clients because two of the three consumers are not Plaid, and importing
+ * plaid.client would drag in the Plaid SDK and its env vars for a string list.
+ *
+ * Only codes here should ever produce a "Reconnect" prompt. A transient
+ * failure (INSTITUTION_DOWN, a rate limit, an upstream pull still in progress)
+ * must not tell the user to re-link, because re-linking will not help.
  */
-export const PLAID_DISCONNECT_ERROR_CODES = [
+const PLAID_DISCONNECT_CODES = [
   "ITEM_LOGIN_REQUIRED",
   "ITEM_LOCKED",
   "INVALID_CREDENTIALS",
@@ -18,10 +21,12 @@ export const PLAID_DISCONNECT_ERROR_CODES = [
   "PASSWORD_RESET_REQUIRED",
 ];
 
-/** Every code, across providers, that warrants a reconnect prompt. */
-export const RECONNECT_ERROR_CODES = [
-  "CONNECTION_EXPIRED",
-  ...PLAID_DISCONNECT_ERROR_CODES,
+/** Synthesized by the Quiltt sync workflow from an ERROR_REPAIRABLE status. */
+const QUILTT_DISCONNECT_CODES = ["CONNECTION_EXPIRED"];
+
+const RECONNECT_ERROR_CODES = [
+  ...PLAID_DISCONNECT_CODES,
+  ...QUILTT_DISCONNECT_CODES,
 ];
 
 export function isReconnectErrorCode(code: string | null | undefined): boolean {
