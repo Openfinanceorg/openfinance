@@ -133,11 +133,14 @@ class PlaidService {
       })
       .returning();
 
-    // Dispatch background workflow for transaction sync
+    // Dispatch background workflow for transaction sync. Plaid is still pulling
+    // from the bank at this point, so tell the workflow to wait for that data
+    // instead of reporting an empty success a second after Link closes.
     await DBOS.startWorkflow(PlaidTransactionSyncWorkflow).run({
       connectionId,
       userId,
       syncJobId: syncJob.id,
+      awaitUpstreamPull: true,
     });
 
     return { syncJobId: syncJob.id };

@@ -33,6 +33,52 @@ export const plaidClient = new PlaidApi(configuration);
 export const PLAID_COUNTRY_CODES = [CountryCode.Us, CountryCode.Ca];
 
 /**
+ * Plaid error codes that mean the user must re-authenticate through Link.
+ * Retrying these on a schedule never succeeds — the connection has to be
+ * parked until the user reconnects.
+ */
+export const PLAID_DISCONNECT_ERROR_CODES = [
+  "ITEM_LOGIN_REQUIRED",
+  "ITEM_LOCKED",
+  "INVALID_CREDENTIALS",
+  "INVALID_MFA",
+  "ACCESS_NOT_GRANTED",
+  "PASSWORD_RESET_REQUIRED",
+];
+
+export interface PlaidApiError {
+  errorCode?: string;
+  errorType?: string;
+  message: string;
+}
+
+/**
+ * The Plaid SDK is axios-based, so a rejected request surfaces as an AxiosError
+ * whose `message` is only ever "Request failed with status code 400". The real
+ * Plaid error code lives in the response body — read it from there, or the
+ * connection looks like an anonymous 400 and gets retried forever.
+ */
+export function extractPlaidError(err: unknown): PlaidApiError {
+  const fallback = err instanceof Error ? err.message : "Unknown sync error";
+  const data = (err as { response?: { data?: unknown } })?.response?.data as
+    | {
+        error_code?: string;
+        error_type?: string;
+        error_message?: string;
+        display_message?: string;
+      }
+    | undefined;
+
+  if (!data?.error_code) return { message: fallback };
+
+  return {
+    errorCode: data.error_code,
+    errorType: data.error_type,
+    message: data.error_message ?? data.display_message ?? fallback,
+  };
+}
+
+/**
  * Stream all institutions from Plaid API in batches for memory-efficient processing
  * Yields each batch as it's fetched from the API
  */
