@@ -3,14 +3,16 @@ export { default as AccountList } from "./AccountList.svelte";
 export { default as AccountRow } from "./AccountRow.svelte";
 export { default as AccountCard } from "./AccountCard.svelte";
 export { default as AccountCarousel } from "./AccountCarousel.svelte";
+export { default as AccountsOverview } from "./AccountsOverview.svelte";
 export {
   groupAccounts,
+  currencyTotals,
   formatBalance,
   formatSubtotal,
   formatAccountType,
   isLiabilityGroup,
 } from "./utils";
-export type { AccountGroup } from "./utils";
+export type { AccountGroup, CurrencyTotal } from "./utils";
 export {
   accountsState,
   loadAccountsState,
