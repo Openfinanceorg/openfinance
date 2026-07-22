@@ -150,8 +150,14 @@ class PlaidService {
     connectionId: number;
     accessToken: string;
     cursor: string | null;
+    /**
+     * Wait for Plaid's asynchronous initial/historical pull to finish. Only set
+     * on the Link path — the scheduled poll processes connections serially, so
+     * blocking there would delay every other connection's sync.
+     */
+    waitForInitialPull?: boolean;
   }) {
-    const { connectionId, accessToken, cursor } = params;
+    const { connectionId, accessToken, cursor, waitForInitialPull } = params;
 
     // Get accounts for this connection to map account IDs
     const accounts = await db
@@ -166,6 +172,7 @@ class PlaidService {
     const accountMap = new Map(accounts.map((a) => [a.providerAccountId, a]));
 
     let nextCursor = cursor ?? "";
+    let updateStatus: string | null = null;
     let added = 0;
     let modified = 0;
     let removed = 0;
@@ -184,6 +191,7 @@ class PlaidService {
 
       const data = response.data;
       nextCursor = data.next_cursor;
+      updateStatus = data.transactions_update_status ?? null;
 
       console.debug(
         `connection ${connectionId}: status=${data.transactions_update_status}, ` +
@@ -294,15 +302,24 @@ class PlaidService {
       // More pages available — continue immediately
       if (data.has_more) continue;
 
-      // During initial sync, keep polling until historical data is ready
-      const isInitialSync = cursor === null;
-      const needsMoreData =
-        data.transactions_update_status !== "HISTORICAL_UPDATE_COMPLETE";
+      // Wait for Plaid's initial/historical pull to finish.
+      //
+      // This deliberately does NOT key off `cursor === null`. A not-ready first
+      // sync returns an empty next_cursor, and so does an Item with no
+      // /transactions/sync-eligible accounts (brokerages — the endpoint covers
+      // credit, depository and some loan accounts only). Both persist as "", so
+      // the cursor cannot tell "not ready yet" from "nothing here, ever".
+      //
+      // An unknown/absent status means we cannot tell; treat it as done rather
+      // than blocking, so those Items never sit in a pointless retry loop.
+      const awaitingPull =
+        updateStatus === "NOT_READY" ||
+        updateStatus === "INITIAL_UPDATE_COMPLETE";
 
-      if (isInitialSync && needsMoreData && retryIndex < maxRetries) {
+      if (waitForInitialPull && awaitingPull && retryIndex < maxRetries) {
         const delay = Math.min(initialDelay * 2 ** retryIndex, maxDelay);
         console.debug(
-          `connection ${connectionId}: ${data.transactions_update_status}, retrying in ${delay}ms (attempt ${retryIndex + 1}/${maxRetries})`,
+          `connection ${connectionId}: ${updateStatus}, retrying in ${delay}ms (attempt ${retryIndex + 1}/${maxRetries})`,
         );
         await sleep(delay);
         retryIndex++;
@@ -326,7 +343,7 @@ class PlaidService {
       `connection ${connectionId}: sync complete — added=${added}, modified=${modified}, removed=${removed}`,
     );
 
-    return { nextCursor, added, modified, removed };
+    return { nextCursor, added, modified, removed, updateStatus };
   }
 
   async refreshBalances(

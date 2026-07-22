@@ -12,7 +12,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { PlaidTransactionSyncWorkflow } from "./plaid-transaction-sync.workflow";
 import { MxTransactionSyncWorkflow } from "./mx-transaction-sync.workflow";
 import { QuilttTransactionSyncWorkflow } from "./quiltt-transaction-sync.workflow";
-import { PLAID_DISCONNECT_ERROR_CODES } from "../lib/sync/plaid.client";
+import { RECONNECT_ERROR_CODES } from "../lib/sync/disconnect-codes";
 
 interface PollResult {
   connectionsProcessed: number;
@@ -142,10 +142,6 @@ export class TransactionPollWorkflow {
     if (active.length === 0) return active;
 
     const connectionIds = active.map((c) => c.id);
-    const DISCONNECT_CODES = [
-      "CONNECTION_EXPIRED",
-      ...PLAID_DISCONNECT_ERROR_CODES,
-    ];
 
     const latestJobs = await db
       .selectDistinctOn([syncJobs.accountConnectionId], {
@@ -168,7 +164,7 @@ export class TransactionPollWorkflow {
             j.status === "pending" ||
             (j.status === "error" &&
               j.errorCode &&
-              DISCONNECT_CODES.includes(j.errorCode)),
+              RECONNECT_ERROR_CODES.includes(j.errorCode)),
         )
         .map((j) => j.accountConnectionId),
     );

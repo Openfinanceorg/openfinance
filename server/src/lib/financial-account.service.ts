@@ -12,6 +12,7 @@ import type { ConnectedAccount } from "@openfinance/shared";
 import { plaidService } from "./sync/plaid.service";
 import { mxService } from "./sync/mx.service";
 import { quilttService } from "./sync/quiltt.service";
+import { isReconnectErrorCode } from "./sync/disconnect-codes";
 import { user as userTable } from "../schema";
 
 interface SyncError {
@@ -291,6 +292,7 @@ class FinancialAccountService {
       .selectDistinctOn([syncJobs.accountConnectionId], {
         accountConnectionId: syncJobs.accountConnectionId,
         errorMessage: syncJobs.errorMessage,
+        errorCode: syncJobs.errorCode,
         completedAt: syncJobs.completedAt,
         status: syncJobs.status,
       })
@@ -304,7 +306,15 @@ class FinancialAccountService {
 
     const errorMap = new Map<number, SyncError>();
     for (const job of latestJobs) {
-      if (job.status === "error" && job.errorMessage) {
+      // Only genuine disconnects get a syncError, because that is what drives
+      // the "Reconnect" prompt and the reconnect task. Transient failures
+      // (INSTITUTION_DOWN, rate limits, an upstream pull still in progress)
+      // must not tell the user to re-link — re-linking would not help.
+      if (
+        job.status === "error" &&
+        job.errorMessage &&
+        isReconnectErrorCode(job.errorCode)
+      ) {
         errorMap.set(job.accountConnectionId, {
           message: job.errorMessage,
           lastFailedAt: (job.completedAt ?? new Date()).toISOString(),

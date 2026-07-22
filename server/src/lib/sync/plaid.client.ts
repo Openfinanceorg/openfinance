@@ -32,20 +32,6 @@ export const plaidClient = new PlaidApi(configuration);
 
 export const PLAID_COUNTRY_CODES = [CountryCode.Us, CountryCode.Ca];
 
-/**
- * Plaid error codes that mean the user must re-authenticate through Link.
- * Retrying these on a schedule never succeeds — the connection has to be
- * parked until the user reconnects.
- */
-export const PLAID_DISCONNECT_ERROR_CODES = [
-  "ITEM_LOGIN_REQUIRED",
-  "ITEM_LOCKED",
-  "INVALID_CREDENTIALS",
-  "INVALID_MFA",
-  "ACCESS_NOT_GRANTED",
-  "PASSWORD_RESET_REQUIRED",
-];
-
 export interface PlaidApiError {
   errorCode?: string;
   errorType?: string;

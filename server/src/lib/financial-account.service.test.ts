@@ -129,7 +129,8 @@ describe("FinancialAccountService", () => {
         provider: "plaid",
         jobType: "accounts",
         status: "error",
-        errorMessage: "ITEM_LOGIN_REQUIRED",
+        errorMessage: "the login details of this item have changed",
+        errorCode: "ITEM_LOGIN_REQUIRED",
         completedAt,
       });
 
@@ -139,8 +140,37 @@ describe("FinancialAccountService", () => {
       // All accounts on this connection should have the sync error
       for (const account of accounts) {
         expect(account.syncError).not.toBeNull();
-        expect(account.syncError!.message).toBe("ITEM_LOGIN_REQUIRED");
+        expect(account.syncError!.message).toBe(
+          "the login details of this item have changed",
+        );
         expect(account.syncError!.lastFailedAt).toBe(completedAt.toISOString());
+      }
+    });
+
+    // syncError drives the "Reconnect" button and the reconnect task, so a
+    // transient failure must not raise one — re-linking would not fix an
+    // upstream pull that is merely still in progress.
+    it("should not return syncError for a non-disconnect error", async () => {
+      await db
+        .delete(syncJobs)
+        .where(eq(syncJobs.accountConnectionId, connectionId));
+
+      await db.insert(syncJobs).values({
+        userId: testUserId,
+        accountConnectionId: connectionId,
+        provider: "plaid",
+        jobType: "transactions",
+        status: "error",
+        errorMessage: "Your bank is still sending data.",
+        errorCode: "UPSTREAM_NOT_READY",
+        completedAt: new Date("2025-01-15T10:00:00Z"),
+      });
+
+      const accounts =
+        await financialAccountService.getAccountsByUserId(testUserId);
+
+      for (const account of accounts) {
+        expect(account.syncError).toBeNull();
       }
     });
 
