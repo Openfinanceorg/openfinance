@@ -16,6 +16,16 @@ export function checkCanConnect() {
   });
 }
 
+export function confirmCheckout(sessionId: string) {
+  return apiFetch<{ confirmed: boolean; status: BillingStatus }>(
+    "/api/billing/confirm-checkout",
+    {
+      method: "POST",
+      body: JSON.stringify({ sessionId }),
+    },
+  );
+}
+
 export function createCheckoutSession(planType: Exclude<PlanType, "free">) {
   return apiFetch<{ url: string }>("/api/billing/create-checkout", {
     method: "POST",

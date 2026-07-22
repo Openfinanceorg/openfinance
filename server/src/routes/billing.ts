@@ -37,7 +37,9 @@ billingRoutes.post(
     const { planType } = c.req.valid("json");
 
     const appUrl = process.env.APP_URL!;
-    const successUrl = `${appUrl}/?checkout=success`;
+    // Stripe substitutes the real session id, which the client hands back to
+    // /confirm-checkout so activation doesn't depend on webhook timing.
+    const successUrl = `${appUrl}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${appUrl}/?checkout=cancel`;
 
     const url = await billingService.createCheckoutSession(
@@ -49,6 +51,32 @@ billingRoutes.post(
     );
 
     return c.json({ url });
+  },
+);
+
+// POST /api/billing/confirm-checkout
+billingRoutes.post(
+  "/confirm-checkout",
+  zValidator("json", z.object({ sessionId: z.string().min(1) })),
+  async (c) => {
+    const user = c.get("user");
+    const { sessionId } = c.req.valid("json");
+
+    try {
+      const result = await billingService.confirmCheckoutSession(
+        user.id,
+        sessionId,
+      );
+      return c.json(result);
+    } catch (err) {
+      // Unknown or expired session id. Report it as unconfirmed and let the
+      // webhook finish the job rather than failing the page load.
+      console.error("Checkout confirmation failed:", err);
+      return c.json({
+        confirmed: false,
+        status: await billingService.getBillingStatus(user.id),
+      });
+    }
   },
 );
 
