@@ -237,4 +237,133 @@ describe("QuilttService.syncTransactions", () => {
     expect(checking?.type).toBe("depository");
     expect(checking?.mask).toBe("1111");
   });
+
+  // The currency used to be hardcoded to "USD", which filed Canadian accounts
+  // (e.g. a CIBC chequing account reporting CAD) under USD.
+  it("stores the currency Quiltt reports rather than assuming USD", async () => {
+    vi.spyOn(quilttService, "getConnection").mockResolvedValue({
+      id: quilttConnectionId,
+      provider: "plaid_aggregated",
+      status: "SYNCED",
+      institution: { name: "CIBC Canada" },
+      accounts: [
+        {
+          id: "quiltt_acct_cad",
+          name: "CHECKING",
+          kind: "CHECKING",
+          mask: "7388",
+          currencyCode: "CAD",
+          balance: { current: 77455.46, available: 77455.46 },
+        },
+        {
+          id: "quiltt_acct_no_currency",
+          name: "Unknown Currency",
+          kind: "CHECKING",
+          mask: "3333",
+          balance: { current: 10, available: 10 },
+        },
+      ],
+    });
+    vi.spyOn(quilttService, "getAllTransactions").mockResolvedValue([]);
+
+    await quilttService.syncTransactions({
+      connectionId,
+      quilttConnectionId,
+      quilttProfileId: "profile_1",
+    });
+
+    const after = await db
+      .select()
+      .from(financialAccounts)
+      .where(eq(financialAccounts.accountConnectionId, connectionId));
+
+    expect(
+      after.find((a) => a.providerAccountId === "quiltt_acct_cad")
+        ?.isoCurrencyCode,
+    ).toBe("CAD");
+    expect(
+      after.find((a) => a.providerAccountId === "quiltt_acct_no_currency")
+        ?.isoCurrencyCode,
+    ).toBeNull();
+  });
+
+  // The account-level fix above left the transaction path still defaulting to
+  // "USD", so a CAD account's transactions were stamped USD while the account
+  // row said CAD.
+  it("stores transaction currency from Quiltt, falling back to the account's currency instead of USD", async () => {
+    vi.spyOn(quilttService, "getConnection").mockResolvedValue({
+      id: quilttConnectionId,
+      provider: "plaid_aggregated",
+      status: "SYNCED",
+      institution: { name: "CIBC Canada" },
+      accounts: [
+        {
+          id: "quiltt_acct_cad",
+          name: "CHECKING",
+          kind: "CHECKING",
+          mask: "7388",
+          currencyCode: "CAD",
+          balance: { current: 77455.46, available: 77455.46 },
+        },
+        {
+          id: "quiltt_acct_no_currency",
+          name: "Unknown Currency",
+          kind: "CHECKING",
+          mask: "3333",
+          balance: { current: 10, available: 10 },
+        },
+      ],
+    });
+    vi.spyOn(quilttService, "getAllTransactions").mockResolvedValue([
+      {
+        id: "quiltt_txn_explicit",
+        date: "2026-07-01",
+        description: "Explicit currency",
+        amount: 25.5,
+        currencyCode: "CAD",
+        entryType: "DEBIT",
+        status: "POSTED",
+        account: { id: "quiltt_acct_cad" },
+      },
+      {
+        // Quiltt omitted currencyCode — must inherit CAD from the account.
+        id: "quiltt_txn_inherits",
+        date: "2026-07-02",
+        description: "No currency reported",
+        amount: 40,
+        entryType: "DEBIT",
+        status: "POSTED",
+        account: { id: "quiltt_acct_cad" },
+      },
+      {
+        // Neither the transaction nor the account has a currency — stay null
+        // rather than inventing one.
+        id: "quiltt_txn_unknown",
+        date: "2026-07-03",
+        description: "Unknowable currency",
+        amount: 5,
+        entryType: "CREDIT",
+        status: "POSTED",
+        account: { id: "quiltt_acct_no_currency" },
+      },
+    ]);
+
+    await quilttService.syncTransactions({
+      connectionId,
+      quilttConnectionId,
+      quilttProfileId: "profile_1",
+    });
+
+    const rows = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, testUserId));
+
+    const byProviderId = (id: string) =>
+      rows.find((t) => t.providerTransactionId === id);
+
+    expect(byProviderId("quiltt_txn_explicit")?.isoCurrencyCode).toBe("CAD");
+    expect(byProviderId("quiltt_txn_inherits")?.isoCurrencyCode).toBe("CAD");
+    expect(byProviderId("quiltt_txn_unknown")?.isoCurrencyCode).toBeNull();
+  });
 });

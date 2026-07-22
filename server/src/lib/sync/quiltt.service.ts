@@ -21,6 +21,7 @@ interface QuilttAccount {
   name: string;
   kind: string;
   mask: string;
+  currencyCode?: string;
   balance: {
     current: number | null;
     available: number | null;
@@ -82,6 +83,7 @@ const CONNECTION_QUERY = `
         name
         kind
         mask
+        currencyCode
         balance {
           current
           available
@@ -534,6 +536,7 @@ class QuilttService {
         id: financialAccounts.id,
         providerAccountId: financialAccounts.providerAccountId,
         userId: financialAccounts.userId,
+        isoCurrencyCode: financialAccounts.isoCurrencyCode,
       })
       .from(financialAccounts)
       .where(eq(financialAccounts.accountConnectionId, connectionId));
@@ -559,6 +562,9 @@ class QuilttService {
       const amount =
         tx.entryType === "CREDIT" ? -Math.abs(tx.amount) : Math.abs(tx.amount);
       const isPending = tx.status?.toUpperCase() === "PENDING";
+      // Never assume USD — fall back to the account's currency so a CAD
+      // account's transactions aren't filed under a currency Quiltt never sent.
+      const isoCurrencyCode = tx.currencyCode ?? account.isoCurrencyCode ?? null;
 
       await db
         .insert(transactions)
@@ -568,7 +574,7 @@ class QuilttService {
           providerTransactionId: tx.id,
           name: tx.description,
           amount: amount.toString(),
-          isoCurrencyCode: tx.currencyCode ?? "USD",
+          isoCurrencyCode,
           date: new Date(tx.date),
           authorizedDate: null,
           pending: isPending,
@@ -580,7 +586,7 @@ class QuilttService {
           set: {
             name: tx.description,
             amount: amount.toString(),
-            isoCurrencyCode: tx.currencyCode ?? "USD",
+            isoCurrencyCode,
             date: new Date(tx.date),
             pending: isPending,
             raw: tx as unknown as Record<string, unknown>,
@@ -615,7 +621,7 @@ class QuilttService {
         mask: account.mask || null,
         currentBalance: account.balance?.current?.toString() ?? null,
         availableBalance: account.balance?.available?.toString() ?? null,
-        isoCurrencyCode: "USD",
+        isoCurrencyCode: account.currencyCode ?? null,
       };
 
       await db
