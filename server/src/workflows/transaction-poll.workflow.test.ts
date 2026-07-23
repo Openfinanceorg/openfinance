@@ -16,6 +16,7 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
   const testUserId = `test-poll-${randomUUID().slice(0, 8)}`;
   let disconnectedConnId: number;
   let transientErrorConnId: number;
+  let staleConnId: number;
   let registryId: number;
 
   beforeAll(async () => {
@@ -75,6 +76,20 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
       .returning();
     transientErrorConnId = conn2.id;
 
+    // Connection 3: will be stale (should still be polled)
+    const [conn3] = await db
+      .insert(accountConnections)
+      .values({
+        userId: testUserId,
+        provider: "plaid",
+        institutionRegistryId: registryId,
+        plaidItemId: `item_${randomUUID().slice(0, 8)}`,
+        plaidAccessToken: `access_${randomUUID()}`,
+        status: "active",
+      })
+      .returning();
+    staleConnId = conn3.id;
+
     await db.insert(financialAccounts).values([
       {
         userId: testUserId,
@@ -121,6 +136,18 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
       errorMessage: "Network timeout",
       errorCode: null,
     });
+
+    // Connection 3: stale data → prompts the user, but stays in the rotation
+    // because the institution can recover on its own.
+    await db.insert(syncJobs).values({
+      userId: testUserId,
+      accountConnectionId: staleConnId,
+      provider: "plaid",
+      jobType: "transactions",
+      status: "error",
+      errorMessage: "Your bank hasn't sent new transactions in a while.",
+      errorCode: "STALE_DATA",
+    });
   });
 
   afterAll(async () => {
@@ -146,5 +173,7 @@ describe("TransactionPollWorkflow.fetchActiveConnections", () => {
     expect(ids).not.toContain(disconnectedConnId);
     // Transient error (null errorCode) → retried
     expect(ids).toContain(transientErrorConnId);
+    // Stale → still retried; only the user-facing prompt differs
+    expect(ids).toContain(staleConnId);
   });
 });

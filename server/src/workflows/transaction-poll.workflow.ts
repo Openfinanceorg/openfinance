@@ -12,7 +12,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { PlaidTransactionSyncWorkflow } from "./plaid-transaction-sync.workflow";
 import { MxTransactionSyncWorkflow } from "./mx-transaction-sync.workflow";
 import { QuilttTransactionSyncWorkflow } from "./quiltt-transaction-sync.workflow";
-import { isReconnectErrorCode } from "../lib/sync/disconnect-codes";
+import { shouldStopPolling } from "../lib/sync/disconnect-codes";
 
 interface PollResult {
   connectionsProcessed: number;
@@ -162,7 +162,7 @@ export class TransactionPollWorkflow {
         .filter(
           (j) =>
             j.status === "pending" ||
-            (j.status === "error" && isReconnectErrorCode(j.errorCode)),
+            (j.status === "error" && shouldStopPolling(j.errorCode)),
         )
         .map((j) => j.accountConnectionId),
     );

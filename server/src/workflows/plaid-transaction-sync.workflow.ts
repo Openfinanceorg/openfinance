@@ -4,7 +4,7 @@ import { accountConnections, syncJobs } from "../schema";
 import { eq } from "drizzle-orm";
 import { plaidService } from "../lib/sync/plaid.service";
 import { extractPlaidError } from "../lib/sync/plaid.client";
-import { isReconnectErrorCode } from "../lib/sync/disconnect-codes";
+import { needsUserAction } from "../lib/sync/disconnect-codes";
 import { notificationService } from "../lib/notification.service";
 
 const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
@@ -405,7 +405,7 @@ export class PlaidTransactionSyncWorkflow {
           `${errorCode ?? "UNKNOWN"} — ${message}`,
       );
 
-      if (isReconnectErrorCode(errorCode)) {
+      if (needsUserAction(errorCode)) {
         await PlaidTransactionSyncWorkflow.notifyDisconnect(
           input.userId,
           connectionId,

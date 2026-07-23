@@ -12,7 +12,7 @@ import type { ConnectedAccount } from "@openfinance/shared";
 import { plaidService } from "./sync/plaid.service";
 import { mxService } from "./sync/mx.service";
 import { quilttService } from "./sync/quiltt.service";
-import { isReconnectErrorCode } from "./sync/disconnect-codes";
+import { needsUserAction } from "./sync/disconnect-codes";
 import { user as userTable } from "../schema";
 
 interface SyncError {
@@ -313,7 +313,7 @@ class FinancialAccountService {
       if (
         job.status === "error" &&
         job.errorMessage &&
-        isReconnectErrorCode(job.errorCode)
+        needsUserAction(job.errorCode)
       ) {
         errorMap.set(job.accountConnectionId, {
           message: job.errorMessage,
