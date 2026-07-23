@@ -94,6 +94,46 @@ export const billingService = {
     return result;
   },
 
+  /**
+   * Apply a completed Checkout Session to the user's plan.
+   *
+   * The webhook is still the source of truth for the subscription lifecycle,
+   * but it is delivered asynchronously and races the browser redirect — and in
+   * local development it never arrives at all unless `stripe listen` is
+   * running. Verifying the session on return makes activation deterministic;
+   * the webhook then acts as an idempotent backstop.
+   */
+  async confirmCheckoutSession(
+    userId: string,
+    sessionId: string,
+  ): Promise<{ confirmed: boolean; status: BillingStatus }> {
+    const session = await stripeClient.retrieveCheckoutSession(sessionId);
+
+    // Never let one user apply another user's session.
+    const belongsToUser = session.clientReferenceId === userId;
+    const paid = session.paymentStatus === "paid";
+    const confirmed = belongsToUser && paid;
+
+    if (confirmed && session.customerId) {
+      const planType =
+        session.planType ??
+        (session.priceId
+          ? await stripeClient.planTypeFromPriceId(session.priceId)
+          : undefined);
+
+      await this.updateUserPlan(userId, {
+        stripeCustomerId: session.customerId,
+        ...(session.subscriptionId && {
+          stripeSubscriptionId: session.subscriptionId,
+          stripeSubscriptionStatus: session.subscriptionStatus ?? "active",
+        }),
+        ...(planType && planType !== "free" && { planType }),
+      });
+    }
+
+    return { confirmed, status: await this.getBillingStatus(userId) };
+  },
+
   async checkDowngradeEligibility(
     userId: string,
   ): Promise<DowngradeEligibility> {

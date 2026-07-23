@@ -3,20 +3,52 @@ import { db } from "../db";
 import { accountConnections, syncJobs } from "../schema";
 import { eq } from "drizzle-orm";
 import { plaidService } from "../lib/sync/plaid.service";
+import { extractPlaidError } from "../lib/sync/plaid.client";
+import { needsUserAction } from "../lib/sync/disconnect-codes";
 import { notificationService } from "../lib/notification.service";
-
-const PLAID_DISCONNECT_ERRORS = [
-  "ITEM_LOGIN_REQUIRED",
-  "ITEM_LOCKED",
-  "INVALID_CREDENTIALS",
-  "ACCESS_NOT_GRANTED",
-  "PASSWORD_RESET_REQUIRED",
-];
 
 const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 
-function isDisconnectError(message: string): boolean {
-  return PLAID_DISCONNECT_ERRORS.some((p) => message.includes(p));
+/**
+ * Plaid pulls from the bank asynchronously after a Link connect or reauth, so
+ * the first /transactions/sync right afterwards almost always returns nothing.
+ * Until we consume the SYNC_UPDATES_AVAILABLE webhook, re-check on a backoff
+ * instead of declaring success on an empty first page.
+ */
+const UPSTREAM_PULL_RETRY_DELAYS_MS = [
+  30_000, 60_000, 120_000, 300_000, 600_000,
+];
+
+const UPSTREAM_NOT_READY_MESSAGE =
+  "Your bank is still sending data. This usually finishes on its own shortly.";
+
+/**
+ * Has Plaid finished pulling from the bank?
+ *
+ * A transaction delta is not a readiness signal — an Item can legitimately
+ * report "done" with nothing changed, and can equally report NOT_READY forever.
+ * The right signal depends on whether the Item has ever pulled before:
+ *
+ * - **Never pulled** (no baseline): `transactions_update_status` reaching
+ *   HISTORICAL_UPDATE_COMPLETE. Anything unknown counts as done, so Items with
+ *   no /transactions/sync-eligible accounts (brokerages) don't block.
+ * - **Has pulled before** (reauth): the status is *already*
+ *   HISTORICAL_UPDATE_COMPLETE from the original link and says nothing about the
+ *   fresh pull, so require last_successful_update to advance past the baseline
+ *   captured before waiting.
+ */
+function isPullComplete(params: {
+  updateStatus: string | null;
+  baseline: number | null;
+  current: number | null;
+}): boolean {
+  const { updateStatus, baseline, current } = params;
+
+  if (baseline !== null) return current !== null && current > baseline;
+
+  return (
+    updateStatus !== "NOT_READY" && updateStatus !== "INITIAL_UPDATE_COMPLETE"
+  );
 }
 
 type FreshnessResult =
@@ -46,8 +78,29 @@ export class PlaidTransactionSyncWorkflow {
     connectionId: number;
     accessToken: string;
     cursor: string | null;
+    waitForInitialPull?: boolean;
   }) {
     return plaidService.syncTransactions(params);
+  }
+
+  /**
+   * Timestamp of Plaid's last successful transactions pull, or null if it has
+   * never pulled (or the status read failed — in which case we fall back to
+   * the status-based check, which errs towards not blocking).
+   */
+  @DBOS.step()
+  static async readLastSuccessfulUpdate(
+    accessToken: string,
+  ): Promise<number | null> {
+    try {
+      const status = await plaidService.getItemStatus(accessToken);
+      return status.lastSuccessfulUpdate?.getTime() ?? null;
+    } catch (err) {
+      DBOS.logger.warn(
+        `Item status read failed: ${err instanceof Error ? err.message : err}`,
+      );
+      return null;
+    }
   }
 
   @DBOS.step()
@@ -191,8 +244,14 @@ export class PlaidTransactionSyncWorkflow {
     connectionId: number;
     userId: string;
     syncJobId: number;
+    /**
+     * Set when this sync was dispatched straight after Link (new connection or
+     * reauth). Plaid's pull from the bank is still in flight at that point, so
+     * the workflow retries on a backoff rather than reporting an empty success.
+     */
+    awaitUpstreamPull?: boolean;
   }): Promise<{ added: number; modified: number; removed: number } | null> {
-    const { connectionId, syncJobId } = input;
+    const { connectionId, syncJobId, awaitUpstreamPull } = input;
 
     await PlaidTransactionSyncWorkflow.markStarted(syncJobId);
 
@@ -208,15 +267,86 @@ export class PlaidTransactionSyncWorkflow {
     }
 
     try {
-      const result = await PlaidTransactionSyncWorkflow.runSync({
+      // Captured before the first sync so a reauth can tell whether Plaid ran a
+      // fresh pull, which transactions_update_status cannot express.
+      const baseline = awaitUpstreamPull
+        ? await PlaidTransactionSyncWorkflow.readLastSuccessfulUpdate(
+            connection.plaidAccessToken,
+          )
+        : null;
+
+      let result = await PlaidTransactionSyncWorkflow.runSync({
         connectionId,
         accessToken: connection.plaidAccessToken,
         cursor: connection.transactionCursor,
+        waitForInitialPull: awaitUpstreamPull,
       });
 
+      if (awaitUpstreamPull) {
+        let current = await PlaidTransactionSyncWorkflow.readLastSuccessfulUpdate(
+          connection.plaidAccessToken,
+        );
+        let complete = isPullComplete({
+          updateStatus: result.updateStatus,
+          baseline,
+          current,
+        });
+
+        for (const delayMs of UPSTREAM_PULL_RETRY_DELAYS_MS) {
+          if (complete) break;
+
+          DBOS.logger.info(
+            `Connection ${connectionId}: upstream pull not complete ` +
+              `(status=${result.updateStatus ?? "unknown"}), ` +
+              `re-checking in ${Math.round(delayMs / 1000)}s`,
+          );
+          await DBOS.sleep(delayMs);
+
+          const next = await PlaidTransactionSyncWorkflow.runSync({
+            connectionId,
+            accessToken: connection.plaidAccessToken,
+            cursor: result.nextCursor,
+          });
+          result = {
+            nextCursor: next.nextCursor,
+            updateStatus: next.updateStatus,
+            added: result.added + next.added,
+            modified: result.modified + next.modified,
+            removed: result.removed + next.removed,
+          };
+          current = await PlaidTransactionSyncWorkflow.readLastSuccessfulUpdate(
+            connection.plaidAccessToken,
+          );
+          complete = isPullComplete({
+            updateStatus: result.updateStatus,
+            baseline,
+            current,
+          });
+        }
+
+        // Never report success on a pull that never finished — that is what
+        // made an unfinished sync indistinguishable from an empty one. The
+        // code is deliberately not a disconnect code, so the poller keeps
+        // retrying and no reconnect email or prompt is raised.
+        if (!complete) {
+          DBOS.logger.warn(
+            `Connection ${connectionId}: upstream pull still incomplete after ` +
+              `${UPSTREAM_PULL_RETRY_DELAYS_MS.length} retries`,
+          );
+          await PlaidTransactionSyncWorkflow.markError(
+            syncJobId,
+            UPSTREAM_NOT_READY_MESSAGE,
+            "UPSTREAM_NOT_READY",
+          );
+          return null;
+        }
+      }
+
       // Skip the freshness check on initial sync — Plaid hasn't run a
-      // background pull yet, so last_successful_update may be unset.
-      if (connection.transactionCursor !== null) {
+      // background pull yet, so last_successful_update may be unset. Also skip
+      // it right after Link: the item legitimately looks stale until Plaid's
+      // first post-reauth pull lands.
+      if (connection.transactionCursor !== null && !awaitUpstreamPull) {
         const freshness =
           await PlaidTransactionSyncWorkflow.checkItemFreshness(
             connection.plaidAccessToken,
@@ -259,20 +389,23 @@ export class PlaidTransactionSyncWorkflow {
       }
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown sync error";
-      const errorCode = isDisconnectError(message)
-        ? "ITEM_LOGIN_REQUIRED"
-        : undefined;
+      // Plaid's own error_code, not the axios message, which is only ever
+      // "Request failed with status code 400". Absent means the failure never
+      // reached Plaid (network, or a bug here), so it stays uncoded and the
+      // poller retries it rather than parking the connection.
+      const { errorCode, message } = extractPlaidError(err);
+
       await PlaidTransactionSyncWorkflow.markError(
         syncJobId,
         message,
         errorCode,
       );
       DBOS.logger.error(
-        `Transaction sync failed for connection ${connectionId}: ${message}`,
+        `Transaction sync failed for connection ${connectionId}: ` +
+          `${errorCode ?? "UNKNOWN"} — ${message}`,
       );
 
-      if (errorCode) {
+      if (needsUserAction(errorCode)) {
         await PlaidTransactionSyncWorkflow.notifyDisconnect(
           input.userId,
           connectionId,

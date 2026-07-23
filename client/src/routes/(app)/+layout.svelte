@@ -8,7 +8,7 @@
   import SyncBanner from "$lib/sync/SyncBanner.svelte";
   import InstitutionSearchContainer from "$lib/sync/InstitutionSearchContainer.svelte";
   import UpgradeModal from "$lib/billing/UpgradeModal.svelte";
-  import { checkCanConnect } from "$lib/billing/api";
+  import { checkCanConnect, confirmCheckout } from "$lib/billing/api";
   import { triggerPoll } from "$lib/sync/sync-status";
   import { setLinkContext } from "$lib/sync/link-context";
   import {
@@ -55,20 +55,46 @@
     }
   });
 
-  // Handle checkout return from Stripe
+  // Handle checkout return from Stripe. `?checkout=success` only means Stripe
+  // redirected us — it says nothing about whether the plan was actually
+  // applied, so confirm the session server-side before claiming success.
+  async function finalizeCheckout(sessionId: string | null) {
+    if (!sessionId) {
+      await refreshBillingState();
+      toast("Payment received — activating your subscription…");
+      return;
+    }
+
+    try {
+      const result = await confirmCheckout(sessionId);
+      billingState.set(result.status);
+
+      // `confirmed` covers the normal path; a non-free plan covers the case
+      // where the webhook already applied it before we got here.
+      if (result.confirmed || result.status.planType !== "free") {
+        toast.success(
+          "Subscription activated! You can now connect more accounts.",
+        );
+      } else {
+        toast("Payment received — activating your subscription…");
+      }
+    } catch {
+      await refreshBillingState();
+      toast("Payment received — activating your subscription…");
+    }
+  }
+
   $effect(() => {
     const checkoutParam = page.url.searchParams.get("checkout");
     if (checkoutParam === "success") {
-      toast.success(
-        "Subscription activated! You can now connect more accounts.",
-      );
-      refreshBillingState();
+      void finalizeCheckout(page.url.searchParams.get("session_id"));
     } else if (checkoutParam === "cancel") {
       toast("Checkout cancelled.");
     }
     if (checkoutParam) {
       const url = new URL(page.url);
       url.searchParams.delete("checkout");
+      url.searchParams.delete("session_id");
       replaceState(url, {});
     }
   });

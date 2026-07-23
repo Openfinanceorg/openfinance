@@ -51,6 +51,41 @@ export function groupAccounts(accounts: ConnectedAccount[]): AccountGroup[] {
   });
 }
 
+export interface CurrencyTotal {
+  currency: string;
+  amount: number;
+}
+
+/**
+ * Totals balances per currency, with liabilities subtracting. Balances are not
+ * converted between currencies, so each total stands on its own.
+ *
+ * Zero totals are dropped — a wallet like Wise can carry many currency
+ * sub-accounts sitting at 0. If every total is zero, the largest is kept so
+ * callers always have something to render.
+ */
+export function currencyTotals(accounts: ConnectedAccount[]): CurrencyTotal[] {
+  const totals = new Map<string, number>();
+
+  for (const account of accounts) {
+    const currency = account.isoCurrencyCode ?? "USD";
+    const balance = parseFloat(account.currentBalance ?? "0");
+    if (Number.isNaN(balance)) continue;
+    const isLiability = account.type === "credit" || account.type === "loan";
+    totals.set(
+      currency,
+      (totals.get(currency) ?? 0) + (isLiability ? -balance : balance),
+    );
+  }
+
+  const sorted = [...totals]
+    .map(([currency, amount]) => ({ currency, amount }))
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+
+  const nonZero = sorted.filter((t) => t.amount !== 0);
+  return nonZero.length > 0 ? nonZero : sorted.slice(0, 1);
+}
+
 export function formatBalance(
   balance: string | null,
   currency: string | null,

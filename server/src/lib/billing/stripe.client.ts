@@ -88,6 +88,51 @@ export async function createCheckoutSession(
   return session.url!;
 }
 
+export interface CheckoutSessionSummary {
+  clientReferenceId: string | null;
+  paymentStatus: string | null;
+  customerId: string | null;
+  subscriptionId: string | null;
+  subscriptionStatus: string | null;
+  planType: Exclude<PlanType, "free"> | null;
+  priceId: string | null;
+}
+
+/**
+ * Read back a completed Checkout Session so the success redirect can be
+ * verified server-side instead of trusting the `?checkout=success` query
+ * param, which the browser controls and which races the webhook.
+ */
+export async function retrieveCheckoutSession(
+  sessionId: string,
+): Promise<CheckoutSessionSummary> {
+  const session = await stripe.checkout.sessions.retrieve(sessionId, {
+    expand: ["subscription"],
+  });
+
+  const subscription =
+    session.subscription && typeof session.subscription !== "string"
+      ? session.subscription
+      : null;
+
+  const metaPlan = session.metadata?.planType;
+
+  return {
+    clientReferenceId: session.client_reference_id ?? null,
+    paymentStatus: session.payment_status ?? null,
+    customerId:
+      typeof session.customer === "string"
+        ? session.customer
+        : (session.customer?.id ?? null),
+    subscriptionId:
+      subscription?.id ??
+      (typeof session.subscription === "string" ? session.subscription : null),
+    subscriptionStatus: subscription?.status ?? null,
+    planType: metaPlan === "plus" || metaPlan === "pro" ? metaPlan : null,
+    priceId: subscription?.items?.data?.[0]?.price?.id ?? null,
+  };
+}
+
 export async function changePlan(
   subscriptionId: string,
   newPlanType: Exclude<PlanType, "free">,

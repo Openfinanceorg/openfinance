@@ -123,6 +123,68 @@ describe("PlaidService.syncTransactions", () => {
     dbMock.set = vi.fn().mockReturnValue(dbMock);
   });
 
+  // An Item with no /transactions/sync-eligible accounts (brokerages: the
+  // endpoint covers credit, depository and some loan accounts only) returns an
+  // empty delta AND an empty next_cursor — the same shape a NOT_READY Item
+  // returns. Readiness must come from the status, never the cursor, or these
+  // Items would wait ~4 minutes on every poll forever.
+  it("does not wait for a ready Item that returns an empty cursor", async () => {
+    mockTransactionsSync.mockResolvedValueOnce(
+      makeSyncResponse({
+        next_cursor: "",
+        transactions_update_status: "HISTORICAL_UPDATE_COMPLETE",
+      }),
+    );
+
+    const result = await plaidService.syncTransactions({
+      connectionId: 1,
+      accessToken: "access-token",
+      cursor: null,
+      waitForInitialPull: true,
+    });
+
+    expect(mockTransactionsSync).toHaveBeenCalledTimes(1);
+    expect(result.added).toBe(0);
+    expect(result.updateStatus).toBe("HISTORICAL_UPDATE_COMPLETE");
+  });
+
+  // An unreadable status must never produce an infinite wait.
+  it("does not wait when the update status is unknown", async () => {
+    mockTransactionsSync.mockResolvedValueOnce(
+      makeSyncResponse({
+        next_cursor: "",
+        transactions_update_status: "TRANSACTIONS_UPDATE_STATUS_UNKNOWN",
+      }),
+    );
+
+    const result = await plaidService.syncTransactions({
+      connectionId: 1,
+      accessToken: "access-token",
+      cursor: null,
+      waitForInitialPull: true,
+    });
+
+    expect(mockTransactionsSync).toHaveBeenCalledTimes(1);
+    expect(result.updateStatus).toBe("TRANSACTIONS_UPDATE_STATUS_UNKNOWN");
+  });
+
+  // The scheduled poll runs connections serially, so it must never block on
+  // Plaid's upstream pull even when the Item reports NOT_READY.
+  it("does not wait during a scheduled poll even when NOT_READY", async () => {
+    mockTransactionsSync.mockResolvedValueOnce(
+      makeSyncResponse({ transactions_update_status: "NOT_READY" }),
+    );
+
+    const result = await plaidService.syncTransactions({
+      connectionId: 1,
+      accessToken: "access-token",
+      cursor: null,
+    });
+
+    expect(mockTransactionsSync).toHaveBeenCalledTimes(1);
+    expect(result.updateStatus).toBe("NOT_READY");
+  });
+
   // Happy path: Plaid has data ready immediately, no polling needed
   it("syncs transactions on first call when data is ready", async () => {
     mockTransactionsSync.mockResolvedValueOnce(
@@ -168,6 +230,7 @@ describe("PlaidService.syncTransactions", () => {
       connectionId: 1,
       accessToken: "access-token",
       cursor: null,
+      waitForInitialPull: true,
     });
 
     // Advance past the first backoff delay (5s)
@@ -201,6 +264,7 @@ describe("PlaidService.syncTransactions", () => {
       connectionId: 1,
       accessToken: "access-token",
       cursor: null,
+      waitForInitialPull: true,
     });
 
     // Advance through all backoff delays: 5s + 10s + 20s + 30s×7
@@ -246,6 +310,7 @@ describe("PlaidService.syncTransactions", () => {
       connectionId: 1,
       accessToken: "access-token",
       cursor: null,
+      waitForInitialPull: true,
     });
 
     // Advance through all backoff delays
@@ -288,6 +353,7 @@ describe("PlaidService.syncTransactions", () => {
       connectionId: 1,
       accessToken: "access-token",
       cursor: null,
+      waitForInitialPull: true,
     });
 
     // Advance past the first backoff delay (5s)

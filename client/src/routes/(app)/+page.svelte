@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { AccountCarousel } from "$lib/accounts";
+  import { AccountsOverview } from "$lib/accounts";
   import EmptyAccountsState from "$lib/accounts/EmptyAccountsState.svelte";
-  import { Button } from "$lib/components/ui/button";
   import { dismissOnboarding } from "$lib/accounts/api";
   import { accountsState, refreshAccountsState } from "$lib/accounts/state";
 
@@ -11,7 +10,6 @@
   import GettingStarted from "$lib/components/GettingStarted.svelte";
   import Tasks from "$lib/tasks/Tasks.svelte";
   import { fetchTasks, type Task } from "$lib/tasks/api";
-  import { Plus } from "lucide-svelte";
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
 
@@ -51,23 +49,6 @@
     },
   );
 
-  let totalBalanceFormatted = $derived.by(() => {
-    const totals: Record<string, number> = {};
-    for (const a of accounts) {
-      const cur = a.isoCurrencyCode ?? "USD";
-      const balance = parseFloat(a.currentBalance ?? "0");
-      const isLiability = a.type === "credit" || a.type === "loan";
-      totals[cur] = (totals[cur] ?? 0) + (isLiability ? -balance : balance);
-    }
-    const [currency, amount] = Object.entries(totals).sort(
-      (a, b) => b[1] - a[1],
-    )[0] ?? ["USD", 0];
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(amount);
-  });
-
   async function handleDismissOnboarding() {
     accountsState.update((s) =>
       s ? { ...s, onboarding: { ...s.onboarding, dismissed: true } } : s,
@@ -99,25 +80,12 @@
     {#if accounts.length === 0}
       <EmptyAccountsState onAddAccount={openSearch} />
     {:else}
-      <section>
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <p class="text-xs text-[var(--text-muted)]">Total balance</p>
-            <p class="text-2xl font-semibold text-[var(--text)]">
-              {totalBalanceFormatted}
-            </p>
-          </div>
-          <Button variant="linkBlue" size="link" onclick={openSearch}>
-            <Plus class="h-3.5 w-3.5" />
-            add account
-          </Button>
-        </div>
-        <AccountCarousel
-          {accounts}
-          onReauth={triggerReauth}
-          onAccountClick={handleAccountClick}
-        />
-      </section>
+      <AccountsOverview
+        {accounts}
+        onAddAccount={openSearch}
+        onReauth={triggerReauth}
+        onAccountClick={handleAccountClick}
+      />
 
       <Tasks {tasks} onReconnect={handleReconnect} />
 
